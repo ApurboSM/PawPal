@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { 
   Cake, 
   MapPin, 
-  Heart 
+  Heart,
+  PawPrint,
+  ArrowRight
 } from "lucide-react";
 import { Pet } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
@@ -62,68 +64,119 @@ export function PetCard({ pet }: PetCardProps) {
   };
 
   return (
-    <Card className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden h-full">
-      <div className="relative">
+    <Card className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-md hover:shadow-xl transition-all-ease overflow-hidden h-full group">
+      <div className="relative overflow-hidden">
         <img 
           src={pet.imageUrl} 
           alt={`${pet.name} - ${pet.breed}`} 
-          className="w-full h-48 object-cover"
+          className="w-full h-52 object-cover transition-all duration-500 group-hover:scale-110"
         />
+        {/* Image overlay gradient on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+        
         <Badge 
-          className="absolute top-3 right-3 bg-[#47B881] hover:bg-[#3A9268] text-white font-bold text-xs"
+          className="absolute top-3 right-3 bg-accent hover:bg-accent/90 text-white font-medium text-xs px-3 py-1 rounded-full shadow-md"
         >
           {pet.status === "available" ? "Available" : pet.status}
         </Badge>
+        
+        {/* Pop-up view details button on hover */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          <Link href={`/pets/${pet.id}`}>
+            <Button 
+              variant="default"
+              className="bg-white text-primary hover:bg-white/90 rounded-full shadow-lg"
+              size="sm"
+            >
+              <ArrowRight className="h-4 w-4 mr-1" />
+              View Details
+            </Button>
+          </Link>
+        </div>
       </div>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-semibold text-neutral-800">{pet.name}</h3>
+      
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{pet.name}</h3>
           <Badge 
-            className="bg-[#6B8DB9] hover:bg-[#4A6FA5] text-white text-xs"
+            className="bg-primary/10 text-primary text-xs rounded-full border border-primary/20"
           >
             {pet.species.charAt(0).toUpperCase() + pet.species.slice(1)}
           </Badge>
         </div>
-        <div className="flex flex-wrap items-center text-sm text-neutral-600 mb-3">
-          <span className="flex items-center mr-3 mb-1">
-            <Cake className="h-4 w-4 mr-1" /> {formatAge(pet.age)}
-          </span>
-          <span className="flex items-center mr-3 mb-1">
-            {pet.gender === "male" ? (
-              <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M17 17L7 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 22V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M9 17H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M9 14L15 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M15 14L9 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-            {pet.gender.charAt(0).toUpperCase() + pet.gender.slice(1)}
-          </span>
-          <span className="flex items-center mb-1">
-            <MapPin className="h-4 w-4 mr-1" /> {pet.location}
+        
+        <div className="flex flex-wrap items-center text-sm text-foreground/70 mb-4 space-y-2">
+          <div className="flex flex-wrap w-full">
+            <span className="flex items-center mr-3 mb-1 bg-primary/5 px-2 py-1 rounded-full">
+              <Cake className="h-3.5 w-3.5 mr-1 text-primary/70" /> {formatAge(pet.age)}
+            </span>
+            <span className="flex items-center mr-3 mb-1 bg-primary/5 px-2 py-1 rounded-full">
+              {pet.gender === "male" ? (
+                <svg className="h-3.5 w-3.5 mr-1 text-primary/70" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M17 17L7 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : (
+                <svg className="h-3.5 w-3.5 mr-1 text-primary/70" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 22V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 17H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 14L15 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M15 14L9 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+              {pet.gender.charAt(0).toUpperCase() + pet.gender.slice(1)}
+            </span>
+          </div>
+          <span className="flex items-center mb-1 w-full">
+            <MapPin className="h-3.5 w-3.5 mr-1 text-primary/70" /> {pet.location}
           </span>
         </div>
-        <p className="text-neutral-700 mb-4 line-clamp-2">{pet.description}</p>
+        
+        <p className="text-foreground mb-4 line-clamp-2 text-sm">{pet.description}</p>
       </CardContent>
-      <CardFooter className="flex justify-between items-center p-4 pt-0">
-        <Link href={`/pets/${pet.id}`}>
-          <Button variant="ghost" className="text-[#4A6FA5] font-medium hover:text-[#3A5A87]">
-            View Details
-          </Button>
-        </Link>
+      
+      <CardFooter className="flex justify-between items-center p-6 pt-0 border-t border-primary/5">
+        {/* Desktop View Details */}
+        <div className="hidden md:block">
+          <Link href={`/pets/${pet.id}`}>
+            <Button 
+              variant="ghost" 
+              className="text-primary font-medium hover:text-primary/80 hover:bg-primary/5 rounded-full group transition-all duration-300"
+            >
+              <PawPrint className="h-4 w-4 mr-1.5 group-hover:rotate-12 transition-transform duration-300" />
+              Details
+            </Button>
+          </Link>
+        </div>
+        
+        {/* Mobile - show smaller pawprint button on mobile */}
+        <div className="md:hidden">
+          <Link href={`/pets/${pet.id}`}>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="h-9 w-9 rounded-full text-primary hover:text-primary/80 hover:bg-primary/5"
+            >
+              <PawPrint className="h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
+        
         <Button 
-          variant="secondary"
-          className={`text-white ${isFavorited ? 'bg-[#E57A53]' : 'bg-[#FF9166]'} hover:bg-[#E57A53] px-3 py-1.5 rounded-lg text-sm font-medium transition-colors`}
+          variant={isFavorited ? "default" : "outline"}
+          className={`
+            rounded-full transition-all duration-300 
+            ${isFavorited 
+              ? 'bg-primary text-white hover:bg-primary/90' 
+              : 'border-primary/20 text-primary hover:border-primary hover:bg-primary/5'
+            }
+          `}
           onClick={handleFavorite}
+          size="sm"
         >
-          <Heart className={`h-4 w-4 mr-1 ${isFavorited ? 'fill-current' : ''}`} />
+          <Heart className={`h-4 w-4 mr-1.5 ${isFavorited ? 'fill-current animate-pulse' : ''}`} />
           {isFavorited ? 'Favorited' : 'Favorite'}
         </Button>
       </CardFooter>
