@@ -844,6 +844,20 @@ export class DatabaseStorage implements IStorage {
         content: "Dogs communicate primarily through body language. Learn to interpret what your dog is saying through their posture, tail position, ear movements, and facial expressions. This guide will help you understand when your dog is happy, anxious, playful, or feeling threatened, allowing you to respond appropriately to their needs.",
         summary: "Learn to read your dog's signals and strengthen your bond.",
         imageUrl: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZG9nJTIwYm9keSUyMGxhbmd1YWdlfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60"
+      },
+      {
+        title: "Pet First Aid: Emergency Care When You Need It Most",
+        category: "Pet Health & Safety",
+        content: "When your pet is injured or unwell, knowing what to do in those critical moments can make all the difference. This comprehensive guide covers essential first aid techniques for common pet emergencies, including cuts, burns, poisoning, choking, and more. Learn how to assess your pet's condition, stabilize them, and determine when immediate veterinary care is needed. We also provide a list of recommended items for your pet first aid kit, emergency veterinary contact information, and tips for safely transporting an injured pet. Remember, while first aid can help in an emergency, it's not a substitute for professional veterinary care - always contact your vet or an emergency animal hospital after administering first aid. At PawPal, we're also available 24/7 through our emergency chat service if you need guidance during a pet health crisis.",
+        summary: "Essential first aid techniques and emergency care guidance for pet owners.",
+        imageUrl: "https://images.unsplash.com/photo-1584466977773-e625c37cdd50?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60"
+      },
+      {
+        title: "Local Veterinary Resources & Emergency Contacts",
+        category: "Pet Health & Safety",
+        content: "Having quick access to veterinary care is essential for every pet owner. This resource provides a comprehensive directory of veterinary services in your area, including regular clinics, 24-hour emergency hospitals, mobile veterinarians, and specialized care providers. We've included contact information, hours of operation, services offered, and directions to help you find immediate care when needed. The guide also features a section on telemedicine options for pets, affordable care resources, and tips for preparing for a veterinary visit. Keep this information accessible - we recommend saving emergency contacts in your phone and posting them on your refrigerator for quick reference. PawPal's support team is also available to help connect you with appropriate medical resources for your pet's specific needs through our chat support system.",
+        summary: "Find veterinary services, emergency animal hospitals, and specialized pet care in your area.",
+        imageUrl: "https://images.unsplash.com/photo-1629736048693-6bc25970ac42?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60"
       }
     ]);
   }

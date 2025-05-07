@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProtectedRoute } from "./lib/protected-route";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/use-auth";
+import { ChatWidget } from "@/components/ui/chat-widget";
 
 // Pages
 import HomePage from "@/pages/home-page";
@@ -38,6 +39,7 @@ function App() {
       <AuthProvider>
         <TooltipProvider>
           <Router />
+          <ChatWidget />
         </TooltipProvider>
       </AuthProvider>
     </ThemeProvider>
