@@ -676,12 +676,14 @@ export class DatabaseStorage implements IStorage {
   // Seed initial data
   private async seedInitialData() {
     try {
-      // Check if we have any existing pets
+      // Check if we have any existing users
+      const existingUsers = await db.select({ count: count() }).from(users);
       const existingPets = await db.select({ count: count() }).from(pets);
+      const existingResources = await db.select({ count: count() }).from(resources);
+      const existingTestimonials = await db.select({ count: count() }).from(testimonials);
       
-      // Only seed if there's no data
-      if (existingPets[0].count === 0) {
-        // Create admin user
+      // Create admin user if doesn't exist
+      if (existingUsers[0].count === 0) {
         await this.createUser({
           username: "admin",
           password: "admin", // This will be hashed in auth.ts
@@ -689,9 +691,20 @@ export class DatabaseStorage implements IStorage {
           name: "Admin User",
           role: "admin"
         });
-        
+      }
+      
+      // Seed pets if needed
+      if (existingPets[0].count === 0) {
         await this.seedPets();
+      }
+      
+      // Seed resources if needed
+      if (existingResources[0].count === 0) {
         await this.seedResources();
+      }
+      
+      // Seed testimonials if needed
+      if (existingTestimonials[0].count === 0) {
         await this.seedTestimonials();
       }
     } catch (error) {
