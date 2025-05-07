@@ -1,6 +1,9 @@
 import { users, type User, type InsertUser, pets, type Pet, type InsertPet, resources, type Resource, type InsertResource, appointments, type Appointment, type InsertAppointment, adoptionApplications, type AdoptionApplication, type InsertAdoptionApplication, testimonials, type Testimonial, type InsertTestimonial } from "@shared/schema";
+import { eq, count } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { db, pool } from "./db";
 
 // Create memory store for sessions
 const MemoryStore = createMemoryStore(session);
@@ -50,7 +53,7 @@ export interface IStorage {
   deleteTestimonial(id: number): Promise<boolean>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -448,4 +451,327 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  public sessionStore: session.SessionStore;
+  
+  constructor() {
+    // Set up PostgreSQL session store
+    const PostgresSessionStore = connectPg(session);
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
+    
+    // Seed initial data if needed - we'll do this via migrations
+    this.seedInitialData();
+  }
+  
+  // Users
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+  
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+  
+  // Pets
+  async getPet(id: number): Promise<Pet | undefined> {
+    const [pet] = await db.select().from(pets).where(eq(pets.id, id));
+    return pet || undefined;
+  }
+  
+  async getPets(filters?: Partial<Pet>): Promise<Pet[]> {
+    if (!filters) {
+      return db.select().from(pets);
+    }
+    
+    let query = db.select().from(pets);
+    
+    if (filters.species && filters.species !== 'all') {
+      query = query.where(eq(pets.species, filters.species));
+    }
+    if (filters.age && filters.age !== 'any-age') {
+      query = query.where(eq(pets.age, filters.age));
+    }
+    if (filters.gender && filters.gender !== 'any-gender') {
+      query = query.where(eq(pets.gender, filters.gender));
+    }
+    if (filters.size && filters.size !== 'any-size') {
+      query = query.where(eq(pets.size, filters.size));
+    }
+    // Note: filtering by goodWith would require more complex query with JSON operators
+    
+    return query;
+  }
+  
+  async createPet(petData: InsertPet): Promise<Pet> {
+    const [pet] = await db.insert(pets).values(petData).returning();
+    return pet;
+  }
+  
+  async updatePet(id: number, petData: Partial<Pet>): Promise<Pet | undefined> {
+    const [pet] = await db
+      .update(pets)
+      .set(petData)
+      .where(eq(pets.id, id))
+      .returning();
+    return pet || undefined;
+  }
+  
+  async deletePet(id: number): Promise<boolean> {
+    const result = await db.delete(pets).where(eq(pets.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Resources
+  async getResource(id: number): Promise<Resource | undefined> {
+    const [resource] = await db.select().from(resources).where(eq(resources.id, id));
+    return resource || undefined;
+  }
+  
+  async getResources(): Promise<Resource[]> {
+    return db.select().from(resources);
+  }
+  
+  async createResource(resourceData: InsertResource): Promise<Resource> {
+    const [resource] = await db.insert(resources).values(resourceData).returning();
+    return resource;
+  }
+  
+  async updateResource(id: number, resourceData: Partial<Resource>): Promise<Resource | undefined> {
+    const [resource] = await db
+      .update(resources)
+      .set(resourceData)
+      .where(eq(resources.id, id))
+      .returning();
+    return resource || undefined;
+  }
+  
+  async deleteResource(id: number): Promise<boolean> {
+    const result = await db.delete(resources).where(eq(resources.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Appointments
+  async getAppointment(id: number): Promise<Appointment | undefined> {
+    const [appointment] = await db.select().from(appointments).where(eq(appointments.id, id));
+    return appointment || undefined;
+  }
+  
+  async getAppointmentsByUser(userId: number): Promise<Appointment[]> {
+    return db.select().from(appointments).where(eq(appointments.userId, userId));
+  }
+  
+  async createAppointment(appointmentData: InsertAppointment): Promise<Appointment> {
+    // Set default status to "scheduled" if not provided
+    const data = {
+      ...appointmentData,
+      status: appointmentData.status || "scheduled"
+    };
+    
+    const [appointment] = await db.insert(appointments).values(data).returning();
+    return appointment;
+  }
+  
+  async updateAppointment(id: number, appointmentData: Partial<Appointment>): Promise<Appointment | undefined> {
+    const [appointment] = await db
+      .update(appointments)
+      .set(appointmentData)
+      .where(eq(appointments.id, id))
+      .returning();
+    return appointment || undefined;
+  }
+  
+  async deleteAppointment(id: number): Promise<boolean> {
+    const result = await db.delete(appointments).where(eq(appointments.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Adoption Applications
+  async getAdoptionApplication(id: number): Promise<AdoptionApplication | undefined> {
+    const [application] = await db.select().from(adoptionApplications).where(eq(adoptionApplications.id, id));
+    return application || undefined;
+  }
+  
+  async getAdoptionApplicationsByUser(userId: number): Promise<AdoptionApplication[]> {
+    return db.select().from(adoptionApplications).where(eq(adoptionApplications.userId, userId));
+  }
+  
+  async getAdoptionApplicationsByPet(petId: number): Promise<AdoptionApplication[]> {
+    return db.select().from(adoptionApplications).where(eq(adoptionApplications.petId, petId));
+  }
+  
+  async createAdoptionApplication(applicationData: InsertAdoptionApplication): Promise<AdoptionApplication> {
+    // Set default values if not provided
+    const data = {
+      ...applicationData,
+      applicationDate: applicationData.applicationDate || new Date(),
+      status: applicationData.status || "pending"
+    };
+    
+    const [application] = await db.insert(adoptionApplications).values(data).returning();
+    return application;
+  }
+  
+  async updateAdoptionApplication(id: number, applicationData: Partial<AdoptionApplication>): Promise<AdoptionApplication | undefined> {
+    const [application] = await db
+      .update(adoptionApplications)
+      .set(applicationData)
+      .where(eq(adoptionApplications.id, id))
+      .returning();
+    return application || undefined;
+  }
+  
+  // Testimonials
+  async getTestimonial(id: number): Promise<Testimonial | undefined> {
+    const [testimonial] = await db.select().from(testimonials).where(eq(testimonials.id, id));
+    return testimonial || undefined;
+  }
+  
+  async getTestimonials(): Promise<Testimonial[]> {
+    return db.select().from(testimonials);
+  }
+  
+  async createTestimonial(testimonialData: InsertTestimonial): Promise<Testimonial> {
+    const [testimonial] = await db.insert(testimonials).values(testimonialData).returning();
+    return testimonial;
+  }
+  
+  async updateTestimonial(id: number, testimonialData: Partial<Testimonial>): Promise<Testimonial | undefined> {
+    const [testimonial] = await db
+      .update(testimonials)
+      .set(testimonialData)
+      .where(eq(testimonials.id, id))
+      .returning();
+    return testimonial || undefined;
+  }
+  
+  async deleteTestimonial(id: number): Promise<boolean> {
+    const result = await db.delete(testimonials).where(eq(testimonials.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Seed initial data
+  private async seedInitialData() {
+    try {
+      // Check if we have any existing pets
+      const existingPets = await db.select({ count: count() }).from(pets);
+      
+      // Only seed if there's no data
+      if (existingPets[0].count === 0) {
+        // Create admin user
+        await this.createUser({
+          username: "admin",
+          password: "admin", // This will be hashed in auth.ts
+          email: "admin@pawpal.com",
+          name: "Admin User",
+          role: "admin"
+        });
+        
+        await this.seedPets();
+        await this.seedResources();
+        await this.seedTestimonials();
+      }
+    } catch (error) {
+      console.error("Error seeding initial data:", error);
+    }
+  }
+  
+  private async seedPets() {
+    await db.insert(pets).values([
+      {
+        name: "Buddy",
+        species: "dog",
+        breed: "Golden Retriever",
+        age: "adult",
+        gender: "male",
+        size: "large",
+        color: "Golden",
+        description: "Buddy is a friendly and energetic Golden Retriever who loves to play fetch and go for long walks. He's great with children and other pets.",
+        imageUrl: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Z29sZGVuJTIwcmV0cmlldmVyfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
+        status: "available",
+        goodWith: { kids: true, dogs: true, cats: true },
+        healthStatus: "Vaccinated, neutered, and microchipped",
+      },
+      {
+        name: "Luna",
+        species: "cat",
+        breed: "Siamese",
+        age: "young",
+        gender: "female",
+        size: "medium",
+        color: "Cream with brown points",
+        description: "Luna is a beautiful Siamese cat with striking blue eyes. She's playful and affectionate but may need time to warm up to new people.",
+        imageUrl: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2lhbWVzZSUyMGNhdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
+        status: "available",
+        goodWith: { kids: true, dogs: false, cats: true },
+        healthStatus: "Vaccinated, spayed, and microchipped",
+      }
+    ]);
+  }
+  
+  private async seedResources() {
+    await db.insert(resources).values([
+      {
+        title: "New Pet Checklist: Everything You Need",
+        category: "New Pet Owners",
+        content: "Bringing home a new pet is exciting! Here's everything you need to prepare for their arrival...",
+        imageUrl: "https://images.unsplash.com/photo-1516750105099-4b8a83e217ee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8cGV0JTIwc3VwcGxpZXN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+        tags: ["new pet", "checklist", "supplies"],
+      },
+      {
+        title: "Understanding Your Dog's Body Language",
+        category: "Dog Behavior",
+        content: "Dogs communicate primarily through body language. Learn to interpret what your dog is saying...",
+        imageUrl: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZG9nJTIwYm9keSUyMGxhbmd1YWdlfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
+        tags: ["dogs", "behavior", "communication"],
+      }
+    ]);
+  }
+  
+  private async seedTestimonials() {
+    await db.insert(testimonials).values([
+      {
+        name: "Sarah J.",
+        petName: "Max",
+        petType: "German Shepherd",
+        content: "Adopting Max from PawPal was the best decision we ever made. The process was smooth, and the staff was incredibly helpful in making sure Max was the right fit for our family. He's brought so much joy to our lives!",
+        rating: 5,
+        avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
+      },
+      {
+        name: "Michael T.",
+        petName: "Luna",
+        petType: "Siamese Cat",
+        content: "Luna has been a wonderful addition to our home. PawPal made the adoption process straightforward, and they provided excellent guidance on helping Luna adjust to her new environment. Thank you for bringing us together!",
+        rating: 5,
+        avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
+      }
+    ]);
+  }
+}
+
+// Use the database storage instead of memory storage
+export const storage = new DatabaseStorage();
