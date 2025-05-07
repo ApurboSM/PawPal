@@ -12,6 +12,7 @@ import AuthPage from "@/pages/auth-page";
 import PetsPage from "@/pages/pets-page";
 import PetDetailPage from "@/pages/pet-detail-page";
 import ResourcesPage from "@/pages/resources-page";
+import ResourceDetailPage from "@/pages/resource-detail-page";
 import AppointmentPage from "@/pages/appointment-page";
 import AdminPage from "@/pages/admin-page";
 import ContactPage from "@/pages/contact-page";
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/pets" component={PetsPage} />
       <Route path="/pets/:id" component={PetDetailPage} />
       <Route path="/resources" component={ResourcesPage} />
+      <Route path="/resources/:id" component={ResourceDetailPage} />
       <Route path="/emergency" component={EmergencyPage} />
       <ProtectedRoute path="/appointments" component={AppointmentPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
