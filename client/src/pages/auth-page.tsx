@@ -278,7 +278,7 @@ export default function AuthPage() {
                         Already have an account?{" "}
                         <button 
                           onClick={() => setActiveTab("login")}
-                          className="text-[#4A6FA5] hover:underline font-medium"
+                          className="text-[#FF6B98] hover:underline font-medium"
                         >
                           Login
                         </button>
@@ -290,9 +290,9 @@ export default function AuthPage() {
             </div>
             
             {/* Hero Section */}
-            <div className="w-full lg:w-1/2 bg-[#4A6FA5] rounded-xl p-8 flex flex-col justify-center text-white">
+            <div className="w-full lg:w-1/2 bg-[#FF6B98] rounded-xl p-8 flex flex-col justify-center text-white">
               <div className="mb-6 flex items-center">
-                <PawPrint className="h-10 w-10 mr-2 text-[#FF9166]" />
+                <PawPrint className="h-10 w-10 mr-2 text-white" />
                 <h2 className="text-3xl font-bold">PawPal</h2>
               </div>
               
@@ -304,26 +304,26 @@ export default function AuthPage() {
               
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center">
-                  <div className="w-8 h-8 bg-[#FF9166] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold">1</span>
+                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <span className="font-bold text-[#FF6B98]">1</span>
                   </div>
                   <span>Browse and save your favorite pets</span>
                 </li>
                 <li className="flex items-center">
-                  <div className="w-8 h-8 bg-[#FF9166] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold">2</span>
+                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <span className="font-bold text-[#FF6B98]">2</span>
                   </div>
                   <span>Submit adoption applications</span>
                 </li>
                 <li className="flex items-center">
-                  <div className="w-8 h-8 bg-[#FF9166] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold">3</span>
+                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <span className="font-bold text-[#FF6B98]">3</span>
                   </div>
                   <span>Schedule appointments for meet & greets</span>
                 </li>
                 <li className="flex items-center">
-                  <div className="w-8 h-8 bg-[#FF9166] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold">4</span>
+                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <span className="font-bold text-[#FF6B98]">4</span>
                   </div>
                   <span>Access exclusive pet care resources</span>
                 </li>
