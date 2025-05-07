@@ -14,6 +14,7 @@ import ResourcesPage from "@/pages/resources-page";
 import AppointmentPage from "@/pages/appointment-page";
 import AdminPage from "@/pages/admin-page";
 import ContactPage from "@/pages/contact-page";
+import EmergencyPage from "@/pages/emergency-page";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/pets" component={PetsPage} />
       <Route path="/pets/:id" component={PetDetailPage} />
       <Route path="/resources" component={ResourcesPage} />
+      <Route path="/emergency" component={EmergencyPage} />
       <ProtectedRoute path="/appointments" component={AppointmentPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
       <Route path="/contact" component={ContactPage} />

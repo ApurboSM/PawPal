@@ -15,6 +15,7 @@ export function Navbar() {
     { name: "Home", path: "/" },
     { name: "Adopt", path: "/pets" },
     { name: "Resources", path: "/resources" },
+    { name: "Emergency", path: "/emergency" },
     { name: "Book Appointment", path: "/appointments" },
     { name: "Contact", path: "/contact" },
   ];
@@ -50,12 +51,22 @@ export function Navbar() {
                 key={item.path}
                 href={item.path}
                 className={`${
-                  location === item.path
-                    ? "text-primary font-medium after:bg-primary"
-                    : "text-foreground hover:text-primary font-medium after:bg-transparent"
+                  item.path === "/emergency" 
+                    ? location === item.path
+                      ? "text-red-600 font-medium after:bg-red-600"
+                      : "text-red-600 hover:text-red-700 font-medium after:bg-transparent"
+                    : location === item.path
+                      ? "text-primary font-medium after:bg-primary"
+                      : "text-foreground hover:text-primary font-medium after:bg-transparent"
                 } relative py-1 transition-all-ease after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded after:transition-all after:duration-300 hover:after:bg-primary/40`}
               >
-                {item.name}
+                {item.path === "/emergency" ? (
+                  <span className="flex items-center">
+                    <span className="animate-pulse mr-1.5">⚕️</span> {item.name}
+                  </span>
+                ) : (
+                  item.name
+                )}
               </Link>
             ))}
             {user && user.role === "admin" && (
@@ -135,13 +146,23 @@ export function Navbar() {
                   key={item.path}
                   href={item.path}
                   className={`${
-                    location === item.path
-                      ? "text-primary font-medium bg-primary/10 rounded-lg pl-4 py-2"
-                      : "text-foreground hover:text-primary font-medium hover:bg-primary/5 rounded-lg pl-4 py-2"
+                    item.path === "/emergency" 
+                      ? location === item.path
+                        ? "text-red-600 font-medium bg-red-50 rounded-lg pl-4 py-2"
+                        : "text-red-600 hover:text-red-700 font-medium hover:bg-red-50 rounded-lg pl-4 py-2"
+                      : location === item.path
+                        ? "text-primary font-medium bg-primary/10 rounded-lg pl-4 py-2"
+                        : "text-foreground hover:text-primary font-medium hover:bg-primary/5 rounded-lg pl-4 py-2"
                   } transition-all duration-200`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {item.name}
+                  {item.path === "/emergency" ? (
+                    <span className="flex items-center">
+                      <span className="animate-pulse mr-1.5">⚕️</span> {item.name}
+                    </span>
+                  ) : (
+                    item.name
+                  )}
                 </Link>
               ))}
               {user && user.role === "admin" && (
