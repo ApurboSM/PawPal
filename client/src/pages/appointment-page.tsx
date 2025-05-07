@@ -287,9 +287,9 @@ export default function AppointmentPage() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="">None (For Meet & Greet)</SelectItem>
+                                  <SelectItem value="none">None (For Meet & Greet)</SelectItem>
                                   {isPetsLoading ? (
-                                    <SelectItem value="" disabled>
+                                    <SelectItem value="loading" disabled>
                                       Loading pets...
                                     </SelectItem>
                                   ) : pets && pets.length > 0 ? (
@@ -299,7 +299,7 @@ export default function AppointmentPage() {
                                       </SelectItem>
                                     ))
                                   ) : (
-                                    <SelectItem value="" disabled>
+                                    <SelectItem value="no-pets" disabled>
                                       No pets available
                                     </SelectItem>
                                   )}

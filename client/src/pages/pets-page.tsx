@@ -199,7 +199,7 @@ export default function PetsPage() {
                           <SelectValue placeholder="All Species" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Species</SelectItem>
+                          <SelectItem value="all">All Species</SelectItem>
                           <SelectItem value="dog">Dogs</SelectItem>
                           <SelectItem value="cat">Cats</SelectItem>
                           <SelectItem value="rabbit">Rabbits</SelectItem>
@@ -219,7 +219,7 @@ export default function PetsPage() {
                           <SelectValue placeholder="Any Age" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any Age</SelectItem>
+                          <SelectItem value="any-age">Any Age</SelectItem>
                           <SelectItem value="puppy">Baby (0-1 year)</SelectItem>
                           <SelectItem value="young">Young (1-3 years)</SelectItem>
                           <SelectItem value="adult">Adult (3-7 years)</SelectItem>
