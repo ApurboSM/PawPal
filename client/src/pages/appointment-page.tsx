@@ -620,7 +620,10 @@ export default function AppointmentPage() {
                         You don't have any upcoming appointments scheduled.
                       </p>
                       <Button
-                        onClick={() => document.querySelector('[data-value="book"]')?.click()}
+                        onClick={() => {
+                          const element = document.querySelector('[data-value="book"]') as HTMLElement;
+                          if (element) element.click();
+                        }}
                         className="bg-[#4A6FA5] hover:bg-[#3A5A87]"
                       >
                         Book an Appointment

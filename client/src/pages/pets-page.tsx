@@ -238,7 +238,7 @@ export default function PetsPage() {
                           <SelectValue placeholder="Any Gender" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any Gender</SelectItem>
+                          <SelectItem value="any-gender">Any Gender</SelectItem>
                           <SelectItem value="male">Male</SelectItem>
                           <SelectItem value="female">Female</SelectItem>
                         </SelectContent>
@@ -255,7 +255,7 @@ export default function PetsPage() {
                           <SelectValue placeholder="Any Size" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any Size</SelectItem>
+                          <SelectItem value="any-size">Any Size</SelectItem>
                           <SelectItem value="small">Small</SelectItem>
                           <SelectItem value="medium">Medium</SelectItem>
                           <SelectItem value="large">Large</SelectItem>
