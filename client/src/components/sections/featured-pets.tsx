@@ -68,7 +68,7 @@ export function FeaturedPets() {
           </div>
         ) : pets && pets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {pets.slice(0, 4).map((pet) => (
+            {pets.map((pet) => (
               <PetCard key={pet.id} pet={pet} />
             ))}
           </div>
