@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema } from "@shared/schema";
+import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema, insertEmergencyContactSchema, insertPetMedicalRecordSchema } from "@shared/schema";
 import { z } from "zod";
 
 // Middleware to check if user is authenticated
@@ -406,6 +406,217 @@ export function registerRoutes(app: Express): Server {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete testimonial" });
+    }
+  });
+  
+  // ---------- Emergency Contact Routes ----------
+  
+  // Get all emergency contacts for a user
+  app.get("/api/emergency-contacts", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const contacts = await storage.getEmergencyContactsByUser(userId);
+      res.json(contacts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch emergency contacts" });
+    }
+  });
+  
+  // Get a specific emergency contact
+  app.get("/api/emergency-contacts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const contact = await storage.getEmergencyContact(id);
+      
+      if (!contact) {
+        return res.status(404).json({ message: "Emergency contact not found" });
+      }
+      
+      // Users can only view their own emergency contacts unless they're admins
+      if (contact.userId !== req.user!.id && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      res.json(contact);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch emergency contact" });
+    }
+  });
+  
+  // Create a new emergency contact
+  app.post("/api/emergency-contacts", isAuthenticated, async (req, res) => {
+    try {
+      const contactData = insertEmergencyContactSchema.parse({
+        ...req.body,
+        userId: req.user!.id,
+      });
+      
+      const contact = await storage.createEmergencyContact(contactData);
+      res.status(201).json(contact);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid emergency contact data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create emergency contact" });
+      }
+    }
+  });
+  
+  // Update an emergency contact
+  app.put("/api/emergency-contacts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const contact = await storage.getEmergencyContact(id);
+      
+      if (!contact) {
+        return res.status(404).json({ message: "Emergency contact not found" });
+      }
+      
+      // Users can only update their own emergency contacts unless they're admins
+      if (contact.userId !== req.user!.id && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const updatedContact = await storage.updateEmergencyContact(id, req.body);
+      res.json(updatedContact);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update emergency contact" });
+    }
+  });
+  
+  // Delete an emergency contact
+  app.delete("/api/emergency-contacts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const contact = await storage.getEmergencyContact(id);
+      
+      if (!contact) {
+        return res.status(404).json({ message: "Emergency contact not found" });
+      }
+      
+      // Users can only delete their own emergency contacts unless they're admins
+      if (contact.userId !== req.user!.id && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const result = await storage.deleteEmergencyContact(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete emergency contact" });
+    }
+  });
+  
+  // ---------- Pet Medical Record Routes ----------
+  
+  // Get all medical records for a user's pets
+  app.get("/api/pet-medical-records", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const records = await storage.getPetMedicalRecordsByUser(userId);
+      res.json(records);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pet medical records" });
+    }
+  });
+  
+  // Get all medical records for a specific pet
+  app.get("/api/pets/:petId/medical-records", isAuthenticated, async (req, res) => {
+    try {
+      const petId = parseInt(req.params.petId);
+      const pet = await storage.getPet(petId);
+      
+      if (!pet) {
+        return res.status(404).json({ message: "Pet not found" });
+      }
+      
+      const records = await storage.getPetMedicalRecordsByPet(petId);
+      res.json(records);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pet medical records" });
+    }
+  });
+  
+  // Get a specific medical record
+  app.get("/api/pet-medical-records/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const record = await storage.getPetMedicalRecord(id);
+      
+      if (!record) {
+        return res.status(404).json({ message: "Medical record not found" });
+      }
+      
+      // Users can only view their own pets' medical records unless they're admins
+      if (record.userId !== req.user!.id && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      res.json(record);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch medical record" });
+    }
+  });
+  
+  // Create a new medical record
+  app.post("/api/pet-medical-records", isAuthenticated, async (req, res) => {
+    try {
+      const recordData = insertPetMedicalRecordSchema.parse({
+        ...req.body,
+        userId: req.user!.id,
+      });
+      
+      const record = await storage.createPetMedicalRecord(recordData);
+      res.status(201).json(record);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid medical record data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create medical record" });
+      }
+    }
+  });
+  
+  // Update a medical record
+  app.put("/api/pet-medical-records/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const record = await storage.getPetMedicalRecord(id);
+      
+      if (!record) {
+        return res.status(404).json({ message: "Medical record not found" });
+      }
+      
+      // Users can only update their own pets' medical records unless they're admins
+      if (record.userId !== req.user!.id && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const updatedRecord = await storage.updatePetMedicalRecord(id, req.body);
+      res.json(updatedRecord);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update medical record" });
+    }
+  });
+  
+  // Delete a medical record
+  app.delete("/api/pet-medical-records/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const record = await storage.getPetMedicalRecord(id);
+      
+      if (!record) {
+        return res.status(404).json({ message: "Medical record not found" });
+      }
+      
+      // Users can only delete their own pets' medical records unless they're admins
+      if (record.userId !== req.user!.id && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const result = await storage.deletePetMedicalRecord(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete medical record" });
     }
   });
 

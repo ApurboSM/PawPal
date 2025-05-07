@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
   AlertTriangle,
@@ -14,7 +14,16 @@ import {
   Menu,
   ArrowRight,
   ChevronDown,
-  X
+  X,
+  Plus,
+  Edit,
+  Trash2,
+  Mail,
+  CalendarClock,
+  Stethoscope,
+  FileText,
+  UserRound,
+  Building
 } from "lucide-react";
 import {
   Accordion,
@@ -457,7 +466,7 @@ export default function EmergencyPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="first-aid" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="first-aid" className="text-base py-3">
               <HeartPulse className="h-5 w-5 mr-2" />
               First Aid Instructions
@@ -465,6 +474,10 @@ export default function EmergencyPage() {
             <TabsTrigger value="emergency-contacts" className="text-base py-3">
               <Phone className="h-5 w-5 mr-2" />
               Emergency Contacts
+            </TabsTrigger>
+            <TabsTrigger value="my-emergency-info" className="text-base py-3">
+              <PawPrint className="h-5 w-5 mr-2" />
+              My Emergency Info
             </TabsTrigger>
           </TabsList>
 
