@@ -705,29 +705,29 @@ export class DatabaseStorage implements IStorage {
         name: "Buddy",
         species: "dog",
         breed: "Golden Retriever",
-        age: "adult",
+        age: 36, // 3 years in months
         gender: "male",
         size: "large",
-        color: "Golden",
         description: "Buddy is a friendly and energetic Golden Retriever who loves to play fetch and go for long walks. He's great with children and other pets.",
         imageUrl: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Z29sZGVuJTIwcmV0cmlldmVyfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
         status: "available",
+        location: "2.5 miles away",
+        healthDetails: "Vaccinated, neutered, and microchipped",
         goodWith: { kids: true, dogs: true, cats: true },
-        healthStatus: "Vaccinated, neutered, and microchipped",
       },
       {
         name: "Luna",
         species: "cat",
         breed: "Siamese",
-        age: "young",
+        age: 12, // 1 year in months
         gender: "female",
         size: "medium",
-        color: "Cream with brown points",
         description: "Luna is a beautiful Siamese cat with striking blue eyes. She's playful and affectionate but may need time to warm up to new people.",
         imageUrl: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2lhbWVzZSUyMGNhdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
         status: "available",
+        location: "3.7 miles away",
+        healthDetails: "Vaccinated, spayed, and microchipped",
         goodWith: { kids: true, dogs: false, cats: true },
-        healthStatus: "Vaccinated, spayed, and microchipped",
       }
     ]);
   }
@@ -737,16 +737,16 @@ export class DatabaseStorage implements IStorage {
       {
         title: "New Pet Checklist: Everything You Need",
         category: "New Pet Owners",
-        content: "Bringing home a new pet is exciting! Here's everything you need to prepare for their arrival...",
-        imageUrl: "https://images.unsplash.com/photo-1516750105099-4b8a83e217ee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8cGV0JTIwc3VwcGxpZXN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-        tags: ["new pet", "checklist", "supplies"],
+        content: "Bringing home a new pet is exciting! Here's everything you need to prepare for their arrival. This comprehensive checklist covers all the essential supplies, from food and bedding to toys and healthcare items. We also provide tips on setting up your home to be safe and comfortable for your new furry friend.",
+        summary: "A comprehensive guide to preparing your home for a new pet arrival.",
+        imageUrl: "https://images.unsplash.com/photo-1516750105099-4b8a83e217ee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8cGV0JTIwc3VwcGxpZXN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60"
       },
       {
         title: "Understanding Your Dog's Body Language",
         category: "Dog Behavior",
-        content: "Dogs communicate primarily through body language. Learn to interpret what your dog is saying...",
-        imageUrl: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZG9nJTIwYm9keSUyMGxhbmd1YWdlfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-        tags: ["dogs", "behavior", "communication"],
+        content: "Dogs communicate primarily through body language. Learn to interpret what your dog is saying through their posture, tail position, ear movements, and facial expressions. This guide will help you understand when your dog is happy, anxious, playful, or feeling threatened, allowing you to respond appropriately to their needs.",
+        summary: "Learn to read your dog's signals and strengthen your bond.",
+        imageUrl: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZG9nJTIwYm9keSUyMGxhbmd1YWdlfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60"
       }
     ]);
   }
@@ -759,7 +759,7 @@ export class DatabaseStorage implements IStorage {
         petType: "German Shepherd",
         content: "Adopting Max from PawPal was the best decision we ever made. The process was smooth, and the staff was incredibly helpful in making sure Max was the right fit for our family. He's brought so much joy to our lives!",
         rating: 5,
-        avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
+        imageUrl: "https://randomuser.me/api/portraits/women/44.jpg"
       },
       {
         name: "Michael T.",
@@ -767,7 +767,7 @@ export class DatabaseStorage implements IStorage {
         petType: "Siamese Cat",
         content: "Luna has been a wonderful addition to our home. PawPal made the adoption process straightforward, and they provided excellent guidance on helping Luna adjust to her new environment. Thank you for bringing us together!",
         rating: 5,
-        avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
+        imageUrl: "https://randomuser.me/api/portraits/men/32.jpg"
       }
     ]);
   }
