@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   AlertTriangle,
   HeartPulse,
@@ -63,6 +67,33 @@ interface FirstAidTip {
   doNot: string[];
   whenToSeek: string;
   petType: string; // "all", "dog", "cat", etc.
+}
+
+// User emergency contact interface
+interface UserEmergencyContact {
+  id: number;
+  userId: number;
+  contactName: string;
+  phone: string;
+  address: string;
+  isVet: boolean;
+  email: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+// Pet medical record interface
+interface PetMedicalRecord {
+  id: number;
+  userId: number;
+  petId: number;
+  recordType: string;
+  recordDate: string;
+  description: string;
+  vetName: string | null;
+  attachmentUrl: string | null;
+  notes: string | null;
+  createdAt: string;
 }
 
 // Mock data - in a real app, this would come from the database
@@ -269,10 +300,84 @@ const firstAidTips: FirstAidTip[] = [
 ];
 
 export default function EmergencyPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPetType, setSelectedPetType] = useState("all");
   const [filterEmergencyOnly, setFilterEmergencyOnly] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAddContactDialogOpen, setIsAddContactDialogOpen] = useState(false);
+  const [isAddMedicalRecordDialogOpen, setIsAddMedicalRecordDialogOpen] = useState(false);
+  
+  // Fetch user's emergency contacts
+  const { 
+    data: userEmergencyContacts = [], 
+    isLoading: isLoadingContacts,
+    isError: isErrorContacts
+  } = useQuery<UserEmergencyContact[]>({
+    queryKey: ['/api/emergency-contacts'],
+    enabled: !!user,
+  });
+  
+  // Fetch user's pets' medical records
+  const {
+    data: petMedicalRecords = [],
+    isLoading: isLoadingRecords,
+    isError: isErrorRecords
+  } = useQuery<PetMedicalRecord[]>({
+    queryKey: ['/api/pet-medical-records'],
+    enabled: !!user,
+  });
+  
+  // Fetch user's pets for the medical records form
+  const {
+    data: pets = [],
+    isLoading: isLoadingPets
+  } = useQuery({
+    queryKey: ['/api/pets'],
+  });
+  
+  // Delete emergency contact mutation
+  const deleteContactMutation = useMutation({
+    mutationFn: async (contactId: number) => {
+      await apiRequest('DELETE', `/api/emergency-contacts/${contactId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Contact deleted successfully",
+        description: "Your emergency contact has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/emergency-contacts'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error deleting contact",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Delete medical record mutation
+  const deleteMedicalRecordMutation = useMutation({
+    mutationFn: async (recordId: number) => {
+      await apiRequest('DELETE', `/api/pet-medical-records/${recordId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Medical record deleted successfully",
+        description: "Your pet's medical record has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/pet-medical-records'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error deleting medical record",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
   // Filter first aid tips based on search and pet type
   const filteredTips = firstAidTips.filter(tip => {
@@ -746,6 +851,401 @@ export default function EmergencyPage() {
                   </Card>
                 ))}
               </div>
+            </div>
+          </TabsContent>
+          
+          {/* My Emergency Info Tab */}
+          <TabsContent value="my-emergency-info" id="my-emergency-info" className="mt-0">
+            <div className="mb-8">
+              {!user ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-8 text-center">
+                  <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-foreground mb-2">Sign in to manage your emergency information</h3>
+                  <p className="text-muted-foreground mb-4 max-w-lg mx-auto">
+                    Create and manage your emergency contacts and pet medical records to have critical information ready when you need it most.
+                  </p>
+                  <Link to="/auth">
+                    <Button className="bg-amber-600 hover:bg-amber-700">
+                      Sign in or Create an Account
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-red-50 border border-red-100 rounded-xl p-6 mb-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                      <div>
+                        <h2 className="text-2xl font-bold text-foreground mb-2">My Emergency Information</h2>
+                        <p className="text-muted-foreground">
+                          Store important emergency contacts and pet medical records for quick access during emergencies.
+                        </p>
+                      </div>
+                      <div className="flex mt-4 md:mt-0 space-x-3">
+                        <Dialog open={isAddContactDialogOpen} onOpenChange={setIsAddContactDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button className="bg-red-600 hover:bg-red-700">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Emergency Contact
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Emergency Contact</DialogTitle>
+                              <DialogDescription>
+                                Add a veterinarian, pet sitter, or other emergency contact for your pets.
+                              </DialogDescription>
+                            </DialogHeader>
+                            {/* Contact form will go here */}
+                            <div className="grid gap-4 py-4">
+                              <div>
+                                <label htmlFor="contactName" className="block text-sm font-medium mb-1">Contact Name *</label>
+                                <Input id="contactName" placeholder="Dr. Smith Veterinary Clinic" />
+                              </div>
+                              <div>
+                                <label htmlFor="phone" className="block text-sm font-medium mb-1">Phone Number *</label>
+                                <Input id="phone" placeholder="(555) 123-4567" />
+                              </div>
+                              <div>
+                                <label htmlFor="address" className="block text-sm font-medium mb-1">Address *</label>
+                                <Input id="address" placeholder="123 Main St, City, State, ZIP" />
+                              </div>
+                              <div>
+                                <label htmlFor="email" className="block text-sm font-medium mb-1">Email (optional)</label>
+                                <Input id="email" type="email" placeholder="contact@example.com" />
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id="isVet"
+                                  className="rounded border-red-300 text-red-600 focus:ring-red-500"
+                                />
+                                <label htmlFor="isVet" className="text-sm font-medium">
+                                  This is a veterinarian/veterinary hospital
+                                </label>
+                              </div>
+                              <div>
+                                <label htmlFor="notes" className="block text-sm font-medium mb-1">Notes (optional)</label>
+                                <textarea
+                                  id="notes"
+                                  rows={3}
+                                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  placeholder="Any additional information about this contact"
+                                ></textarea>
+                              </div>
+                            </div>
+                            <div className="flex justify-end gap-3">
+                              <Button variant="outline" onClick={() => setIsAddContactDialogOpen(false)}>
+                                Cancel
+                              </Button>
+                              <Button className="bg-red-600 hover:bg-red-700">
+                                Save Contact
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        <Dialog open={isAddMedicalRecordDialogOpen} onOpenChange={setIsAddMedicalRecordDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button className="bg-red-600 hover:bg-red-700">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Medical Record
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Pet Medical Record</DialogTitle>
+                              <DialogDescription>
+                                Track important medical information for your pets.
+                              </DialogDescription>
+                            </DialogHeader>
+                            {/* Medical record form will go here */}
+                            <div className="grid gap-4 py-4">
+                              <div>
+                                <label htmlFor="pet" className="block text-sm font-medium mb-1">Pet *</label>
+                                <select 
+                                  id="pet" 
+                                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  <option value="">Select a pet</option>
+                                  {pets.map(pet => (
+                                    <option key={pet.id} value={pet.id}>{pet.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label htmlFor="recordType" className="block text-sm font-medium mb-1">Record Type *</label>
+                                <select 
+                                  id="recordType" 
+                                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  <option value="">Select record type</option>
+                                  <option value="Vaccination">Vaccination</option>
+                                  <option value="Surgery">Surgery</option>
+                                  <option value="Medication">Medication</option>
+                                  <option value="Examination">Examination</option>
+                                  <option value="Allergy">Allergy</option>
+                                  <option value="Condition">Chronic Condition</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label htmlFor="recordDate" className="block text-sm font-medium mb-1">Date *</label>
+                                <Input id="recordDate" type="date" />
+                              </div>
+                              <div>
+                                <label htmlFor="description" className="block text-sm font-medium mb-1">Description *</label>
+                                <Input id="description" placeholder="Rabies vaccination" />
+                              </div>
+                              <div>
+                                <label htmlFor="vetName" className="block text-sm font-medium mb-1">Veterinarian (optional)</label>
+                                <Input id="vetName" placeholder="Dr. Smith" />
+                              </div>
+                              <div>
+                                <label htmlFor="notes" className="block text-sm font-medium mb-1">Notes (optional)</label>
+                                <textarea
+                                  id="notes"
+                                  rows={3}
+                                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  placeholder="Additional information about this medical record"
+                                ></textarea>
+                              </div>
+                            </div>
+                            <div className="flex justify-end gap-3">
+                              <Button variant="outline" onClick={() => setIsAddMedicalRecordDialogOpen(false)}>
+                                Cancel
+                              </Button>
+                              <Button className="bg-red-600 hover:bg-red-700">
+                                Save Record
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Emergency Contacts Section */}
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold mb-4 flex items-center">
+                      <Phone className="h-5 w-5 mr-2 text-red-600" />
+                      My Emergency Contacts
+                    </h3>
+                    
+                    {isLoadingContacts ? (
+                      <div className="text-center py-12">
+                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-400 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+                        <p className="mt-2 text-muted-foreground">Loading your emergency contacts...</p>
+                      </div>
+                    ) : isErrorContacts ? (
+                      <div className="text-center py-12 bg-muted/20 rounded-xl">
+                        <AlertTriangle className="h-12 w-12 mx-auto text-red-400 mb-3" />
+                        <h3 className="text-xl font-medium text-foreground mb-2">Unable to load contacts</h3>
+                        <p className="text-muted-foreground">There was a problem loading your emergency contacts. Please try again later.</p>
+                      </div>
+                    ) : userEmergencyContacts.length === 0 ? (
+                      <div className="text-center py-12 bg-muted/20 rounded-xl">
+                        <Phone className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                        <h3 className="text-xl font-medium text-foreground mb-2">No emergency contacts yet</h3>
+                        <p className="text-muted-foreground mb-4">Add important contacts like your veterinarian, pet sitter, or pet-friendly neighbor.</p>
+                        <Button 
+                          onClick={() => setIsAddContactDialogOpen(true)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Emergency Contact
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {userEmergencyContacts.map((contact) => (
+                          <Card key={contact.id} className="overflow-hidden border-muted">
+                            <CardContent className="p-0">
+                              <div className="flex flex-col md:flex-row">
+                                <div className="p-6 md:w-3/4 border-b md:border-b-0 md:border-r border-muted">
+                                  <div className="flex items-center mb-3">
+                                    {contact.isVet && (
+                                      <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full mr-2">
+                                        <Stethoscope className="w-3 h-3 mr-1" />
+                                        Veterinarian
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  <h3 className="text-xl font-bold text-foreground mb-1">{contact.contactName}</h3>
+                                  
+                                  <div className="flex items-start mb-2">
+                                    <MapPin className="h-4 w-4 text-muted-foreground mt-1 mr-2 flex-shrink-0" />
+                                    <p className="text-muted-foreground text-sm">{contact.address}</p>
+                                  </div>
+                                  
+                                  <div className="flex items-start mb-2">
+                                    <Phone className="h-4 w-4 text-muted-foreground mt-1 mr-2 flex-shrink-0" />
+                                    <p className="text-sm font-medium">{contact.phone}</p>
+                                  </div>
+                                  
+                                  {contact.email && (
+                                    <div className="flex items-start mb-2">
+                                      <Mail className="h-4 w-4 text-muted-foreground mt-1 mr-2 flex-shrink-0" />
+                                      <p className="text-sm">{contact.email}</p>
+                                    </div>
+                                  )}
+                                  
+                                  {contact.notes && (
+                                    <div className="flex items-start mt-3 pt-3 border-t border-muted">
+                                      <p className="text-sm text-muted-foreground">{contact.notes}</p>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="p-6 md:w-1/4 flex flex-col justify-center gap-3">
+                                  <Button className="w-full bg-red-600 hover:bg-red-700">
+                                    <Phone className="h-4 w-4 mr-2" />
+                                    Call
+                                  </Button>
+                                  
+                                  <Button variant="outline" className="w-full border-muted-foreground/20">
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </Button>
+                                  
+                                  <Button 
+                                    variant="outline" 
+                                    className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    onClick={() => deleteContactMutation.mutate(contact.id)}
+                                    disabled={deleteContactMutation.isPending}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {deleteContactMutation.isPending ? 'Deleting...' : 'Delete'}
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Pet Medical Records Section */}
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold mb-4 flex items-center">
+                      <FileText className="h-5 w-5 mr-2 text-red-600" />
+                      Pet Medical Records
+                    </h3>
+                    
+                    {isLoadingRecords ? (
+                      <div className="text-center py-12">
+                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-400 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+                        <p className="mt-2 text-muted-foreground">Loading your pet's medical records...</p>
+                      </div>
+                    ) : isErrorRecords ? (
+                      <div className="text-center py-12 bg-muted/20 rounded-xl">
+                        <AlertTriangle className="h-12 w-12 mx-auto text-red-400 mb-3" />
+                        <h3 className="text-xl font-medium text-foreground mb-2">Unable to load medical records</h3>
+                        <p className="text-muted-foreground">There was a problem loading your pet's medical records. Please try again later.</p>
+                      </div>
+                    ) : petMedicalRecords.length === 0 ? (
+                      <div className="text-center py-12 bg-muted/20 rounded-xl">
+                        <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                        <h3 className="text-xl font-medium text-foreground mb-2">No medical records yet</h3>
+                        <p className="text-muted-foreground mb-4">Keep track of important medical information like vaccinations, allergies, and procedures.</p>
+                        <Button 
+                          onClick={() => setIsAddMedicalRecordDialogOpen(true)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Medical Record
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {petMedicalRecords.map((record) => {
+                          const pet = pets.find(p => p.id === record.petId);
+                          return (
+                            <Card key={record.id} className="overflow-hidden border-muted">
+                              <CardContent className="p-0">
+                                <div className="flex flex-col md:flex-row">
+                                  <div className="p-6 md:w-3/4 border-b md:border-b-0 md:border-r border-muted">
+                                    <div className="flex items-center mb-3">
+                                      <span className="inline-flex items-center bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full mr-2">
+                                        {record.recordType}
+                                      </span>
+                                      {pet && (
+                                        <span className="inline-flex items-center bg-purple-100 text-purple-800 text-xs px-2.5 py-1 rounded-full">
+                                          <PawPrint className="w-3 h-3 mr-1" />
+                                          {pet.name}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    <h3 className="text-xl font-bold text-foreground mb-1">{record.description}</h3>
+                                    
+                                    <div className="flex items-start mb-2">
+                                      <CalendarClock className="h-4 w-4 text-muted-foreground mt-1 mr-2 flex-shrink-0" />
+                                      <p className="text-muted-foreground text-sm">
+                                        Date: {new Date(record.recordDate).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                    
+                                    {record.vetName && (
+                                      <div className="flex items-start mb-2">
+                                        <UserRound className="h-4 w-4 text-muted-foreground mt-1 mr-2 flex-shrink-0" />
+                                        <p className="text-sm">Veterinarian: {record.vetName}</p>
+                                      </div>
+                                    )}
+                                    
+                                    {record.notes && (
+                                      <div className="flex items-start mt-3 pt-3 border-t border-muted">
+                                        <p className="text-sm text-muted-foreground">{record.notes}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="p-6 md:w-1/4 flex flex-col justify-center gap-3">
+                                    <Button variant="outline" className="w-full border-muted-foreground/20">
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </Button>
+                                    
+                                    <Button 
+                                      variant="outline" 
+                                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                      onClick={() => deleteMedicalRecordMutation.mutate(record.id)}
+                                      disabled={deleteMedicalRecordMutation.isPending}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      {deleteMedicalRecordMutation.isPending ? 'Deleting...' : 'Delete'}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+                    <div className="flex flex-col md:flex-row items-start gap-6">
+                      <div className="bg-amber-100 p-4 rounded-full">
+                        <AlertTriangle className="h-8 w-8 text-amber-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-foreground mb-2">Important Information</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Your emergency contacts and medical records are stored securely and are only accessible to you.
+                          Having this information readily available can be crucial during emergencies.
+                        </p>
+                        <p className="text-sm bg-white p-3 rounded-lg border border-amber-200">
+                          <strong>Pro Tip:</strong> Consider printing a copy of your pet's most important medical 
+                          information and emergency contacts to keep in your car or pet carrier.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </TabsContent>
         </Tabs>
