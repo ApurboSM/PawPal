@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Redirect } from "wouter";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,9 +13,32 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { Loader2, PawPrint } from "lucide-react";
 
+// Loading animation component
+export function KittenLoadingAnimation() {
+  return (
+    <div className="loading-indicator">
+      <div className="paw-container">
+        <PawPrint className="paw-icon" />
+        <div className="loading-text">Loading PawPal...</div>
+      </div>
+    </div>
+  );
+}
+
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("login");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showPawAnimation, setShowPawAnimation] = useState<{ login: boolean; register: boolean }>({ login: false, register: false });
+  
+  // Loading animation at startup
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   // Login form
   const loginForm = useForm({
@@ -40,11 +63,19 @@ export default function AuthPage() {
   });
 
   const onLoginSubmit = (data: any) => {
-    loginMutation.mutate(data);
+    setShowPawAnimation({ ...showPawAnimation, login: true });
+    setTimeout(() => {
+      setShowPawAnimation({ ...showPawAnimation, login: false });
+      loginMutation.mutate(data);
+    }, 600);
   };
 
   const onRegisterSubmit = (data: RegisterData) => {
-    registerMutation.mutate(data);
+    setShowPawAnimation({ ...showPawAnimation, register: true });
+    setTimeout(() => {
+      setShowPawAnimation({ ...showPawAnimation, register: false });
+      registerMutation.mutate(data);
+    }, 600);
   };
 
   // Redirect to home if user is already logged in
@@ -58,6 +89,9 @@ export default function AuthPage() {
         <title>Login or Sign Up - PawPal</title>
         <meta name="description" content="Join PawPal to find your perfect pet companion. Login or sign up to access adoption applications, appointments, and more." />
       </Helmet>
+      
+      {/* Show loading animation */}
+      {isLoading && <KittenLoadingAnimation />}
       
       <Navbar />
       
@@ -118,13 +152,13 @@ export default function AuthPage() {
                           
                           <Button 
                             type="submit" 
-                            className="w-full bg-[#4A6FA5] hover:bg-[#3A5A87]"
+                            className={`w-full bg-[#FF6B98] hover:bg-[#FF4B78] ${showPawAnimation.login ? 'animate-paw' : ''}`}
                             disabled={loginMutation.isPending}
                           >
                             {loginMutation.isPending ? (
                               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging in...</>
                             ) : (
-                              "Login"
+                              <><PawPrint className="mr-2 h-4 w-4" /> Login</>
                             )}
                           </Button>
                         </form>
@@ -135,7 +169,7 @@ export default function AuthPage() {
                         Don't have an account?{" "}
                         <button 
                           onClick={() => setActiveTab("register")}
-                          className="text-[#4A6FA5] hover:underline font-medium"
+                          className="text-[#FF6B98] hover:underline font-medium"
                         >
                           Sign up
                         </button>
@@ -227,13 +261,13 @@ export default function AuthPage() {
                           
                           <Button 
                             type="submit" 
-                            className="w-full bg-[#4A6FA5] hover:bg-[#3A5A87]"
+                            className={`w-full bg-[#FF6B98] hover:bg-[#FF4B78] ${showPawAnimation.register ? 'animate-paw' : ''}`}
                             disabled={registerMutation.isPending}
                           >
                             {registerMutation.isPending ? (
                               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...</>
                             ) : (
-                              "Sign Up"
+                              <><PawPrint className="mr-2 h-4 w-4" /> Sign Up</>
                             )}
                           </Button>
                         </form>
