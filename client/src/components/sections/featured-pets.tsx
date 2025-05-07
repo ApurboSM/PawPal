@@ -11,8 +11,42 @@ export function FeaturedPets() {
     queryKey: ["/api/pets?status=available"],
   });
 
+  // Ensure we display a diverse set of pet types with priority to include all animal varieties
+  const getFilteredPets = () => {
+    if (!pets || pets.length === 0) return [];
+    
+    const targetSpecies = ["guinea_pig", "fish", "parrot", "rabbit", "hamster", "dog", "cat", "bird"];
+    const petsBySpecies: Record<string, Pet[]> = {};
+    
+    // Group pets by species
+    pets.forEach(pet => {
+      if (!petsBySpecies[pet.species]) {
+        petsBySpecies[pet.species] = [];
+      }
+      petsBySpecies[pet.species].push(pet);
+    });
+    
+    // First, ensure we have one of each target species if available
+    const featuredPets: Pet[] = [];
+    targetSpecies.forEach(species => {
+      if (petsBySpecies[species]?.length > 0) {
+        featuredPets.push(petsBySpecies[species][0]);
+        // Remove the selected pet from the pool
+        petsBySpecies[species] = petsBySpecies[species].slice(1);
+      }
+    });
+    
+    // Then fill remaining slots with other pets to reach 8 total if possible
+    const remainingPets = Object.values(petsBySpecies).flat();
+    while (featuredPets.length < 8 && remainingPets.length > 0) {
+      featuredPets.push(remainingPets.shift()!);
+    }
+    
+    return featuredPets;
+  };
+
   const renderSkeletonCards = () => {
-    return Array.from({ length: 4 }).map((_, index) => (
+    return Array.from({ length: 8 }).map((_, index) => (
       <div key={index} className="bg-white/50 backdrop-blur-sm rounded-3xl shadow-md overflow-hidden transition-all-ease">
         <Skeleton className="w-full h-52 bg-primary/5" />
         <div className="p-6">
@@ -68,7 +102,7 @@ export function FeaturedPets() {
           </div>
         ) : pets && pets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {pets.map((pet) => (
+            {getFilteredPets().map((pet) => (
               <PetCard key={pet.id} pet={pet} />
             ))}
           </div>
