@@ -72,9 +72,9 @@ export function FeaturedPets() {
           'dog': 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
           'cat': 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
           'rabbit': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
-          'bird': 'https://images.unsplash.com/photo-1591198936750-16d8e15edc9f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'bird': 'https://images.unsplash.com/photo-1444464666168-49d633b86797?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
           'guinea_pig': 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
-          'fish': 'https://images.unsplash.com/photo-1535591612981-ab1c88fc5ef5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'fish': 'https://images.unsplash.com/photo-1522720833375-9c27ffb02a5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
           'parrot': 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
           'hamster': 'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60'
         };

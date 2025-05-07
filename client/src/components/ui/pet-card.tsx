@@ -63,13 +63,36 @@ export function PetCard({ pet }: PetCardProps) {
     }
   };
 
+  // Fallback image handling
+  const getFallbackImage = (species: string) => {
+    const fallbackImages: Record<string, string> = {
+      'dog': 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+      'cat': 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+      'rabbit': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+      'bird': 'https://images.unsplash.com/photo-1444464666168-49d633b86797?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+      'guinea_pig': 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+      'fish': 'https://images.unsplash.com/photo-1522720833375-9c27ffb02a5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+      'parrot': 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+      'hamster': 'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60'
+    };
+    
+    return fallbackImages[species] || 'https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60';
+  };
+  
+  const [imageError, setImageError] = useState(false);
+  
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
     <Card className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-md hover:shadow-xl transition-all-ease overflow-hidden h-full group">
       <div className="relative overflow-hidden">
         <img 
-          src={pet.imageUrl} 
+          src={imageError ? getFallbackImage(pet.species) : pet.imageUrl} 
           alt={`${pet.name} - ${pet.breed}`} 
           className="w-full h-52 object-cover transition-all duration-500 group-hover:scale-110"
+          onError={handleImageError}
         />
         {/* Image overlay gradient on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
