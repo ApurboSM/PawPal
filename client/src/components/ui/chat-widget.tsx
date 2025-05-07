@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   PawPrint, 
   X, 
@@ -7,36 +7,160 @@ import {
   Phone, 
   AlarmClock,
   AlertCircle,
-  Stethoscope
+  Stethoscope,
+  WifiOff
 } from 'lucide-react';
 import { Button } from './button';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
 export function ChatWidget() {
+  // Basic state
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{type: 'user' | 'system', text: string}[]>([
-    {type: 'system', text: 'Hello! How can we help you today? Our team is here to assist with pet adoptions, care questions, or emergencies.'},
+  const [messages, setMessages] = useState<{
+    id?: string | number;
+    type: 'user' | 'system';
+    text: string;
+    timestamp?: string;
+    sender?: { 
+      userId: string | number;
+      username: string;
+      isAdmin: boolean;
+    };
+  }[]>([
+    {
+      type: 'system', 
+      text: 'Hello! How can we help you today? Our team is here to assist with pet adoptions, care questions, or emergencies.',
+      timestamp: new Date().toISOString()
+    },
   ]);
   const [messageText, setMessageText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('disconnected');
+  
+  // Refs
+  const wsRef = useRef<WebSocket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Hooks
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const connectWebSocket = () => {
+      setConnectionStatus('connecting');
+      
+      // Determine WebSocket URL
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+      
+      ws.onopen = () => {
+        console.log('WebSocket connection established');
+        setConnectionStatus('connected');
+        
+        // Send authentication info if the user is logged in
+        if (user) {
+          ws.send(JSON.stringify({
+            type: 'auth',
+            userId: user.id,
+            username: user.name || user.username,
+            isAdmin: user.role === 'admin'
+          }));
+        }
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Received message:', data);
+          
+          if (data.type === 'chat_message') {
+            handleIncomingChatMessage(data.data);
+          } else if (data.type === 'system_message') {
+            setMessages(prev => [...prev, {
+              type: 'system',
+              text: data.data.message,
+              timestamp: data.data.timestamp
+            }]);
+          } else if (data.type === 'error') {
+            toast({
+              title: 'Chat Error',
+              description: data.data.message,
+              variant: 'destructive'
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setConnectionStatus('disconnected');
+        toast({
+          title: 'Connection Error',
+          description: 'Could not connect to chat. Please try again later.',
+          variant: 'destructive'
+        });
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket connection closed');
+        setConnectionStatus('disconnected');
+      };
+    };
+    
+    connectWebSocket();
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, [isOpen, user, toast]);
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+  
+  const handleIncomingChatMessage = (data: any) => {
+    // Format incoming message
+    const newMessage = {
+      id: data.id,
+      type: data.sender.userId === (user?.id || 'guest') ? 'user' : 'system',
+      text: data.message,
+      timestamp: data.timestamp,
+      sender: data.sender
+    };
+    
+    setMessages(prev => [...prev, newMessage]);
+    setIsLoading(false);
+  };
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
 
-    // If we're opening the chat and it's just the initial message, add the menu options
+    // If we're opening the chat for the first time, add the menu options
     if (!isOpen && messages.length === 1) {
       setMessages([
         ...messages,
         {
           type: 'system', 
           text: 'Select an option or type your question:',
+          timestamp: new Date().toISOString()
         },
         {
           type: 'system', 
-          text: '• Emergency pet care assistance\n• Adoption process questions\n• Schedule a visit\n• General pet care advice'
+          text: '• Emergency pet care assistance\n• Adoption process questions\n• Schedule a visit\n• General pet care advice',
+          timestamp: new Date().toISOString()
         }
       ]);
     }
@@ -45,29 +169,46 @@ export function ChatWidget() {
   const sendMessage = () => {
     if (!messageText.trim()) return;
     
-    // Add user message
-    setMessages([...messages, {type: 'user', text: messageText}]);
+    // Add user message to UI immediately for better responsiveness
+    const userMessage = {
+      type: 'user' as const,
+      text: messageText,
+      timestamp: new Date().toISOString()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     
-    // Simulate response based on message content
-    setTimeout(() => {
-      let response = '';
-      const lowerCaseMsg = messageText.toLowerCase();
+    // Check if WebSocket is open before sending
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      // Send message through WebSocket
+      wsRef.current.send(JSON.stringify({
+        type: 'chat_message',
+        message: messageText
+      }));
       
-      if (lowerCaseMsg.includes('emergency') || lowerCaseMsg.includes('hurt') || lowerCaseMsg.includes('injured')) {
-        response = "I'm connecting you with our emergency assistance team. In the meantime, please keep your pet calm and comfortable. For immediate life-threatening emergencies, please call our emergency hotline at (555) 123-4567. What's happening with your pet right now?";
-      } else if (lowerCaseMsg.includes('adopt') || lowerCaseMsg.includes('adoption')) {
-        response = "Thank you for your interest in adoption! Our adoption process is designed to ensure good matches between pets and families. The process typically includes an application, meet-and-greet, home check, and finally adoption. Would you like more details about a specific part of this process?";
-      } else if (lowerCaseMsg.includes('visit') || lowerCaseMsg.includes('appointment') || lowerCaseMsg.includes('schedule')) {
-        response = "We'd be happy to help you schedule a visit! Our facility is open for visits Monday-Friday 10am-7pm and Saturday-Sunday 10am-5pm. Would you prefer to meet a specific pet or would you like a general tour?";
-      } else {
-        response = "Thank you for your message! One of our pet care specialists will respond shortly. Is there anything specific about your pet that we should know to better assist you?";
-      }
-      
-      setMessages(prev => [...prev, {type: 'system', text: response}]);
-      setIsLoading(false);
       setMessageText('');
-    }, 1000);
+    } else {
+      // Fallback for when WebSocket is not available
+      toast({
+        title: 'Connection Issue',
+        description: 'Could not send message. Reconnecting...',
+        variant: 'destructive'
+      });
+      
+      // Simulate response for better UX even when WebSocket fails
+      setTimeout(() => {
+        const fallbackResponse = {
+          type: 'system' as const,
+          text: "I'm having trouble connecting to the server right now. Please try again in a moment.",
+          timestamp: new Date().toISOString()
+        };
+        
+        setMessages(prev => [...prev, fallbackResponse]);
+        setIsLoading(false);
+        setMessageText('');
+      }, 1000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -138,11 +279,19 @@ export function ChatWidget() {
             </div>
           </div>
 
+          {/* Connection Status */}
+          {connectionStatus !== 'connected' && (
+            <div className="bg-amber-50 px-3 py-1 border-b border-amber-100 flex items-center justify-center text-amber-600 text-xs">
+              <WifiOff className="h-3 w-3 mr-1" /> 
+              {connectionStatus === 'connecting' ? 'Connecting to chat...' : 'Disconnected - messages may not be delivered'}
+            </div>
+          )}
+
           {/* Messages */}
           <div className="h-80 overflow-y-auto p-4 bg-gray-50 flex flex-col space-y-3">
             {messages.map((message, index) => (
               <div
-                key={index}
+                key={message.id || index}
                 className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
@@ -152,7 +301,17 @@ export function ChatWidget() {
                       : 'bg-white border border-gray-200 rounded-tl-none'
                   }`}
                 >
+                  {message.sender?.isAdmin && (
+                    <div className="text-xs font-semibold mb-1 text-pink-600">
+                      {message.sender.username} · Staff
+                    </div>
+                  )}
                   <p className="whitespace-pre-line text-sm">{message.text}</p>
+                  {message.timestamp && (
+                    <div className="text-[10px] mt-1 opacity-50 text-right">
+                      {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -163,6 +322,8 @@ export function ChatWidget() {
                 </div>
               </div>
             )}
+            {/* This div is for auto-scrolling to bottom of messages */}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}

@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema } from "@shared/schema";
@@ -409,5 +410,100 @@ export function registerRoutes(app: Express): Server {
   });
 
   const httpServer = createServer(app);
+  
+  // Set up WebSocket server for real-time chat
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Store connected clients
+  const clients = new Map<WebSocket, { userId?: number; username?: string; isAdmin?: boolean }>();
+  
+  wss.on('connection', (ws) => {
+    console.log('Client connected to WebSocket');
+    clients.set(ws, {});
+    
+    // Handle messages from clients
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('Received message:', data);
+        
+        // Handle authentication
+        if (data.type === 'auth') {
+          const { userId, username, isAdmin } = data;
+          clients.set(ws, { userId, username, isAdmin });
+          
+          // Send confirmation back to the client
+          ws.send(JSON.stringify({
+            type: 'auth_success',
+            data: { userId, username, isAdmin }
+          }));
+          
+          return;
+        }
+        
+        // Handle chat messages
+        if (data.type === 'chat_message') {
+          const clientInfo = clients.get(ws);
+          
+          // Create message object with sender info
+          const messageToSend = {
+            type: 'chat_message',
+            data: {
+              id: Date.now(), // Use timestamp as temporary ID
+              message: data.message,
+              sender: {
+                userId: clientInfo?.userId || 'guest',
+                username: clientInfo?.username || 'Guest',
+                isAdmin: clientInfo?.isAdmin || false
+              },
+              timestamp: new Date().toISOString()
+            }
+          };
+          
+          // Broadcast to all clients or target a specific user
+          if (data.recipientId) {
+            // Find the recipient and send the private message
+            for (const [client, info] of clients.entries()) {
+              if (info.userId === data.recipientId && client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(messageToSend));
+                // Also send back to the sender
+                ws.send(JSON.stringify(messageToSend));
+                break;
+              }
+            }
+          } else {
+            // Broadcast to all connected clients
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(messageToSend));
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+        ws.send(JSON.stringify({
+          type: 'error',
+          data: { message: 'Invalid message format' }
+        }));
+      }
+    });
+    
+    // Handle client disconnection
+    ws.on('close', () => {
+      console.log('Client disconnected from WebSocket');
+      clients.delete(ws);
+    });
+    
+    // Send welcome message
+    ws.send(JSON.stringify({
+      type: 'system_message',
+      data: {
+        message: 'Welcome to PawPal chat! If you\'re logged in, send an auth message to identify yourself.',
+        timestamp: new Date().toISOString()
+      }
+    }));
+  });
+  
   return httpServer;
 }
