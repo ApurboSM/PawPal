@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./lib/protected-route";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/use-auth";
 import { ChatWidget } from "@/components/ui/chat-widget";
+import { HelmetProvider } from "react-helmet-async";
 
 // Pages
 import HomePage from "@/pages/home-page";
@@ -37,14 +38,16 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light">
-      <AuthProvider>
-        <TooltipProvider>
-          <Router />
-          <ChatWidget />
-        </TooltipProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider attribute="class" defaultTheme="light">
+        <AuthProvider>
+          <TooltipProvider>
+            <Router />
+            <ChatWidget />
+          </TooltipProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 }
 
