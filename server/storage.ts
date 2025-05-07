@@ -52,6 +52,21 @@ export interface IStorage {
   updateTestimonial(id: number, testimonial: Partial<Testimonial>): Promise<Testimonial | undefined>;
   deleteTestimonial(id: number): Promise<boolean>;
   
+  // Emergency contact operations
+  getEmergencyContact(id: number): Promise<EmergencyContact | undefined>;
+  getEmergencyContactsByUser(userId: number): Promise<EmergencyContact[]>;
+  createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact>;
+  updateEmergencyContact(id: number, contact: Partial<EmergencyContact>): Promise<EmergencyContact | undefined>;
+  deleteEmergencyContact(id: number): Promise<boolean>;
+  
+  // Pet medical records operations
+  getPetMedicalRecord(id: number): Promise<PetMedicalRecord | undefined>;
+  getPetMedicalRecordsByPet(petId: number): Promise<PetMedicalRecord[]>;
+  getPetMedicalRecordsByUser(userId: number): Promise<PetMedicalRecord[]>;
+  createPetMedicalRecord(record: InsertPetMedicalRecord): Promise<PetMedicalRecord>;
+  updatePetMedicalRecord(id: number, record: Partial<PetMedicalRecord>): Promise<PetMedicalRecord | undefined>;
+  deletePetMedicalRecord(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: session.Store;
 }
@@ -63,6 +78,8 @@ export class MemStorage implements IStorage {
   private appointments: Map<number, Appointment>;
   private adoptionApplications: Map<number, AdoptionApplication>;
   private testimonials: Map<number, Testimonial>;
+  private emergencyContacts: Map<number, EmergencyContact>;
+  private petMedicalRecords: Map<number, PetMedicalRecord>;
   
   public sessionStore: session.SessionStore;
   
@@ -72,6 +89,8 @@ export class MemStorage implements IStorage {
   private appointmentIdCounter: number;
   private adoptionApplicationIdCounter: number;
   private testimonialIdCounter: number;
+  private emergencyContactIdCounter: number;
+  private petMedicalRecordIdCounter: number;
   
   constructor() {
     this.users = new Map();
@@ -80,6 +99,8 @@ export class MemStorage implements IStorage {
     this.appointments = new Map();
     this.adoptionApplications = new Map();
     this.testimonials = new Map();
+    this.emergencyContacts = new Map();
+    this.petMedicalRecords = new Map();
     
     this.userIdCounter = 1;
     this.petIdCounter = 1;
@@ -87,6 +108,8 @@ export class MemStorage implements IStorage {
     this.appointmentIdCounter = 1;
     this.adoptionApplicationIdCounter = 1;
     this.testimonialIdCounter = 1;
+    this.emergencyContactIdCounter = 1;
+    this.petMedicalRecordIdCounter = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired sessions every 24h
@@ -319,6 +342,76 @@ export class MemStorage implements IStorage {
   
   async deleteTestimonial(id: number): Promise<boolean> {
     return this.testimonials.delete(id);
+  }
+  
+  // Emergency Contact operations
+  async getEmergencyContact(id: number): Promise<EmergencyContact | undefined> {
+    return this.emergencyContacts.get(id);
+  }
+  
+  async getEmergencyContactsByUser(userId: number): Promise<EmergencyContact[]> {
+    return Array.from(this.emergencyContacts.values()).filter(
+      (contact) => contact.userId === userId
+    );
+  }
+  
+  async createEmergencyContact(contactData: InsertEmergencyContact): Promise<EmergencyContact> {
+    const id = this.emergencyContactIdCounter++;
+    const createdAt = new Date();
+    const contact: EmergencyContact = { ...contactData, id, createdAt };
+    this.emergencyContacts.set(id, contact);
+    return contact;
+  }
+  
+  async updateEmergencyContact(id: number, contactData: Partial<EmergencyContact>): Promise<EmergencyContact | undefined> {
+    const contact = await this.getEmergencyContact(id);
+    if (!contact) return undefined;
+    
+    const updatedContact = { ...contact, ...contactData };
+    this.emergencyContacts.set(id, updatedContact);
+    return updatedContact;
+  }
+  
+  async deleteEmergencyContact(id: number): Promise<boolean> {
+    return this.emergencyContacts.delete(id);
+  }
+  
+  // Pet Medical Record operations
+  async getPetMedicalRecord(id: number): Promise<PetMedicalRecord | undefined> {
+    return this.petMedicalRecords.get(id);
+  }
+  
+  async getPetMedicalRecordsByPet(petId: number): Promise<PetMedicalRecord[]> {
+    return Array.from(this.petMedicalRecords.values()).filter(
+      (record) => record.petId === petId
+    );
+  }
+  
+  async getPetMedicalRecordsByUser(userId: number): Promise<PetMedicalRecord[]> {
+    return Array.from(this.petMedicalRecords.values()).filter(
+      (record) => record.userId === userId
+    );
+  }
+  
+  async createPetMedicalRecord(recordData: InsertPetMedicalRecord): Promise<PetMedicalRecord> {
+    const id = this.petMedicalRecordIdCounter++;
+    const createdAt = new Date();
+    const record: PetMedicalRecord = { ...recordData, id, createdAt };
+    this.petMedicalRecords.set(id, record);
+    return record;
+  }
+  
+  async updatePetMedicalRecord(id: number, recordData: Partial<PetMedicalRecord>): Promise<PetMedicalRecord | undefined> {
+    const record = await this.getPetMedicalRecord(id);
+    if (!record) return undefined;
+    
+    const updatedRecord = { ...record, ...recordData };
+    this.petMedicalRecords.set(id, updatedRecord);
+    return updatedRecord;
+  }
+  
+  async deletePetMedicalRecord(id: number): Promise<boolean> {
+    return this.petMedicalRecords.delete(id);
   }
   
   // Seed data functions

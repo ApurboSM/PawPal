@@ -174,3 +174,57 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).pick({
 
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type Testimonial = typeof testimonials.$inferSelect;
+
+// Emergency Contacts
+export const emergencyContacts = pgTable("emergency_contacts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  contactName: text("contact_name").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address").notNull(),
+  isVet: boolean("is_vet").notNull().default(false),
+  email: text("email"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertEmergencyContactSchema = createInsertSchema(emergencyContacts).pick({
+  userId: true,
+  contactName: true,
+  phone: true,
+  address: true,
+  isVet: true,
+  email: true,
+  notes: true,
+});
+
+export type InsertEmergencyContact = z.infer<typeof insertEmergencyContactSchema>;
+export type EmergencyContact = typeof emergencyContacts.$inferSelect;
+
+// Pet Medical History
+export const petMedicalRecords = pgTable("pet_medical_records", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  petId: integer("pet_id").notNull(),
+  recordType: text("record_type").notNull(), // vaccination, surgery, check-up, medication, allergy, etc.
+  recordDate: timestamp("record_date").notNull(),
+  description: text("description").notNull(),
+  vetName: text("vet_name"),
+  attachmentUrl: text("attachment_url"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPetMedicalRecordSchema = createInsertSchema(petMedicalRecords).pick({
+  userId: true,
+  petId: true,
+  recordType: true,
+  recordDate: true,
+  description: true,
+  vetName: true,
+  attachmentUrl: true,
+  notes: true,
+});
+
+export type InsertPetMedicalRecord = z.infer<typeof insertPetMedicalRecordSchema>;
+export type PetMedicalRecord = typeof petMedicalRecords.$inferSelect;
