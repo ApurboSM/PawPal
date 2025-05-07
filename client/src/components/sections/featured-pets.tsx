@@ -15,24 +15,46 @@ export function FeaturedPets() {
   const getFilteredPets = () => {
     if (!pets || pets.length === 0) return [];
     
-    const targetSpecies = ["guinea_pig", "fish", "parrot", "rabbit", "hamster", "dog", "cat", "bird"];
+    // First, find Buddy and Luna to place at the top
+    const buddyAndLuna: Pet[] = [];
+    const dogLuna = pets.filter(pet => pet.name === "Buddy" || pet.name === "Luna");
+    if (dogLuna.length > 0) {
+      buddyAndLuna.push(...dogLuna);
+    }
+    
+    // Get remaining pets excluding Buddy and Luna
+    const remainingPetsPool = pets.filter(pet => pet.name !== "Buddy" && pet.name !== "Luna");
+    
+    // Prioritize species we want to ensure are included
+    const targetSpecies = ["guinea_pig", "fish", "parrot", "rabbit", "hamster", "bird"];
     const petsBySpecies: Record<string, Pet[]> = {};
     
-    // Group pets by species
-    pets.forEach(pet => {
+    // Group remaining pets by species
+    remainingPetsPool.forEach(pet => {
       if (!petsBySpecies[pet.species]) {
         petsBySpecies[pet.species] = [];
       }
       petsBySpecies[pet.species].push(pet);
     });
     
-    // First, ensure we have one of each target species if available
-    const featuredPets: Pet[] = [];
+    // Select one from each target species if available (excluding dog and cat since we prioritized Buddy and Luna)
+    const featuredPets: Pet[] = [...buddyAndLuna];
     targetSpecies.forEach(species => {
       if (petsBySpecies[species]?.length > 0) {
-        featuredPets.push(petsBySpecies[species][0]);
-        // Remove the selected pet from the pool
-        petsBySpecies[species] = petsBySpecies[species].slice(1);
+        // Ensure all pets have valid image URLs
+        const petsWithImages = petsBySpecies[species].filter(pet => 
+          pet.imageUrl && pet.imageUrl.trim() !== '' && !pet.imageUrl.includes('undefined')
+        );
+        
+        if (petsWithImages.length > 0) {
+          featuredPets.push(petsWithImages[0]);
+          // Remove the selected pet from the pool
+          petsBySpecies[species] = petsBySpecies[species].filter(p => p.id !== petsWithImages[0].id);
+        } else if (petsBySpecies[species].length > 0) {
+          // If no pets with valid images, still include one but fix its image later
+          featuredPets.push(petsBySpecies[species][0]);
+          petsBySpecies[species] = petsBySpecies[species].slice(1);
+        }
       }
     });
     
@@ -42,7 +64,28 @@ export function FeaturedPets() {
       featuredPets.push(remainingPets.shift()!);
     }
     
-    return featuredPets;
+    // Ensure all pets have valid image URLs (fallback to default images if needed)
+    return featuredPets.map(pet => {
+      // If image URL is missing or invalid, provide a fallback based on species
+      if (!pet.imageUrl || pet.imageUrl.trim() === '' || pet.imageUrl.includes('undefined')) {
+        const fallbackImages: Record<string, string> = {
+          'dog': 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'cat': 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'rabbit': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'bird': 'https://images.unsplash.com/photo-1591198936750-16d8e15edc9f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'guinea_pig': 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'fish': 'https://images.unsplash.com/photo-1535591612981-ab1c88fc5ef5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'parrot': 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60',
+          'hamster': 'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60'
+        };
+        
+        return {
+          ...pet,
+          imageUrl: fallbackImages[pet.species] || 'https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=60'
+        };
+      }
+      return pet;
+    });
   };
 
   const renderSkeletonCards = () => {
