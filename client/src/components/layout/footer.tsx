@@ -24,11 +24,11 @@ export function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="flex items-center justify-center bg-primary/20 rounded-full p-2">
-                <Cat className="h-6 w-6 text-primary" />
+                <PawPrint className="h-6 w-6 text-primary" />
               </div>
               <div className="flex flex-col">
                 <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">PawPal</span>
-                <span className="text-xs text-muted-foreground -mt-1">Pet Adoption & Care</span>
+                <span className="text-xs text-muted-foreground -mt-1">Where Every Tail Finds a Tale</span>
               </div>
             </div>
             <p className="text-foreground mb-4">

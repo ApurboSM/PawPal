@@ -30,6 +30,10 @@ export const petSpeciesEnum = pgEnum("pet_species", [
   "cat",
   "rabbit",
   "bird",
+  "guinea_pig",
+  "fish",
+  "parrot", 
+  "hamster",
   "other",
 ]);
 
@@ -45,7 +49,7 @@ export const petStatusEnum = pgEnum("pet_status", [
 export const pets = pgTable("pets", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  species: text("species").notNull(), // dog, cat, rabbit, bird, other
+  species: text("species").notNull(), // dog, cat, rabbit, bird, guinea_pig, fish, parrot, hamster, other
   breed: text("breed").notNull(),
   age: integer("age").notNull(), // age in months
   gender: text("gender").notNull(), // male, female
