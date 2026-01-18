@@ -35,7 +35,7 @@ export function registerRoutes(app: Express): Server {
   app.use("/api/users", userRoutes);
 
   // ---------- Health ----------
-  app.get("/api/health", async (_req, res) => {
+  const healthHandler = async (_req: Request, res: Response) => {
     const isDbConfigured = hasDatabaseUrl && Boolean(pool);
     let dbOk = false;
 
@@ -56,7 +56,11 @@ export function registerRoutes(app: Express): Server {
         ok: dbOk,
       },
     });
-  });
+  };
+
+  // Backwards/shortcut health route
+  app.get("/health", healthHandler);
+  app.get("/api/health", healthHandler);
 
   // ---------- Pet Routes ----------
   
