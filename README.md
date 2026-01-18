@@ -72,6 +72,28 @@ npm run start
 npm run db:push
 ```
 
+## Seed Neon with Sample Data
+This will insert sample data (idempotent) for:
+- 20+ pets (with owners)
+- pet medical records
+- adoption applications
+- meet & greet appointments (2-user appointments)
+- emergency contacts
+- resources + testimonials
+
+1. Ensure `apps/api/.env` contains `DATABASE_URL`
+2. Push schema updates:
+
+```bash
+npm run db:push
+```
+
+3. Seed:
+
+```bash
+npm run seed
+```
+
 ## Security
 - Do **not** commit `.env` files or database URLs.
 - Use `env.example` files as templates.

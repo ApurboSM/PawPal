@@ -170,6 +170,48 @@ export function registerRoutes(app: Express): Server {
       }
     }
   });
+
+  // Create a new pet listing (authenticated user)
+  // Supports optional medical records array; records are stored in pet_medical_records.
+  app.post("/api/pets/listings", isAuthenticated, async (req, res) => {
+    try {
+      const schema = insertPetSchema.omit({ ownerId: true }).extend({
+        medicalRecords: z
+          .array(
+            insertPetMedicalRecordSchema
+              .omit({ userId: true, petId: true })
+              .partial({ vetName: true, attachmentUrl: true, notes: true }),
+          )
+          .optional(),
+      });
+
+      const parsed = schema.parse(req.body);
+      const { medicalRecords, ...petBody } = parsed as any;
+
+      const pet = await storage.createPet({
+        ...petBody,
+        ownerId: req.user!.id,
+      });
+
+      if (medicalRecords?.length) {
+        for (const record of medicalRecords) {
+          await storage.createPetMedicalRecord({
+            ...record,
+            userId: req.user!.id,
+            petId: pet.id,
+          });
+        }
+      }
+
+      res.status(201).json(pet);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid pet listing data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create pet listing" });
+      }
+    }
+  });
   
   // Update a pet (admin only)
   app.put("/api/pets/:id", isAdmin, async (req, res) => {
@@ -298,7 +340,7 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/appointments", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user!.id;
-      const appointments = await storage.getAppointmentsByUser(userId);
+      const appointments = await storage.getAppointmentsForUser(userId);
       res.json(appointments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch appointments" });
@@ -308,15 +350,7 @@ export function registerRoutes(app: Express): Server {
   // Get all appointments (admin only)
   app.get("/api/admin/appointments", isAdmin, async (req, res) => {
     try {
-      // We don't have a getAllAppointments method, so let's create a workaround
-      const appointments = [];
-      
-      // Get appointments for each user
-      for (const user of Array.from((await storage.getPets()).map(pet => pet.id))) {
-        const userAppointments = await storage.getAppointmentsByUser(user);
-        appointments.push(...userAppointments);
-      }
-      
+      const appointments = await storage.getAllAppointments();
       res.json(appointments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch appointments" });
@@ -347,9 +381,32 @@ export function registerRoutes(app: Express): Server {
   // Create a new appointment
   app.post("/api/appointments", isAuthenticated, async (req, res) => {
     try {
+      const body = z
+        .object({
+          petId: z.number().nullable().optional(),
+          type: z.string(),
+          date: z.coerce.date(),
+          notes: z.string().optional(),
+          participantUserId: z.number().nullable().optional(),
+        })
+        .parse(req.body);
+
+      let participantUserId = body.participantUserId ?? null;
+      const petId = body.petId ?? null;
+
+      // If this is a pet meetup appointment, auto-link the pet owner as the second participant.
+      if (!participantUserId && petId) {
+        const pet = await storage.getPet(petId);
+        participantUserId = (pet as any)?.ownerId ?? null;
+      }
+
       const appointmentData = insertAppointmentSchema.parse({
-        ...req.body,
         userId: req.user!.id,
+        participantUserId,
+        petId,
+        type: body.type,
+        date: body.date,
+        notes: body.notes,
       });
       
       const appointment = await storage.createAppointment(appointmentData);
@@ -641,7 +698,7 @@ export function registerRoutes(app: Express): Server {
   });
   
   // Get all medical records for a specific pet
-  app.get("/api/pets/:petId/medical-records", isAuthenticated, async (req, res) => {
+  app.get("/api/pets/:petId/medical-records", async (req, res) => {
     try {
       const petId = parseInt(req.params.petId);
       const pet = await storage.getPet(petId);
