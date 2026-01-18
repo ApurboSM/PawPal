@@ -66,6 +66,19 @@ export function registerRoutes(app: Express): Server {
   app.get("/health", healthHandler);
   app.get("/api/health", healthHandler);
 
+  // Root route (helpful during dev when people open the API port in the browser)
+  app.get("/", (_req: Request, res: Response) => {
+    if (process.env.NODE_ENV === "production") {
+      return res
+        .status(200)
+        .type("text/plain")
+        .send("PawPal API is running. Try /health or /api/health.");
+    }
+
+    // In dev the frontend runs on Vite (5173)
+    return res.redirect(302, "http://localhost:5173/");
+  });
+
   // ---------- Current user profile ----------
   app.patch("/api/user", isAuthenticated, async (req, res) => {
     try {

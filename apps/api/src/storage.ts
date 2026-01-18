@@ -189,12 +189,13 @@ export class MemStorage implements IStorage {
     const user: User = {
       id,
       createdAt,
-      favorites: [],
-      adoptionHistory: [],
+      ...userData,
       role: userData.role ?? "user",
       profileImage: userData.profileImage ?? null,
       phone: userData.phone ?? null,
-      ...userData,
+      location: (userData as any).location ?? null,
+      favorites: [],
+      adoptionHistory: [],
     };
     this.users.set(id, user);
     return user;

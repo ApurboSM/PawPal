@@ -1,20 +1,19 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import type {
-  Appointment,
-  AdoptionApplication,
-  EmergencyContact,
-  Pet,
-  PetMedicalRecord,
-} from "@pawpal/shared/schema";
+import type { Appointment, AdoptionApplication, Pet } from "@pawpal/shared/schema";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { useAuth } from "@/hooks/use-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   Table,
   TableBody,
@@ -23,12 +22,40 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
-import { Calendar, Heart, PawPrint, ShieldAlert, FileText, ClipboardList } from "lucide-react";
+import { Calendar, MapPin, Phone, User, PawPrint, Pencil, Trash2, Settings } from "lucide-react";
+
+type EditPetDraft = Pick<
+  Pet,
+  "id" | "name" | "species" | "breed" | "age" | "gender" | "size" | "description" | "location" | "healthDetails" | "status" | "imageUrl"
+>;
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [editPet, setEditPet] = useState<EditPetDraft | null>(null);
+  const [editPetImageFile, setEditPetImageFile] = useState<File | null>(null);
+  const [editPetImagePreview, setEditPetImagePreview] = useState<string>("");
 
   const { data: myPets = [] } = useQuery<Pet[]>({
     queryKey: ["/api/me/pets"],
@@ -40,27 +67,97 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
-  const { data: favorites = [] } = useQuery<Pet[]>({
-    queryKey: ["/api/pets/favorites"],
-    enabled: !!user,
-  });
-
   const { data: adoptionApplications = [] } = useQuery<AdoptionApplication[]>({
     queryKey: ["/api/adoption-applications"],
     enabled: !!user,
   });
 
-  const { data: emergencyContacts = [] } = useQuery<EmergencyContact[]>({
-    queryKey: ["/api/emergency-contacts"],
-    enabled: !!user,
-  });
-
-  const { data: medicalRecords = [] } = useQuery<PetMedicalRecord[]>({
-    queryKey: ["/api/pet-medical-records"],
-    enabled: !!user,
-  });
-
   const petById = useMemo(() => new Map(myPets.map((p) => [p.id, p])), [myPets]);
+  const now = Date.now();
+  const pastAppointments = useMemo(
+    () => appointments.filter((a) => new Date(a.date!).getTime() < now).sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime()),
+    [appointments, now],
+  );
+
+  const adoptedApps = useMemo(
+    () => adoptionApplications.filter((a) => (a.status ?? "pending") === "approved"),
+    [adoptionApplications],
+  );
+
+  const sellHistoryPets = useMemo(
+    () => myPets.filter((p) => ["adopted", "pending"].includes(p.status ?? "available")),
+    [myPets],
+  );
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: { name: string; phone: string; location: string }) => {
+      const res = await apiRequest("PATCH", "/api/user", {
+        name: data.name,
+        phone: data.phone?.trim() ? data.phone.trim() : null,
+        location: data.location?.trim() ? data.location.trim() : null,
+      });
+      return res.json();
+    },
+    onSuccess: (nextUser) => {
+      queryClient.setQueryData(["/api/user"], nextUser);
+      toast({ title: "Profile updated", description: "Your profile details were saved." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deletePetMutation = useMutation({
+    mutationFn: async (petId: number) => {
+      await apiRequest("DELETE", `/api/pets/${petId}`);
+    },
+    onSuccess: () => {
+      toast({ title: "Pet deleted", description: "Your listing has been removed." });
+      queryClient.invalidateQueries({ queryKey: ["/api/me/pets"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pets"] });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updatePetMutation = useMutation({
+    mutationFn: async (draft: EditPetDraft) => {
+      let imageUrl = draft.imageUrl;
+      if (editPetImageFile) {
+        const fd = new FormData();
+        fd.append("file", editPetImageFile);
+        const uploadRes = await fetch("/api/uploads/pet-image", {
+          method: "POST",
+          body: fd,
+          credentials: "include",
+        });
+        if (!uploadRes.ok) {
+          const text = await uploadRes.text();
+          throw new Error(text || "Failed to upload image");
+        }
+        const uploaded = (await uploadRes.json()) as { url: string };
+        imageUrl = uploaded.url;
+      }
+
+      const res = await apiRequest("PUT", `/api/pets/${draft.id}`, {
+        ...draft,
+        imageUrl,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Pet updated", description: "Your listing changes were saved." });
+      setEditPet(null);
+      setEditPetImageFile(null);
+      setEditPetImagePreview("");
+      queryClient.invalidateQueries({ queryKey: ["/api/me/pets"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pets"] });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+    },
+  });
 
   // ProtectedRoute already redirects if unauthenticated, but we must still return an element for typing.
   if (!user) {
@@ -81,7 +178,7 @@ export default function ProfilePage() {
     <>
       <Helmet>
         <title>My Profile - PawPal</title>
-        <meta name="description" content="Manage your PawPal profile, pets, favorites, applications, and appointments." />
+        <meta name="description" content="Manage your PawPal profile, pets, and history." />
       </Helmet>
 
       <Navbar />
@@ -99,7 +196,7 @@ export default function ProfilePage() {
               <Link href="/pets/register">
                 <Button className="bg-[#4A6FA5] hover:bg-[#3A5A87]">
                   <PawPrint className="h-4 w-4 mr-2" />
-                  Register / List a Pet
+                  Register / List your pets
                 </Button>
               </Link>
               <Link href="/appointments">
@@ -111,52 +208,114 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <Tabs defaultValue="pets">
+          <Tabs defaultValue="my-profile">
             <TabsList className="mb-6 flex flex-wrap">
-              <TabsTrigger value="pets">
+              <TabsTrigger value="my-profile">My Profile</TabsTrigger>
+              <TabsTrigger value="my-pets">
                 My Pets
                 <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
                   {myPets.length}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="appointments">
-                Appointments
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </TabsTrigger>
+              <TabsTrigger value="appointment-history">
+                Appointment History
                 <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
-                  {appointments.length}
+                  {pastAppointments.length}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="favorites">
-                Favorites
-                <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
-                  {favorites.length}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="applications">
-                Applications
-                <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
-                  {adoptionApplications.length}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="emergency">
-                Emergency
-                <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
-                  {emergencyContacts.length}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="medical">
-                Medical
-                <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
-                  {medicalRecords.length}
-                </span>
-              </TabsTrigger>
+              <TabsTrigger value="adopt-sell">Adopt / Sell</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="pets">
+            <TabsContent value="my-profile">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5 text-[#4A6FA5]" />
+                    My Profile
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-lg border bg-white p-4">
+                      <div className="text-sm text-neutral-500">Email</div>
+                      <div className="font-medium">{user.email}</div>
+                    </div>
+                    <div className="rounded-lg border bg-white p-4">
+                      <div className="text-sm text-neutral-500">Username</div>
+                      <div className="font-medium">{user.username}</div>
+                    </div>
+                    <div className="rounded-lg border bg-white p-4 flex items-start gap-3">
+                      <Phone className="h-5 w-5 text-neutral-600 mt-0.5" />
+                      <div>
+                        <div className="text-sm text-neutral-500">Phone</div>
+                        <div className="font-medium">{(user as any).phone ?? "—"}</div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border bg-white p-4 flex items-start gap-3">
+                      <MapPin className="h-5 w-5 text-neutral-600 mt-0.5" />
+                      <div>
+                        <div className="text-sm text-neutral-500">Location</div>
+                        <div className="font-medium">{(user as any).location ?? "—"}</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-[#4A6FA5]" />
+                    Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 max-w-xl">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <div className="text-sm font-medium mb-1">Name</div>
+                      <Input
+                        defaultValue={user.name}
+                        onChange={(e) => setTimeout(() => void 0, 0)}
+                        id="settings-name"
+                      />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium mb-1">Phone</div>
+                      <Input defaultValue={(user as any).phone ?? ""} id="settings-phone" placeholder="+1 555..." />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium mb-1">Location</div>
+                      <Input defaultValue={(user as any).location ?? ""} id="settings-location" placeholder="City, Country" />
+                    </div>
+                    <Button
+                      className="bg-[#4A6FA5] hover:bg-[#3A5A87]"
+                      disabled={updateProfileMutation.isPending}
+                      onClick={() => {
+                        const name = (document.getElementById("settings-name") as HTMLInputElement | null)?.value ?? user.name;
+                        const phone = (document.getElementById("settings-phone") as HTMLInputElement | null)?.value ?? "";
+                        const location = (document.getElementById("settings-location") as HTMLInputElement | null)?.value ?? "";
+                        updateProfileMutation.mutate({ name, phone, location });
+                      }}
+                    >
+                      Save Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="my-pets">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <PawPrint className="h-5 w-5 text-[#4A6FA5]" />
-                    My Pet Listings
+                    My Pets
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -164,55 +323,7 @@ export default function ProfilePage() {
                     <div className="text-neutral-600">
                       You haven’t listed any pets yet.{" "}
                       <Link href="/pets/register" className="text-[#4A6FA5] underline">
-                        Create your first listing
-                      </Link>
-                      .
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {myPets.map((pet) => (
-                        <Card key={pet.id} className="overflow-hidden">
-                          <img src={pet.imageUrl} alt={pet.name} className="w-full h-44 object-cover" />
-                          <CardContent className="pt-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <div className="font-semibold text-lg">{pet.name}</div>
-                                <div className="text-sm text-neutral-600">
-                                  {pet.breed} • {pet.species}
-                                </div>
-                              </div>
-                              <Badge className="bg-[#6B8DB9] text-white">{pet.status}</Badge>
-                            </div>
-                            <div className="mt-4">
-                              <Link href={`/pets/${pet.id}`}>
-                                <Button variant="outline" className="w-full">
-                                  View Listing
-                                </Button>
-                              </Link>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="appointments">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-[#4A6FA5]" />
-                    My Appointments
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {appointments.length === 0 ? (
-                    <div className="text-neutral-600">
-                      No appointments yet.{" "}
-                      <Link href="/appointments" className="text-[#4A6FA5] underline">
-                        Book one now
+                        Register / List your pets
                       </Link>
                       .
                     </div>
@@ -220,16 +331,197 @@ export default function ProfilePage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Date</TableHead>
                           <TableHead>Pet</TableHead>
                           <TableHead>Status</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {appointments.map((a) => (
+                        {myPets.map((p) => (
+                          <TableRow key={p.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <img src={p.imageUrl} alt={p.name} className="h-10 w-10 rounded object-cover" />
+                                <div>
+                                  <Link href={`/pets/${p.id}`} className="font-medium text-[#4A6FA5] underline">
+                                    {p.name}
+                                  </Link>
+                                  <div className="text-xs text-neutral-600">{p.breed}</div>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-[#6B8DB9] text-white">{p.status}</Badge>
+                            </TableCell>
+                            <TableCell>{p.location}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="inline-flex gap-2">
+                                <Dialog
+                                  open={!!editPet && editPet.id === p.id}
+                                  onOpenChange={(open) => {
+                                    if (!open) {
+                                      setEditPet(null);
+                                      setEditPetImageFile(null);
+                                      setEditPetImagePreview("");
+                                    }
+                                  }}
+                                >
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setEditPet({
+                                          id: p.id,
+                                          name: p.name,
+                                          species: p.species,
+                                          breed: p.breed,
+                                          age: p.age,
+                                          gender: p.gender,
+                                          size: p.size,
+                                          description: p.description,
+                                          location: p.location,
+                                          healthDetails: p.healthDetails,
+                                          status: p.status,
+                                          imageUrl: p.imageUrl,
+                                        });
+                                      }}
+                                    >
+                                      <Pencil className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                      <DialogTitle>Edit Pet</DialogTitle>
+                                      <DialogDescription>Update your listing details.</DialogDescription>
+                                    </DialogHeader>
+                                    {editPet ? (
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
+                                        <div className="space-y-2">
+                                          <div className="text-sm font-medium">Name</div>
+                                          <Input value={editPet.name} onChange={(e) => setEditPet({ ...editPet, name: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <div className="text-sm font-medium">Status</div>
+                                          <Input value={editPet.status ?? "available"} onChange={(e) => setEditPet({ ...editPet, status: e.target.value as any })} />
+                                        </div>
+                                        <div className="space-y-2 md:col-span-2">
+                                          <div className="text-sm font-medium">Location</div>
+                                          <Input value={editPet.location} onChange={(e) => setEditPet({ ...editPet, location: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2 md:col-span-2">
+                                          <div className="text-sm font-medium">Description</div>
+                                          <Textarea value={editPet.description} onChange={(e) => setEditPet({ ...editPet, description: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2 md:col-span-2">
+                                          <div className="text-sm font-medium">Pet Image</div>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <Input
+                                              type="file"
+                                              accept="image/*"
+                                              onChange={(e) => {
+                                                const f = e.target.files?.[0] ?? null;
+                                                setEditPetImageFile(f);
+                                                if (f) setEditPetImagePreview(URL.createObjectURL(f));
+                                                else setEditPetImagePreview("");
+                                              }}
+                                            />
+                                            <div className="rounded-lg border bg-white overflow-hidden min-h-[120px] flex items-center justify-center">
+                                              <img
+                                                src={editPetImagePreview || editPet.imageUrl}
+                                                alt="Preview"
+                                                className="w-full h-32 object-cover"
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                    <DialogFooter>
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                          setEditPet(null);
+                                          setEditPetImageFile(null);
+                                          setEditPetImagePreview("");
+                                        }}
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        className="bg-[#4A6FA5] hover:bg-[#3A5A87]"
+                                        disabled={!editPet || updatePetMutation.isPending}
+                                        onClick={() => editPet && updatePetMutation.mutate(editPet)}
+                                      >
+                                        Save Changes
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm">
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Delete
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete this pet listing?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deletePetMutation.mutate(p.id)}
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="appointment-history">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-[#4A6FA5]" />
+                    Appointment History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pastAppointments.length === 0 ? (
+                    <div className="text-neutral-600">No past appointments yet.</div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Pet</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pastAppointments.map((a) => (
                           <TableRow key={a.id}>
-                            <TableCell className="font-medium">{a.type}</TableCell>
+                            <TableCell className="font-medium">#{a.id}</TableCell>
+                            <TableCell>{a.type}</TableCell>
                             <TableCell>{format(new Date(a.date!), "PPP p")}</TableCell>
                             <TableCell>
                               {a.petId ? (
@@ -240,9 +532,6 @@ export default function ProfilePage() {
                                 "—"
                               )}
                             </TableCell>
-                            <TableCell>
-                              <Badge className="bg-[#6B8DB9] text-white">{a.status ?? "scheduled"}</Badge>
-                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -252,178 +541,78 @@ export default function ProfilePage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="favorites">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="h-5 w-5 text-[#4A6FA5]" />
-                    Favorite Pets
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {favorites.length === 0 ? (
-                    <div className="text-neutral-600">No favorites yet. Browse pets and tap the heart.</div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {favorites.map((pet) => (
-                        <Card key={pet.id} className="overflow-hidden">
-                          <img src={pet.imageUrl} alt={pet.name} className="w-full h-44 object-cover" />
-                          <CardContent className="pt-4">
-                            <div className="font-semibold text-lg">{pet.name}</div>
-                            <div className="text-sm text-neutral-600">
-                              {pet.breed} • {pet.species}
-                            </div>
-                            <div className="mt-4">
-                              <Link href={`/pets/${pet.id}`}>
-                                <Button variant="outline" className="w-full">
-                                  View Pet
-                                </Button>
-                              </Link>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="applications">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ClipboardList className="h-5 w-5 text-[#4A6FA5]" />
-                    Adoption Applications
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {adoptionApplications.length === 0 ? (
-                    <div className="text-neutral-600">No applications yet.</div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Pet</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Notes</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {adoptionApplications.map((a) => (
-                          <TableRow key={a.id}>
-                            <TableCell>
-                              <Link href={`/pets/${a.petId}`} className="text-[#4A6FA5] underline">
-                                Pet #{a.petId}
-                              </Link>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-[#6B8DB9] text-white">{a.status ?? "pending"}</Badge>
-                            </TableCell>
-                            <TableCell className="max-w-[520px] truncate">{a.notes ?? "—"}</TableCell>
+            <TabsContent value="adopt-sell">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Adoption History</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {adoptedApps.length === 0 ? (
+                      <div className="text-neutral-600">No approved adoptions yet.</div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Application</TableHead>
+                            <TableHead>Pet</TableHead>
+                            <TableHead>Status</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                        </TableHeader>
+                        <TableBody>
+                          {adoptedApps.map((a) => (
+                            <TableRow key={a.id}>
+                              <TableCell className="font-medium">#{a.id}</TableCell>
+                              <TableCell>
+                                <Link href={`/pets/${a.petId}`} className="text-[#4A6FA5] underline">
+                                  Pet #{a.petId}
+                                </Link>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className="bg-[#6B8DB9] text-white">{a.status}</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
 
-            <TabsContent value="emergency">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShieldAlert className="h-5 w-5 text-[#4A6FA5]" />
-                    Emergency Contacts
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <Link href="/emergency">
-                      <Button variant="outline">
-                        <ShieldAlert className="h-4 w-4 mr-2" />
-                        Manage in Emergency Page
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {emergencyContacts.length === 0 ? (
-                    <div className="text-neutral-600">No emergency contacts saved yet.</div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>Address</TableHead>
-                          <TableHead>Type</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {emergencyContacts.map((c) => (
-                          <TableRow key={c.id}>
-                            <TableCell className="font-medium">{c.contactName}</TableCell>
-                            <TableCell>{c.phone}</TableCell>
-                            <TableCell className="max-w-[520px] truncate">{c.address}</TableCell>
-                            <TableCell>{c.isVet ? "Vet" : "Other"}</TableCell>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Sell / Listing History</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {sellHistoryPets.length === 0 ? (
+                      <div className="text-neutral-600">No adopted/pending listings yet.</div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Pet</TableHead>
+                            <TableHead>Status</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="medical">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-[#4A6FA5]" />
-                    Pet Medical Records
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <Link href="/emergency">
-                      <Button variant="outline">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Add / Manage Records
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {medicalRecords.length === 0 ? (
-                    <div className="text-neutral-600">No medical records saved yet.</div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Pet</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Description</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {medicalRecords.map((r) => (
-                          <TableRow key={r.id}>
-                            <TableCell>
-                              <Link href={`/pets/${r.petId}`} className="text-[#4A6FA5] underline">
-                                {petById.get(r.petId)?.name ?? `Pet #${r.petId}`}
-                              </Link>
-                            </TableCell>
-                            <TableCell className="font-medium">{r.recordType}</TableCell>
-                            <TableCell>{format(new Date(r.recordDate!), "PPP")}</TableCell>
-                            <TableCell className="max-w-[520px] truncate">{r.description}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
+                        </TableHeader>
+                        <TableBody>
+                          {sellHistoryPets.map((p) => (
+                            <TableRow key={p.id}>
+                              <TableCell>
+                                <Link href={`/pets/${p.id}`} className="text-[#4A6FA5] underline">
+                                  {p.name}
+                                </Link>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className="bg-[#6B8DB9] text-white">{p.status}</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

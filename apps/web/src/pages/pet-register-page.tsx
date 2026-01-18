@@ -27,8 +27,9 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Loader2, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 const medicalRecordSchema = z.object({
   recordType: z.string().min(1, "Record type is required"),
@@ -47,7 +48,7 @@ const petListingSchema = z.object({
   gender: z.string().min(1, "Gender is required"),
   size: z.string().min(1, "Size is required"),
   description: z.string().min(1, "Description is required"),
-  imageUrl: z.string().url("Image URL must be a valid URL"),
+  imageUrl: z.string().url("Image URL must be a valid URL").optional().or(z.literal("")),
   location: z.string().min(1, "Location is required"),
   healthDetails: z.string().min(1, "Health details are required"),
   goodWith: z.object({
@@ -63,6 +64,8 @@ type PetListingForm = z.infer<typeof petListingSchema>;
 export default function PetRegisterPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
 
   const form = useForm<PetListingForm>({
     resolver: zodResolver(petListingSchema),
@@ -89,8 +92,30 @@ export default function PetRegisterPage() {
 
   const createListingMutation = useMutation({
     mutationFn: async (data: PetListingForm) => {
+      let imageUrl = data.imageUrl?.trim() ?? "";
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append("file", imageFile);
+        const uploadRes = await fetch("/api/uploads/pet-image", {
+          method: "POST",
+          body: fd,
+          credentials: "include",
+        });
+        if (!uploadRes.ok) {
+          const text = await uploadRes.text();
+          throw new Error(text || "Failed to upload image");
+        }
+        const uploaded = (await uploadRes.json()) as { url: string };
+        imageUrl = uploaded.url;
+      }
+
+      if (!imageUrl) {
+        throw new Error("Please upload a pet image.");
+      }
+
       const payload = {
         ...data,
+        imageUrl,
         medicalRecords: (data.medicalRecords ?? []).map((r) => ({
           ...r,
           // backend coerces; sending ISO string keeps it JSON-safe
@@ -105,7 +130,8 @@ export default function PetRegisterPage() {
         title: "Pet listed successfully",
         description: "Your pet listing is now live.",
       });
-      setLocation(`/pets/${pet.id}`);
+      queryClient.invalidateQueries({ queryKey: ["/api/me/pets"] });
+      setLocation(`/profile`);
     },
     onError: (error: Error) => {
       toast({
@@ -133,7 +159,7 @@ export default function PetRegisterPage() {
         <div className="container mx-auto px-4 max-w-3xl">
           <Card>
             <CardHeader>
-              <CardTitle>Register / List a Pet</CardTitle>
+              <CardTitle>Register / List your pets</CardTitle>
               <CardDescription>
                 Fill out details about your pet. You can also add medical history so it appears publicly on the pet profile.
               </CardDescription>
@@ -273,19 +299,50 @@ export default function PetRegisterPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Image URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <div className="font-medium">Pet Image</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0] ?? null;
+                            setImageFile(f);
+                            if (f) {
+                              const url = URL.createObjectURL(f);
+                              setImagePreviewUrl(url);
+                            } else {
+                              setImagePreviewUrl("");
+                            }
+                          }}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Upload a clear photo. Max 5MB.
+                        </p>
+                      </div>
+                      <div className="rounded-lg border bg-white overflow-hidden min-h-[160px] flex items-center justify-center">
+                        {imagePreviewUrl ? (
+                          <img src={imagePreviewUrl} alt="Preview" className="w-full h-40 object-cover" />
+                        ) : (
+                          <div className="text-sm text-neutral-500">No image selected</div>
+                        )}
+                      </div>
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Or paste an Image URL (optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   <FormField
                     control={form.control}
