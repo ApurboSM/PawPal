@@ -89,10 +89,19 @@ export function Navbar() {
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
             ) : user ? (
               <>
-                <div className="flex items-center space-x-2 bg-muted py-1 px-3 rounded-full text-foreground">
+                <Link
+                  href="/profile"
+                  className="flex items-center space-x-2 bg-muted py-1 px-3 rounded-full text-foreground hover:bg-muted/80 transition-colors"
+                >
                   <Heart className="h-4 w-4 text-primary" />
                   <span className="font-medium">Hello, {user.name}</span>
-                </div>
+                </Link>
+                <Link href="/pets/register">
+                  <Button className="bg-primary text-white hover:bg-primary/90 hover:shadow-lg rounded-full transition-all duration-300">
+                    <Cat className="h-4 w-4 mr-1" />
+                    List a Pet
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary/20 hover:text-primary hover:border-primary rounded-full transition-all duration-300"
@@ -185,10 +194,20 @@ export function Navbar() {
                 </div>
               ) : user ? (
                 <>
-                  <div className="flex items-center space-x-2 bg-muted py-2 px-4 rounded-lg">
+                  <Link
+                    href="/profile"
+                    className="flex items-center space-x-2 bg-muted py-2 px-4 rounded-lg hover:bg-muted/80 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     <Heart className="h-4 w-4 text-primary" />
                     <span className="text-foreground font-medium">Hello, {user.name}</span>
-                  </div>
+                  </Link>
+                  <Link href="/pets/register" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="bg-primary text-white hover:bg-primary/90 rounded-full w-full transition-all duration-300">
+                      <Cat className="h-4 w-4 mr-1" />
+                      List a Pet
+                    </Button>
+                  </Link>
                   <Button
                     variant="outline"
                     className="border-primary text-primary hover:bg-primary/20 rounded-full w-full transition-all duration-300"

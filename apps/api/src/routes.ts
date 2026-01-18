@@ -67,7 +67,7 @@ export function registerRoutes(app: Express): Server {
   // Get all pets with optional filters
   app.get("/api/pets", async (req, res) => {
     try {
-      const { species, status, search, age, gender, size, goodWith } = req.query;
+      const { species, status, search, age, gender, size, goodWith, ownerId } = req.query;
       const filters: any = {};
 
       if (species) filters.species = String(species);
@@ -75,6 +75,7 @@ export function registerRoutes(app: Express): Server {
       if (age) filters.age = Number(age);
       if (gender) filters.gender = String(gender);
       if (size) filters.size = String(size);
+      if (ownerId !== undefined) filters.ownerId = Number(ownerId);
 
       let pets = await storage.getPets(Object.keys(filters).length ? filters : undefined);
 
@@ -101,6 +102,17 @@ export function registerRoutes(app: Express): Server {
       res.json(pets);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch pets" });
+    }
+  });
+
+  // Get current user's pet listings
+  app.get("/api/me/pets", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const pets = await storage.getPets({ ownerId: userId } as any);
+      res.json(pets);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch your pets" });
     }
   });
 
@@ -180,6 +192,7 @@ export function registerRoutes(app: Express): Server {
           .array(
             insertPetMedicalRecordSchema
               .omit({ userId: true, petId: true })
+              .extend({ recordDate: z.coerce.date() })
               .partial({ vetName: true, attachmentUrl: true, notes: true }),
           )
           .optional(),
@@ -738,12 +751,22 @@ export function registerRoutes(app: Express): Server {
   // Create a new medical record
   app.post("/api/pet-medical-records", isAuthenticated, async (req, res) => {
     try {
-      const recordData = insertPetMedicalRecordSchema.parse({
-        ...req.body,
-        userId: req.user!.id,
-      });
+      const recordData = z
+        .object({
+          petId: z.number(),
+          recordType: z.string(),
+          recordDate: z.coerce.date(),
+          description: z.string(),
+          vetName: z.string().nullable().optional(),
+          attachmentUrl: z.string().nullable().optional(),
+          notes: z.string().nullable().optional(),
+        })
+        .parse(req.body);
       
-      const record = await storage.createPetMedicalRecord(recordData);
+      const record = await storage.createPetMedicalRecord({
+        ...recordData,
+        userId: req.user!.id,
+      } as any);
       res.status(201).json(record);
     } catch (error) {
       if (error instanceof z.ZodError) {
