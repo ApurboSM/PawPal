@@ -1,0 +1,19 @@
+{
+  "name": "rest-express",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "install:all": "npm --prefix apps/api install && npm --prefix apps/web install",
+    "dev": "concurrently -n api,web -c blue,green \"npm --prefix apps/api run dev\" \"npm --prefix apps/web run dev\"",
+    "build": "npm --prefix apps/web run build && npm --prefix apps/api run build",
+    "start": "npm --prefix apps/api run start",
+    "check": "npm --prefix apps/api run check && npm --prefix apps/web run check",
+    "db:push": "npm --prefix apps/api run db:push"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  },
+  "optionalDependencies": {}
+}
