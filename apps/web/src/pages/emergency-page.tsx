@@ -309,6 +309,24 @@ export default function EmergencyPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddContactDialogOpen, setIsAddContactDialogOpen] = useState(false);
   const [isAddMedicalRecordDialogOpen, setIsAddMedicalRecordDialogOpen] = useState(false);
+
+  const [newContact, setNewContact] = useState({
+    contactName: "",
+    phone: "",
+    address: "",
+    email: "",
+    isVet: false,
+    notes: "",
+  });
+
+  const [newMedicalRecord, setNewMedicalRecord] = useState({
+    petId: "",
+    recordType: "",
+    recordDate: "",
+    description: "",
+    vetName: "",
+    notes: "",
+  });
   
   // Fetch user's emergency contacts
   const { 
@@ -335,7 +353,84 @@ export default function EmergencyPage() {
     data: pets = [],
     isLoading: isLoadingPets
   } = useQuery<Pet[]>({
-    queryKey: ['/api/pets'],
+    queryKey: ['/api/me/pets'],
+    enabled: !!user,
+  });
+
+  const createContactMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        contactName: newContact.contactName,
+        phone: newContact.phone,
+        address: newContact.address,
+        isVet: Boolean(newContact.isVet),
+        email: newContact.email?.trim() ? newContact.email.trim() : null,
+        notes: newContact.notes?.trim() ? newContact.notes.trim() : null,
+      };
+      const res = await apiRequest("POST", "/api/emergency-contacts", payload);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Contact saved",
+        description: "Your emergency contact has been added.",
+      });
+      setIsAddContactDialogOpen(false);
+      setNewContact({
+        contactName: "",
+        phone: "",
+        address: "",
+        email: "",
+        isVet: false,
+        notes: "",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/emergency-contacts"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to save contact",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createMedicalRecordMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        petId: Number(newMedicalRecord.petId),
+        recordType: newMedicalRecord.recordType,
+        recordDate: new Date(newMedicalRecord.recordDate).toISOString(),
+        description: newMedicalRecord.description,
+        vetName: newMedicalRecord.vetName?.trim() ? newMedicalRecord.vetName.trim() : null,
+        notes: newMedicalRecord.notes?.trim() ? newMedicalRecord.notes.trim() : null,
+      };
+      const res = await apiRequest("POST", "/api/pet-medical-records", payload);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Record saved",
+        description: "Medical record has been added.",
+      });
+      setIsAddMedicalRecordDialogOpen(false);
+      setNewMedicalRecord({
+        petId: "",
+        recordType: "",
+        recordDate: "",
+        description: "",
+        vetName: "",
+        notes: "",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/pet-medical-records"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to save record",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
   
   // Delete emergency contact mutation
@@ -865,7 +960,7 @@ export default function EmergencyPage() {
                   <p className="text-muted-foreground mb-4 max-w-lg mx-auto">
                     Create and manage your emergency contacts and pet medical records to have critical information ready when you need it most.
                   </p>
-                  <Link to="/auth">
+                  <Link href="/auth">
                     <Button className="bg-amber-600 hover:bg-amber-700">
                       Sign in or Create an Account
                     </Button>
@@ -900,25 +995,48 @@ export default function EmergencyPage() {
                             <div className="grid gap-4 py-4">
                               <div>
                                 <label htmlFor="contactName" className="block text-sm font-medium mb-1">Contact Name *</label>
-                                <Input id="contactName" placeholder="Dr. Smith Veterinary Clinic" />
+                                <Input
+                                  id="contactName"
+                                  placeholder="Dr. Smith Veterinary Clinic"
+                                  value={newContact.contactName}
+                                  onChange={(e) => setNewContact((p) => ({ ...p, contactName: e.target.value }))}
+                                />
                               </div>
                               <div>
                                 <label htmlFor="phone" className="block text-sm font-medium mb-1">Phone Number *</label>
-                                <Input id="phone" placeholder="(555) 123-4567" />
+                                <Input
+                                  id="phone"
+                                  placeholder="(555) 123-4567"
+                                  value={newContact.phone}
+                                  onChange={(e) => setNewContact((p) => ({ ...p, phone: e.target.value }))}
+                                />
                               </div>
                               <div>
                                 <label htmlFor="address" className="block text-sm font-medium mb-1">Address *</label>
-                                <Input id="address" placeholder="123 Main St, City, State, ZIP" />
+                                <Input
+                                  id="address"
+                                  placeholder="123 Main St, City, State, ZIP"
+                                  value={newContact.address}
+                                  onChange={(e) => setNewContact((p) => ({ ...p, address: e.target.value }))}
+                                />
                               </div>
                               <div>
                                 <label htmlFor="email" className="block text-sm font-medium mb-1">Email (optional)</label>
-                                <Input id="email" type="email" placeholder="contact@example.com" />
+                                <Input
+                                  id="email"
+                                  type="email"
+                                  placeholder="contact@example.com"
+                                  value={newContact.email}
+                                  onChange={(e) => setNewContact((p) => ({ ...p, email: e.target.value }))}
+                                />
                               </div>
                               <div className="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
                                   id="isVet"
                                   className="rounded border-red-300 text-red-600 focus:ring-red-500"
+                                  checked={newContact.isVet}
+                                  onChange={(e) => setNewContact((p) => ({ ...p, isVet: e.target.checked }))}
                                 />
                                 <label htmlFor="isVet" className="text-sm font-medium">
                                   This is a veterinarian/veterinary hospital
@@ -931,6 +1049,8 @@ export default function EmergencyPage() {
                                   rows={3}
                                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                   placeholder="Any additional information about this contact"
+                                  value={newContact.notes}
+                                  onChange={(e) => setNewContact((p) => ({ ...p, notes: e.target.value }))}
                                 ></textarea>
                               </div>
                             </div>
@@ -938,7 +1058,16 @@ export default function EmergencyPage() {
                               <Button variant="outline" onClick={() => setIsAddContactDialogOpen(false)}>
                                 Cancel
                               </Button>
-                              <Button className="bg-red-600 hover:bg-red-700">
+                              <Button
+                                className="bg-red-600 hover:bg-red-700"
+                                disabled={
+                                  createContactMutation.isPending ||
+                                  !newContact.contactName.trim() ||
+                                  !newContact.phone.trim() ||
+                                  !newContact.address.trim()
+                                }
+                                onClick={() => createContactMutation.mutate()}
+                              >
                                 Save Contact
                               </Button>
                             </div>
@@ -966,6 +1095,8 @@ export default function EmergencyPage() {
                                 <select 
                                   id="pet" 
                                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  value={newMedicalRecord.petId}
+                                  onChange={(e) => setNewMedicalRecord((p) => ({ ...p, petId: e.target.value }))}
                                 >
                                   <option value="">Select a pet</option>
                                   {pets.map(pet => (
@@ -978,6 +1109,8 @@ export default function EmergencyPage() {
                                 <select 
                                   id="recordType" 
                                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  value={newMedicalRecord.recordType}
+                                  onChange={(e) => setNewMedicalRecord((p) => ({ ...p, recordType: e.target.value }))}
                                 >
                                   <option value="">Select record type</option>
                                   <option value="Vaccination">Vaccination</option>
@@ -991,15 +1124,30 @@ export default function EmergencyPage() {
                               </div>
                               <div>
                                 <label htmlFor="recordDate" className="block text-sm font-medium mb-1">Date *</label>
-                                <Input id="recordDate" type="date" />
+                                <Input
+                                  id="recordDate"
+                                  type="date"
+                                  value={newMedicalRecord.recordDate}
+                                  onChange={(e) => setNewMedicalRecord((p) => ({ ...p, recordDate: e.target.value }))}
+                                />
                               </div>
                               <div>
                                 <label htmlFor="description" className="block text-sm font-medium mb-1">Description *</label>
-                                <Input id="description" placeholder="Rabies vaccination" />
+                                <Input
+                                  id="description"
+                                  placeholder="Rabies vaccination"
+                                  value={newMedicalRecord.description}
+                                  onChange={(e) => setNewMedicalRecord((p) => ({ ...p, description: e.target.value }))}
+                                />
                               </div>
                               <div>
                                 <label htmlFor="vetName" className="block text-sm font-medium mb-1">Veterinarian (optional)</label>
-                                <Input id="vetName" placeholder="Dr. Smith" />
+                                <Input
+                                  id="vetName"
+                                  placeholder="Dr. Smith"
+                                  value={newMedicalRecord.vetName}
+                                  onChange={(e) => setNewMedicalRecord((p) => ({ ...p, vetName: e.target.value }))}
+                                />
                               </div>
                               <div>
                                 <label htmlFor="notes" className="block text-sm font-medium mb-1">Notes (optional)</label>
@@ -1008,6 +1156,8 @@ export default function EmergencyPage() {
                                   rows={3}
                                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                   placeholder="Additional information about this medical record"
+                                  value={newMedicalRecord.notes}
+                                  onChange={(e) => setNewMedicalRecord((p) => ({ ...p, notes: e.target.value }))}
                                 ></textarea>
                               </div>
                             </div>
@@ -1015,7 +1165,17 @@ export default function EmergencyPage() {
                               <Button variant="outline" onClick={() => setIsAddMedicalRecordDialogOpen(false)}>
                                 Cancel
                               </Button>
-                              <Button className="bg-red-600 hover:bg-red-700">
+                              <Button
+                                className="bg-red-600 hover:bg-red-700"
+                                disabled={
+                                  createMedicalRecordMutation.isPending ||
+                                  !newMedicalRecord.petId ||
+                                  !newMedicalRecord.recordType ||
+                                  !newMedicalRecord.recordDate ||
+                                  !newMedicalRecord.description.trim()
+                                }
+                                onClick={() => createMedicalRecordMutation.mutate()}
+                              >
                                 Save Record
                               </Button>
                             </div>

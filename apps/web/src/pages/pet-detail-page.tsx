@@ -26,7 +26,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Loader2, Calendar, MapPin, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -38,7 +38,6 @@ export default function PetDetailPage() {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isFavorited, setIsFavorited] = useState(false);
   
   // Adoption application dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -57,6 +56,13 @@ export default function PetDetailPage() {
     queryKey: [`/api/pets/${id}/medical-records`],
     enabled: !!id,
   });
+
+  const isFavorited = useMemo(() => {
+    const petId = pet?.id;
+    const favs = (user as any)?.favorites as number[] | undefined;
+    if (!petId || !Array.isArray(favs)) return false;
+    return favs.includes(petId);
+  }, [pet?.id, user]);
   
   // Adoption application form
   const form = useForm({
@@ -85,6 +91,22 @@ export default function PetDetailPage() {
         description: error.message,
         variant: "destructive",
       });
+    },
+  });
+
+  const favoriteMutation = useMutation({
+    mutationFn: async (nextFavorited: boolean) => {
+      const response = await apiRequest("POST", `/api/pets/${pet!.id}/favorite`, {
+        favorited: nextFavorited,
+      });
+      return response.json() as Promise<{ favorites: number[] }>;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["/api/user"], (prev: any) => {
+        if (!prev) return prev;
+        return { ...prev, favorites: data.favorites };
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/pets/favorites"] });
     },
   });
   
@@ -119,13 +141,15 @@ export default function PetDetailPage() {
       });
       return;
     }
-    
-    setIsFavorited(!isFavorited);
+
+    if (!pet) return;
+    const next = !isFavorited;
+    favoriteMutation.mutate(next);
     toast({
-      title: isFavorited ? "Removed from favorites" : "Added to favorites",
-      description: isFavorited 
-        ? `${pet?.name} has been removed from your favorites.` 
-        : `${pet?.name} has been added to your favorites.`
+      title: next ? "Added to favorites" : "Removed from favorites",
+      description: next
+        ? `${pet.name} has been added to your favorites.`
+        : `${pet.name} has been removed from your favorites.`,
     });
   };
   
