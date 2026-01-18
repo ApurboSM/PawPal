@@ -19,6 +19,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   profileImage: text("profile_image"),
   phone: text("phone"),
+  location: text("location"),
   role: text("role").notNull().default("user"), // user, admin
   favorites: jsonb("favorites").$type<number[]>().notNull().default([]), // Array of pet IDs
   adoptionHistory: jsonb("adoption_history").$type<number[]>().notNull().default([]), // Array of pet IDs
@@ -32,6 +33,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
   profileImage: true,
   phone: true,
+  location: true,
   role: true,
 });
 

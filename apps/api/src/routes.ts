@@ -5,6 +5,10 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema, insertEmergencyContactSchema, insertPetMedicalRecordSchema } from "@pawpal/shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import type { FileFilterCallback } from "multer";
+import path from "path";
+import fs from "fs";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
 import { z as zod } from "zod";
@@ -62,7 +66,62 @@ export function registerRoutes(app: Express): Server {
   app.get("/health", healthHandler);
   app.get("/api/health", healthHandler);
 
+  // ---------- Current user profile ----------
+  app.patch("/api/user", isAuthenticated, async (req, res) => {
+    try {
+      const schema = z.object({
+        name: z.string().min(1).optional(),
+        phone: z.string().optional().nullable(),
+        location: z.string().optional().nullable(),
+        profileImage: z.string().url().optional().nullable(),
+      });
+
+      const parsed = schema.parse(req.body);
+      const updated = await storage.updateUser(req.user!.id, {
+        ...parsed,
+      } as any);
+      if (!updated) return res.status(404).json({ message: "User not found" });
+
+      const { password, ...userWithoutPassword } = updated as any;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to update profile" });
+      }
+    }
+  });
+
   // ---------- Pet Routes ----------
+
+  // ---------- Uploads ----------
+  // Store files in apps/api/uploads and serve them via /uploads (see src/index.ts).
+  const uploadDir = path.resolve(process.cwd(), "uploads");
+  fs.mkdirSync(uploadDir, { recursive: true });
+
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: (_req: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) =>
+        cb(null, uploadDir),
+      filename: (_req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
+        const safeExt = path.extname(file.originalname || "").slice(0, 10) || ".png";
+        const name = `pet_${Date.now()}_${Math.random().toString(16).slice(2)}${safeExt}`;
+        cb(null, name);
+      },
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+      if (file.mimetype?.startsWith("image/")) return cb(null, true);
+      cb(new Error("Only image uploads are allowed"));
+    },
+  });
+
+  app.post("/api/uploads/pet-image", isAuthenticated, upload.single("file"), async (req, res) => {
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) return res.status(400).json({ message: "No file uploaded" });
+    return res.json({ url: `/uploads/${file.filename}` });
+  });
   
   // Get all pets with optional filters
   app.get("/api/pets", async (req, res) => {
@@ -226,12 +285,23 @@ export function registerRoutes(app: Express): Server {
     }
   });
   
-  // Update a pet (admin only)
-  app.put("/api/pets/:id", isAdmin, async (req, res) => {
+  // Update a pet (admin OR owner)
+  app.put("/api/pets/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const petData = req.body;
       
+      const existing = await storage.getPet(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Pet not found" });
+      }
+
+      const isOwner = (existing as any).ownerId && (existing as any).ownerId === req.user!.id;
+      const isAdminUser = req.user!.role === "admin";
+      if (!isAdminUser && !isOwner) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
       const updatedPet = await storage.updatePet(id, petData);
       
       if (!updatedPet) {
@@ -244,10 +314,21 @@ export function registerRoutes(app: Express): Server {
     }
   });
   
-  // Delete a pet (admin only)
-  app.delete("/api/pets/:id", isAdmin, async (req, res) => {
+  // Delete a pet (admin OR owner)
+  app.delete("/api/pets/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const existing = await storage.getPet(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Pet not found" });
+      }
+
+      const isOwner = (existing as any).ownerId && (existing as any).ownerId === req.user!.id;
+      const isAdminUser = req.user!.role === "admin";
+      if (!isAdminUser && !isOwner) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
       const result = await storage.deletePet(id);
       
       if (!result) {

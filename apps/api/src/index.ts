@@ -1,11 +1,18 @@
 import "./env";
 import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
+import fs from "fs";
 import { registerRoutes } from "./routes";
 import { log } from "./logger";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Serve uploaded files (pet images, etc.)
+const uploadDir = path.resolve(process.cwd(), "uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
+app.use("/uploads", express.static(uploadDir));
 
 app.use((req, res, next) => {
   const start = Date.now();

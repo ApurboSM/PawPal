@@ -74,6 +74,8 @@ async function main() {
         email: `${username}@pawpal.dev`,
         name: username.toUpperCase(),
         role: "user",
+        phone: "+1 555 0100",
+        location: "City Center",
         favorites: [],
         adoptionHistory: [],
       })
