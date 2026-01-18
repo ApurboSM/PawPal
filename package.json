@@ -5,7 +5,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "install:all": "npm --prefix apps/api install && npm --prefix apps/web install",
+    "install:all": "npm --prefix apps/api install && npm --prefix apps/web install && node scripts/link-shared-deps.mjs",
     "dev": "concurrently -n api,web -c blue,green \"npm --prefix apps/api run dev\" \"npm --prefix apps/web run dev\"",
     "build": "npm --prefix apps/web run build && npm --prefix apps/api run build",
     "start": "npm --prefix apps/api run start",

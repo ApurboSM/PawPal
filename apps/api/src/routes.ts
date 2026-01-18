@@ -7,6 +7,8 @@ import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertA
 import { z } from "zod";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
+import { z as zod } from "zod";
+import { hasDatabaseUrl, pool } from "./db";
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: Function) => {
@@ -32,21 +34,105 @@ export function registerRoutes(app: Express): Server {
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);
 
+  // ---------- Health ----------
+  app.get("/api/health", async (_req, res) => {
+    const isDbConfigured = hasDatabaseUrl && Boolean(pool);
+    let dbOk = false;
+
+    if (isDbConfigured) {
+      try {
+        await pool!.query("select 1 as ok");
+        dbOk = true;
+      } catch {
+        dbOk = false;
+      }
+    }
+
+    res.json({
+      ok: true,
+      storage: isDbConfigured ? "database" : "memory",
+      db: {
+        configured: isDbConfigured,
+        ok: dbOk,
+      },
+    });
+  });
+
   // ---------- Pet Routes ----------
   
   // Get all pets with optional filters
   app.get("/api/pets", async (req, res) => {
     try {
-      const { species, status } = req.query;
+      const { species, status, search, age, gender, size, goodWith } = req.query;
       const filters: any = {};
-      
-      if (species) filters.species = species;
-      if (status) filters.status = status;
-      
-      const pets = await storage.getPets(Object.keys(filters).length ? filters : undefined);
+
+      if (species) filters.species = String(species);
+      if (status) filters.status = String(status);
+      if (age) filters.age = Number(age);
+      if (gender) filters.gender = String(gender);
+      if (size) filters.size = String(size);
+
+      let pets = await storage.getPets(Object.keys(filters).length ? filters : undefined);
+
+      // Extra filtering (safe for both DB + in-memory)
+      if (search) {
+        const q = String(search).toLowerCase();
+        pets = pets.filter((p) =>
+          [p.name, p.breed, p.species, p.description].some((v) =>
+            String(v ?? "").toLowerCase().includes(q),
+          ),
+        );
+      }
+
+      const goodWithList = Array.isArray(goodWith) ? goodWith : goodWith ? [goodWith] : [];
+      if (goodWithList.length) {
+        pets = pets.filter((p) =>
+          goodWithList.every((k) => {
+            const key = String(k);
+            return Boolean((p.goodWith as any)?.[key]);
+          }),
+        );
+      }
+
       res.json(pets);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch pets" });
+    }
+  });
+
+  // Favorites (authenticated users)
+  app.get("/api/pets/favorites", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user!.id);
+      const favorites = user?.favorites ?? [];
+      const pets = await storage.getPets();
+      res.json(pets.filter((p) => favorites.includes(p.id)));
+    } catch {
+      res.status(500).json({ message: "Failed to fetch favorites" });
+    }
+  });
+
+  app.post("/api/pets/:id/favorite", isAuthenticated, async (req, res) => {
+    try {
+      const petId = Number(req.params.id);
+      const user = await storage.getUser(req.user!.id);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      const body = zod.object({ favorited: zod.boolean().optional() }).safeParse(req.body);
+      const favorites = Array.isArray(user.favorites) ? [...user.favorites] : [];
+
+      const shouldFavorite = body.success ? body.data.favorited : undefined;
+      const isFav = favorites.includes(petId);
+
+      let nextFavs = favorites;
+      if (shouldFavorite === true && !isFav) nextFavs = [...favorites, petId];
+      else if (shouldFavorite === false && isFav) nextFavs = favorites.filter((id) => id !== petId);
+      else if (shouldFavorite === undefined) nextFavs = isFav ? favorites.filter((id) => id !== petId) : [...favorites, petId];
+
+      const updated = await storage.updateUser(req.user!.id, { favorites: nextFavs });
+      res.json({ favorites: updated?.favorites ?? nextFavs });
+    } catch {
+      res.status(500).json({ message: "Failed to update favorites" });
     }
   });
   
@@ -124,6 +210,16 @@ export function registerRoutes(app: Express): Server {
       res.json(resources);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch resources" });
+    }
+  });
+
+  // Featured resources (for homepage)
+  app.get("/api/resources/featured", async (_req, res) => {
+    try {
+      const resources = await storage.getResources();
+      res.json(resources.slice(0, 3));
+    } catch {
+      res.status(500).json({ message: "Failed to fetch featured resources" });
     }
   });
   
@@ -513,6 +609,21 @@ export function registerRoutes(app: Express): Server {
   });
   
   // ---------- Pet Medical Record Routes ----------
+  // ---------- Newsletter ----------
+  app.post("/api/newsletter", async (req, res) => {
+    const schema = z.object({
+      email: z.string().email(),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid email" });
+    }
+
+    // Placeholder: store in DB later (newsletter_subscriptions table).
+    // For now return success so newsletter CTA works end-to-end.
+    return res.status(200).json({ ok: true });
+  });
   
   // Get all medical records for a user's pets
   app.get("/api/pet-medical-records", isAuthenticated, async (req, res) => {
