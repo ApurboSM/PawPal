@@ -24,7 +24,7 @@ import {
   type PetMedicalRecord,
   type InsertPetMedicalRecord,
 } from "@pawpal/shared/schema";
-import { eq, count, and } from "drizzle-orm";
+import { eq, count, and, or } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -63,7 +63,9 @@ export interface IStorage {
   
   // Appointment operations
   getAppointment(id: number): Promise<Appointment | undefined>;
-  getAppointmentsByUser(userId: number): Promise<Appointment[]>;
+  // Includes appointments where the user is either the creator (userId) or participant (participantUserId)
+  getAppointmentsForUser(userId: number): Promise<Appointment[]>;
+  getAllAppointments(): Promise<Appointment[]>;
   createAppointment(appointment: InsertAppointment): Promise<Appointment>;
   updateAppointment(id: number, appointment: Partial<Appointment>): Promise<Appointment | undefined>;
   deleteAppointment(id: number): Promise<boolean>;
@@ -237,6 +239,7 @@ export class MemStorage implements IStorage {
     const pet: Pet = {
       id,
       createdAt,
+      ownerId: petData.ownerId ?? null,
       ...petData,
       status: petData.status ?? "available",
       goodWith: petData.goodWith ?? {},
@@ -293,10 +296,14 @@ export class MemStorage implements IStorage {
     return this.appointments.get(id);
   }
   
-  async getAppointmentsByUser(userId: number): Promise<Appointment[]> {
-    return Array.from(this.appointments.values()).filter(
-      (appointment) => appointment.userId === userId,
-    );
+  async getAppointmentsForUser(userId: number): Promise<Appointment[]> {
+    return Array.from(this.appointments.values()).filter((appointment) => {
+      return appointment.userId === userId || appointment.participantUserId === userId;
+    });
+  }
+
+  async getAllAppointments(): Promise<Appointment[]> {
+    return Array.from(this.appointments.values());
   }
   
   async createAppointment(appointmentData: InsertAppointment): Promise<Appointment> {
@@ -307,6 +314,7 @@ export class MemStorage implements IStorage {
       createdAt,
       status: "scheduled",
       petId: appointmentData.petId ?? null,
+      participantUserId: appointmentData.participantUserId ?? null,
       notes: appointmentData.notes ?? null,
       ...appointmentData,
     };
@@ -740,8 +748,15 @@ export class DatabaseStorage implements IStorage {
     return appointment || undefined;
   }
   
-  async getAppointmentsByUser(userId: number): Promise<Appointment[]> {
-    return db.select().from(appointments).where(eq(appointments.userId, userId));
+  async getAppointmentsForUser(userId: number): Promise<Appointment[]> {
+    return db
+      .select()
+      .from(appointments)
+      .where(or(eq(appointments.userId, userId), eq(appointments.participantUserId, userId)));
+  }
+
+  async getAllAppointments(): Promise<Appointment[]> {
+    return db.select().from(appointments);
   }
   
   async createAppointment(appointmentData: InsertAppointment): Promise<Appointment> {

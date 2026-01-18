@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import type { Pet } from "@pawpal/shared/schema";
+import type { Pet, PetMedicalRecord } from "@pawpal/shared/schema";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
@@ -50,6 +50,11 @@ export default function PetDetailPage() {
     isError 
   } = useQuery<Pet>({
     queryKey: [`/api/pets/${id}`],
+    enabled: !!id,
+  });
+
+  const { data: medicalRecords } = useQuery<PetMedicalRecord[]>({
+    queryKey: [`/api/pets/${id}/medical-records`],
     enabled: !!id,
   });
   
@@ -269,6 +274,36 @@ export default function PetDetailPage() {
                       <h3 className="font-semibold mb-2">Health Details</h3>
                       <p className="text-neutral-700">{pet.healthDetails}</p>
                     </div>
+                  </div>
+
+                  <Separator className="my-6" />
+
+                  <div>
+                    <h3 className="font-semibold mb-2">Medical History</h3>
+                    {medicalRecords && medicalRecords.length > 0 ? (
+                      <div className="space-y-3">
+                        {medicalRecords.map((r) => (
+                          <div key={r.id} className="rounded-lg border bg-white p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="font-medium capitalize">{r.recordType.replaceAll("_", " ")}</div>
+                              <div className="text-sm text-neutral-500">
+                                {new Date(r.recordDate).toLocaleDateString()}
+                              </div>
+                            </div>
+                            <div className="text-sm text-neutral-700 mt-1">{r.description}</div>
+                            {(r.vetName || r.notes) && (
+                              <div className="text-xs text-neutral-500 mt-1">
+                                {r.vetName ? `Vet: ${r.vetName}` : null}
+                                {r.vetName && r.notes ? " · " : null}
+                                {r.notes ? `Notes: ${r.notes}` : null}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-neutral-600">No medical records available.</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -62,6 +62,8 @@ export const petStatusEnum = pgEnum("pet_status", [
 // Pets related schema
 export const pets = pgTable("pets", {
   id: serial("id").primaryKey(),
+  // Owner of the pet listing (seller/owner). Null for admin/seed listings.
+  ownerId: integer("owner_id"),
   name: text("name").notNull(),
   species: text("species").notNull(), // dog, cat, rabbit, bird, guinea_pig, fish, parrot, hamster, other
   breed: text("breed").notNull(),
@@ -83,6 +85,7 @@ export const pets = pgTable("pets", {
 export const insertPetSchema = createInsertSchema(pets, {
   goodWith: goodWithSchema,
 }).pick({
+  ownerId: true,
   name: true,
   species: true,
   breed: true,
@@ -151,6 +154,7 @@ export const appointmentTypes = pgEnum("appointment_types", [
 export const appointments = pgTable("appointments", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
+  participantUserId: integer("participant_user_id"),
   petId: integer("pet_id"),
   type: text("type").notNull(), // meet_and_greet, veterinary_care, grooming
   date: timestamp("date").notNull(),
@@ -161,6 +165,7 @@ export const appointments = pgTable("appointments", {
 
 export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   userId: true,
+  participantUserId: true,
   petId: true,
   type: true,
   date: true,
