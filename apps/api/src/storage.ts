@@ -686,10 +686,13 @@ export class DatabaseStorage implements IStorage {
     }
 
     const conditions = [];
+    if (filters.ownerId !== undefined) conditions.push(eq(pets.ownerId, filters.ownerId as any));
     if (filters.species) conditions.push(eq(pets.species, filters.species));
     if (filters.age !== undefined) conditions.push(eq(pets.age, filters.age));
     if (filters.gender) conditions.push(eq(pets.gender, filters.gender));
     if (filters.size) conditions.push(eq(pets.size, filters.size));
+    if (filters.status) conditions.push(eq(pets.status, filters.status));
+    if (filters.location) conditions.push(eq(pets.location, filters.location));
     // Note: filtering by goodWith would require more complex query with JSON operators
 
     return conditions.length ? db.select().from(pets).where(and(...conditions)) : db.select().from(pets);

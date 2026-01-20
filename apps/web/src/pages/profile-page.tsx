@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -56,6 +56,11 @@ export default function ProfilePage() {
   const [editPet, setEditPet] = useState<EditPetDraft | null>(null);
   const [editPetImageFile, setEditPetImageFile] = useState<File | null>(null);
   const [editPetImagePreview, setEditPetImagePreview] = useState<string>("");
+  const [profileDraft, setProfileDraft] = useState<{ name: string; phone: string; location: string }>({
+    name: "",
+    phone: "",
+    location: "",
+  });
 
   const { data: myPets = [] } = useQuery<Pet[]>({
     queryKey: ["/api/me/pets"],
@@ -106,6 +111,15 @@ export default function ProfilePage() {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
     },
   });
+
+  useEffect(() => {
+    if (!user) return;
+    setProfileDraft({
+      name: user.name ?? "",
+      phone: ((user as any).phone ?? "") as string,
+      location: ((user as any).location ?? "") as string,
+    });
+  }, [user?.id]);
 
   const deletePetMutation = useMutation({
     mutationFn: async (petId: number) => {
@@ -241,12 +255,20 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="rounded-lg border bg-white p-4">
+                      <div className="text-sm text-neutral-500">Name</div>
+                      <div className="font-medium">{user.name}</div>
+                    </div>
+                    <div className="rounded-lg border bg-white p-4">
                       <div className="text-sm text-neutral-500">Email</div>
                       <div className="font-medium">{user.email}</div>
                     </div>
                     <div className="rounded-lg border bg-white p-4">
                       <div className="text-sm text-neutral-500">Username</div>
                       <div className="font-medium">{user.username}</div>
+                    </div>
+                    <div className="rounded-lg border bg-white p-4">
+                      <div className="text-sm text-neutral-500">Member since</div>
+                      <div className="font-medium">{(user as any).createdAt ? format(new Date((user as any).createdAt), "PPP") : "—"}</div>
                     </div>
                     <div className="rounded-lg border bg-white p-4 flex items-start gap-3">
                       <Phone className="h-5 w-5 text-neutral-600 mt-0.5" />
@@ -263,6 +285,45 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="rounded-lg border bg-white p-4">
+                    <div className="text-sm font-medium mb-3">Edit Profile</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm font-medium mb-1">Name</div>
+                        <Input
+                          value={profileDraft.name}
+                          onChange={(e) => setProfileDraft((p) => ({ ...p, name: e.target.value }))}
+                          placeholder="Your name"
+                        />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium mb-1">Phone</div>
+                        <Input
+                          value={profileDraft.phone}
+                          onChange={(e) => setProfileDraft((p) => ({ ...p, phone: e.target.value }))}
+                          placeholder="+1 555..."
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <div className="text-sm font-medium mb-1">Location</div>
+                        <Input
+                          value={profileDraft.location}
+                          onChange={(e) => setProfileDraft((p) => ({ ...p, location: e.target.value }))}
+                          placeholder="City, Country"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                      <Button
+                        className="bg-[#4A6FA5] hover:bg-[#3A5A87]"
+                        disabled={updateProfileMutation.isPending}
+                        onClick={() => updateProfileMutation.mutate(profileDraft)}
+                      >
+                        Save Profile
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -277,34 +338,18 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-4 max-w-xl">
                   <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <div className="text-sm font-medium mb-1">Name</div>
-                      <Input
-                        defaultValue={user.name}
-                        onChange={(e) => setTimeout(() => void 0, 0)}
-                        id="settings-name"
-                      />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium mb-1">Phone</div>
-                      <Input defaultValue={(user as any).phone ?? ""} id="settings-phone" placeholder="+1 555..." />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium mb-1">Location</div>
-                      <Input defaultValue={(user as any).location ?? ""} id="settings-location" placeholder="City, Country" />
-                    </div>
                     <Button
                       className="bg-[#4A6FA5] hover:bg-[#3A5A87]"
                       disabled={updateProfileMutation.isPending}
                       onClick={() => {
-                        const name = (document.getElementById("settings-name") as HTMLInputElement | null)?.value ?? user.name;
-                        const phone = (document.getElementById("settings-phone") as HTMLInputElement | null)?.value ?? "";
-                        const location = (document.getElementById("settings-location") as HTMLInputElement | null)?.value ?? "";
-                        updateProfileMutation.mutate({ name, phone, location });
+                        updateProfileMutation.mutate(profileDraft);
                       }}
                     >
                       Save Settings
                     </Button>
+                    <div className="text-sm text-neutral-600">
+                      Use the <span className="font-medium">My Profile</span> tab to edit your profile details.
+                    </div>
                   </div>
                 </CardContent>
               </Card>
