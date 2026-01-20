@@ -27,13 +27,13 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/pets" component={PetsPage} />
+      <ProtectedRoute path="/pets/register" component={PetRegisterPage} />
       <Route path="/pets/:id" component={PetDetailPage} />
       <Route path="/resources" component={ResourcesPage} />
       <Route path="/resources/:id" component={ResourceDetailPage} />
       <Route path="/emergency" component={EmergencyPage} />
       <ProtectedRoute path="/appointments" component={AppointmentPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
-      <ProtectedRoute path="/pets/register" component={PetRegisterPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
       <Route path="/contact" component={ContactPage} />
       {/* Fallback to 404 */}

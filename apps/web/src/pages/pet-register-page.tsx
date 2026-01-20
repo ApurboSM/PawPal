@@ -47,6 +47,7 @@ const petListingSchema = z.object({
   age: z.coerce.number().int().min(0, "Age (months) must be 0 or greater"),
   gender: z.string().min(1, "Gender is required"),
   size: z.string().min(1, "Size is required"),
+  status: z.enum(["available", "pending", "fostered", "adopted"]).default("available"),
   description: z.string().min(1, "Description is required"),
   imageUrl: z.string().url("Image URL must be a valid URL").optional().or(z.literal("")),
   location: z.string().min(1, "Location is required"),
@@ -76,6 +77,7 @@ export default function PetRegisterPage() {
       age: 0,
       gender: "",
       size: "",
+      status: "available",
       description: "",
       imageUrl: "",
       location: "",
@@ -277,6 +279,30 @@ export default function PetRegisterPage() {
                               <SelectItem value="small">Small</SelectItem>
                               <SelectItem value="medium">Medium</SelectItem>
                               <SelectItem value="large">Large</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Listing Status</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="available">Available</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="fostered">Fostered</SelectItem>
+                              <SelectItem value="adopted">Adopted</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
