@@ -180,9 +180,10 @@ export function registerRoutes(app: Express): Server {
   // Get current user's pet listings
   app.get("/api/me/pets", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = Number(req.user!.id);
       const pets = await storage.getPets({ ownerId: userId } as any);
-      res.json(pets);
+      // Defensive filter in case storage filtering differs across backends or id types
+      res.json((pets ?? []).filter((p: any) => Number(p.ownerId) === userId));
     } catch {
       res.status(500).json({ message: "Failed to fetch your pets" });
     }

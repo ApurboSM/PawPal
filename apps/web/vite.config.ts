@@ -27,7 +27,7 @@ export default defineConfig({
   },
   root: path.resolve(import.meta.dirname),
   server: {
-    port: 5173,
+    port: 5175,
     strictPort: true,
     proxy: {
       "/api": {
