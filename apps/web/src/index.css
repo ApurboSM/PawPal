@@ -46,7 +46,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 235, 245, 0.8);
+  background-color: rgba(255, 235, 245, 0.92);
+  backdrop-filter: blur(2px);
   z-index: 9999;
 }
 
@@ -57,16 +58,17 @@
 }
 
 .loading-indicator .paw-icon {
-  font-size: 64px;
+  font-size: 76px;
   color: #FF6B98;
   animation: loadingPaws 1.2s infinite ease-in-out;
 }
 
 .loading-indicator .loading-text {
   margin-top: 16px;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   color: #FF6B98;
+  letter-spacing: 0.3px;
 }
 
 :root {

@@ -66,6 +66,6 @@ export function RouteLoadingOverlay() {
   }, [active, isFetching, isMutating]);
 
   if (!active) return null;
-  return <PawLoadingOverlay text="Loading PawPal..." />;
+  return <PawLoadingOverlay text="PawPal" />;
 }
 
