@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
 import {
   AlertTriangle,
   HeartPulse,
@@ -503,6 +505,8 @@ export default function EmergencyPage() {
           content="Emergency pet care guidance, first aid instructions, and veterinary contact information for your pet's urgent health needs."
         />
       </Helmet>
+
+      <Navbar />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-red-50 to-orange-50 relative overflow-hidden">
@@ -1561,6 +1565,8 @@ export default function EmergencyPage() {
           </button>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
