@@ -579,16 +579,19 @@ export default function EmergencyPage() {
         </div>
 
         {/* Emergency Guidelines Banner */}
-        <div className="bg-red-600 text-white py-4">
+        <div className="bg-gradient-to-r from-red-700 to-red-600 text-white py-4">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <p className="font-medium mb-2 md:mb-0">
-                <AlertTriangle className="inline-block mr-2 h-5 w-5" />
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <p className="font-semibold text-white/95">
+                <AlertTriangle className="inline-block mr-2 h-5 w-5 text-white" />
                 Always call a veterinarian immediately for serious emergencies
               </p>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="text-white border-white hover:bg-red-700 hover:text-white">
+                  <Button
+                    variant="outline"
+                    className="w-full md:w-auto bg-transparent text-white border-white/80 hover:bg-white/10 hover:text-white"
+                  >
                     What counts as an emergency?
                   </Button>
                 </DialogTrigger>
@@ -667,17 +670,17 @@ export default function EmergencyPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="first-aid" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="first-aid" className="text-base py-3">
-              <HeartPulse className="h-5 w-5 mr-2" />
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-8 gap-2 sm:gap-0">
+            <TabsTrigger value="first-aid" className="text-sm sm:text-base py-3 flex items-center justify-center">
+              <HeartPulse className="h-5 w-5 mr-2 hidden sm:inline-block" />
               First Aid Instructions
             </TabsTrigger>
-            <TabsTrigger value="emergency-contacts" className="text-base py-3">
-              <Phone className="h-5 w-5 mr-2" />
+            <TabsTrigger value="emergency-contacts" className="text-sm sm:text-base py-3 flex items-center justify-center">
+              <Phone className="h-5 w-5 mr-2 hidden sm:inline-block" />
               Emergency Contacts
             </TabsTrigger>
-            <TabsTrigger value="my-emergency-info" className="text-base py-3">
-              <PawPrint className="h-5 w-5 mr-2" />
+            <TabsTrigger value="my-emergency-info" className="text-sm sm:text-base py-3 flex items-center justify-center">
+              <PawPrint className="h-5 w-5 mr-2 hidden sm:inline-block" />
               My Emergency Info
             </TabsTrigger>
           </TabsList>
