@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/use-auth";
 import { ChatWidget } from "@/components/ui/chat-widget";
 import { HelmetProvider } from "react-helmet-async";
+import { RouteLoadingOverlay } from "@/components/layout/route-loading-overlay";
 
 // Pages
 import HomePage from "@/pages/home-page";
@@ -48,6 +49,7 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="light">
         <AuthProvider>
           <TooltipProvider>
+            <RouteLoadingOverlay />
             <Router />
             <ChatWidget />
           </TooltipProvider>

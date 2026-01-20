@@ -12,18 +12,7 @@ import { useAuth, loginSchema, registerSchema, type RegisterData } from "@/hooks
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { Loader2, PawPrint } from "lucide-react";
-
-// Loading animation component
-export function KittenLoadingAnimation() {
-  return (
-    <div className="loading-indicator">
-      <div className="paw-container">
-        <PawPrint className="paw-icon" />
-        <div className="loading-text">Loading PawPal...</div>
-      </div>
-    </div>
-  );
-}
+import { PawLoadingOverlay } from "@/components/ui/paw-loading-overlay";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -91,7 +80,7 @@ export default function AuthPage() {
       </Helmet>
       
       {/* Show loading animation */}
-      {isLoading && <KittenLoadingAnimation />}
+      {isLoading && <PawLoadingOverlay />}
       
       <Navbar />
       
