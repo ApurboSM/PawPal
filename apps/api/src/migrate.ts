@@ -14,6 +14,12 @@ async function migrate() {
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS adoption_history JSONB DEFAULT '[]';`);
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';`);
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();`);
+
+    // Pets: listing type (adopt/sell)
+    await db.execute(sql`ALTER TABLE pets ADD COLUMN IF NOT EXISTS listing_type TEXT;`);
+    await db.execute(sql`UPDATE pets SET listing_type = 'adopt' WHERE listing_type IS NULL;`);
+    await db.execute(sql`ALTER TABLE pets ALTER COLUMN listing_type SET DEFAULT 'adopt';`);
+    await db.execute(sql`ALTER TABLE pets ALTER COLUMN listing_type SET NOT NULL;`);
     
     console.log('Migration completed successfully');
     process.exit(0);

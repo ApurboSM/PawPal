@@ -23,6 +23,7 @@ const PetCard = ({ pet }: PetCardProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isFavorited, setIsFavorited] = useState(Boolean(pet.isFavorited));
+  const listingType = (pet as any).listingType as string | undefined;
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
@@ -69,6 +70,15 @@ const PetCard = ({ pet }: PetCardProps) => {
           alt={`${pet.name} - ${pet.breed}`}
           className="w-full h-48 object-cover"
         />
+        {listingType && (
+          <Badge
+            className={`absolute top-3 left-3 px-2 py-1 text-white text-xs font-bold ${
+              listingType === "sell" ? "bg-[#4A6FA5]" : "bg-[#FF6B98]"
+            }`}
+          >
+            {listingType === "sell" ? "Sell" : "Adopt"}
+          </Badge>
+        )}
         <Badge className="absolute top-3 right-3 px-2 py-1 bg-accent text-white text-xs font-bold">
           {pet.status}
         </Badge>
