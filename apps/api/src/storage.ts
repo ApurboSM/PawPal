@@ -237,11 +237,13 @@ export class MemStorage implements IStorage {
   async createPet(petData: InsertPet): Promise<Pet> {
     const id = this.petIdCounter++;
     const createdAt = new Date();
+    const { listingType, ...rest } = petData as any;
     const pet: Pet = {
       id,
       createdAt,
       ownerId: petData.ownerId ?? null,
-      ...petData,
+      ...rest,
+      listingType: listingType ?? "adopt",
       status: petData.status ?? "available",
       goodWith: petData.goodWith ?? {},
     };
