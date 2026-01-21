@@ -1,5 +1,14 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+export function invalidatePetsQueries(qc: QueryClient) {
+  qc.invalidateQueries({
+    predicate: (q) => {
+      const key0 = q.queryKey[0];
+      return typeof key0 === "string" && key0.startsWith("/api/pets");
+    },
+  });
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;

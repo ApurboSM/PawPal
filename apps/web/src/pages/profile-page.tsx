@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, invalidatePetsQueries, queryClient } from "@/lib/queryClient";
 import {
   Table,
   TableBody,
@@ -128,7 +128,7 @@ export default function ProfilePage() {
     onSuccess: () => {
       toast({ title: "Pet deleted", description: "Your listing has been removed." });
       queryClient.invalidateQueries({ queryKey: ["/api/me/pets"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/pets"] });
+      invalidatePetsQueries(queryClient);
     },
     onError: (error: Error) => {
       toast({ title: "Delete failed", description: error.message, variant: "destructive" });
@@ -166,7 +166,7 @@ export default function ProfilePage() {
       setEditPetImageFile(null);
       setEditPetImagePreview("");
       queryClient.invalidateQueries({ queryKey: ["/api/me/pets"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/pets"] });
+      invalidatePetsQueries(queryClient);
     },
     onError: (error: Error) => {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
