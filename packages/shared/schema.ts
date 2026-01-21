@@ -61,6 +61,8 @@ export const petStatusEnum = pgEnum("pet_status", [
   "fostered",
 ]);
 
+export const petListingTypeEnum = pgEnum("pet_listing_type", ["adopt", "sell"]);
+
 // Pets related schema
 export const pets = pgTable("pets", {
   id: serial("id").primaryKey(),
@@ -72,6 +74,7 @@ export const pets = pgTable("pets", {
   age: integer("age").notNull(), // age in months
   gender: text("gender").notNull(), // male, female
   size: text("size").notNull(), // small, medium, large
+  listingType: text("listing_type").notNull().default("adopt"), // adopt, sell
   description: text("description").notNull(),
   imageUrl: text("image_url").notNull(),
   status: text("status").notNull().default("available"), // available, adopted, pending, fostered
@@ -94,6 +97,7 @@ export const insertPetSchema = createInsertSchema(pets, {
   age: true,
   gender: true,
   size: true,
+  listingType: true,
   description: true,
   imageUrl: true,
   status: true,

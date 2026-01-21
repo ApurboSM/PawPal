@@ -27,9 +27,10 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, invalidatePetsQueries, queryClient } from "@/lib/queryClient";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const medicalRecordSchema = z.object({
   recordType: z.string().min(1, "Record type is required"),
@@ -47,6 +48,7 @@ const petListingSchema = z.object({
   age: z.coerce.number().int().min(0, "Age (months) must be 0 or greater"),
   gender: z.string().min(1, "Gender is required"),
   size: z.string().min(1, "Size is required"),
+  listingType: z.enum(["adopt", "sell"]).default("adopt"),
   status: z.enum(["available", "pending", "fostered", "adopted"]).default("available"),
   description: z.string().min(1, "Description is required"),
   imageUrl: z.string().url("Image URL must be a valid URL").optional().or(z.literal("")),
@@ -77,6 +79,7 @@ export default function PetRegisterPage() {
       age: 0,
       gender: "",
       size: "",
+      listingType: "adopt",
       status: "available",
       description: "",
       imageUrl: "",
@@ -133,6 +136,7 @@ export default function PetRegisterPage() {
         description: "Your pet listing is now live.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/me/pets"] });
+      invalidatePetsQueries(queryClient);
       setLocation(`/profile`);
     },
     onError: (error: Error) => {
@@ -170,6 +174,32 @@ export default function PetRegisterPage() {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="listingType"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Adopt / Sell</FormLabel>
+                          <FormControl>
+                            <ToggleGroup
+                              type="single"
+                              value={field.value}
+                              onValueChange={(v) => v && field.onChange(v)}
+                              className="justify-start"
+                            >
+                              <ToggleGroupItem value="adopt" aria-label="List for adoption">
+                                Adopt
+                              </ToggleGroupItem>
+                              <ToggleGroupItem value="sell" aria-label="List for sale">
+                                Sell
+                              </ToggleGroupItem>
+                            </ToggleGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name="name"
