@@ -179,7 +179,7 @@ export default function PetRegisterPage() {
                       name="listingType"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel>Adopt / Sell</FormLabel>
+                          <FormLabel className="sr-only">Adopt / Sell</FormLabel>
                           <FormControl>
                             <ToggleGroup
                               type="single"
