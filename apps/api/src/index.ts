@@ -2,42 +2,17 @@ import "./env";
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
 import fs from "fs";
-import compression from "compression";
 import { registerRoutes } from "./routes";
 import { log } from "./logger";
 
 const app = express();
-app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Serve uploaded files (pet images, etc.)
 const uploadDir = path.resolve(process.cwd(), "uploads");
 fs.mkdirSync(uploadDir, { recursive: true });
-app.use(
-  "/uploads",
-  express.static(uploadDir, {
-    // Files are written with unique names, so it's safe to cache aggressively.
-    maxAge: "30d",
-    immutable: true,
-    etag: true,
-  }),
-);
-
-function summarizeForLog(body: unknown) {
-  if (body == null) return body;
-  if (Array.isArray(body)) return { type: "array", length: body.length };
-  if (typeof body === "object") {
-    const obj = body as Record<string, unknown>;
-    const keys = Object.keys(obj);
-    return {
-      type: "object",
-      keys: keys.slice(0, 10),
-      ...(typeof obj.message === "string" ? { message: obj.message } : {}),
-    };
-  }
-  return body;
-}
+app.use("/uploads", express.static(uploadDir));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -55,8 +30,7 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        // Avoid expensive JSON.stringify on large payloads (e.g. pets lists).
-        logLine += ` :: ${JSON.stringify(summarizeForLog(capturedJsonResponse))}`;
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
       if (logLine.length > 80) {
