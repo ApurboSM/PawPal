@@ -69,8 +69,6 @@ const PetCard = ({ pet }: PetCardProps) => {
           src={pet.imageUrl}
           alt={`${pet.name} - ${pet.breed}`}
           className="w-full h-48 object-cover"
-          loading="lazy"
-          decoding="async"
         />
         {listingType && (
           <Badge
