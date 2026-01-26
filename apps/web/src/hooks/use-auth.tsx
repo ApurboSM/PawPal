@@ -55,8 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery<UserWithoutPassword | undefined, Error>({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
-    staleTime: 5 * 60_000,
-    gcTime: 30 * 60_000,
   });
 
   const loginMutation = useMutation({
