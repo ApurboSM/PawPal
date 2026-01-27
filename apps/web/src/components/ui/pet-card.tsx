@@ -93,6 +93,8 @@ export function PetCard({ pet }: PetCardProps) {
           alt={`${pet.name} - ${pet.breed}`} 
           className="w-full h-52 object-cover transition-all duration-500 group-hover:scale-110"
           onError={handleImageError}
+          loading="lazy"
+          decoding="async"
         />
         {/* Image overlay gradient on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>

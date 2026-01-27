@@ -1,14 +1,37 @@
+import { Suspense, lazy } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { HeroBanner } from "@/components/sections/hero-banner";
-import { FeaturedPets } from "@/components/sections/featured-pets";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { PetCategories } from "@/components/sections/pet-categories";
-import { ResourcesSection } from "@/components/sections/resources-section";
-import { AppointmentSection } from "@/components/sections/appointment-section";
-import { Testimonials } from "@/components/sections/testimonials";
-import { Newsletter } from "@/components/sections/newsletter";
+import { LazyMount } from "@/components/layout/lazy-mount";
 import { Helmet } from "react-helmet";
+
+const FeaturedPets = lazy(() =>
+  import("@/components/sections/featured-pets").then((m) => ({
+    default: m.FeaturedPets,
+  })),
+);
+const ResourcesSection = lazy(() =>
+  import("@/components/sections/resources-section").then((m) => ({
+    default: m.ResourcesSection,
+  })),
+);
+const AppointmentSection = lazy(() =>
+  import("@/components/sections/appointment-section").then((m) => ({
+    default: m.AppointmentSection,
+  })),
+);
+const Testimonials = lazy(() =>
+  import("@/components/sections/testimonials").then((m) => ({
+    default: m.Testimonials,
+  })),
+);
+const Newsletter = lazy(() =>
+  import("@/components/sections/newsletter").then((m) => ({
+    default: m.Newsletter,
+  })),
+);
 
 export default function HomePage() {
   return (
@@ -24,22 +47,47 @@ export default function HomePage() {
         <HeroBanner 
           title="Find Your Perfect Companion"
           subtitle="Adopt, care, and connect with pets looking for their forever homes."
-          backgroundImage="https://images.unsplash.com/photo-1560743641-3914f2c45636?ixlib=rb-4.0.3"
+          // External hero images are a common LCP bottleneck; keep the hero fast and clean.
+          backgroundImage={undefined}
         />
-        
-        <FeaturedPets />
-        
+
+        {/* Defer heavier sections until they are near the viewport */}
+        <LazyMount
+          rootMargin="900px"
+          placeholder={<div className="py-16 bg-background" />}
+        >
+          <Suspense fallback={<div className="py-16 bg-background" />}>
+            <FeaturedPets />
+          </Suspense>
+        </LazyMount>
+
         <HowItWorks />
         
         <PetCategories />
-        
-        <ResourcesSection />
-        
-        <AppointmentSection />
-        
-        <Testimonials />
-        
-        <Newsletter />
+
+        <LazyMount placeholder={<div className="py-16 bg-neutral-100" />}>
+          <Suspense fallback={<div className="py-16 bg-neutral-100" />}>
+            <ResourcesSection />
+          </Suspense>
+        </LazyMount>
+
+        <LazyMount placeholder={<div className="py-16 bg-white" />}>
+          <Suspense fallback={<div className="py-16 bg-white" />}>
+            <AppointmentSection />
+          </Suspense>
+        </LazyMount>
+
+        <LazyMount placeholder={<div className="py-16 bg-neutral-100" />}>
+          <Suspense fallback={<div className="py-16 bg-neutral-100" />}>
+            <Testimonials />
+          </Suspense>
+        </LazyMount>
+
+        <LazyMount placeholder={<div className="py-16 bg-background" />}>
+          <Suspense fallback={<div className="py-16 bg-background" />}>
+            <Newsletter />
+          </Suspense>
+        </LazyMount>
       </main>
       
       <Footer />
