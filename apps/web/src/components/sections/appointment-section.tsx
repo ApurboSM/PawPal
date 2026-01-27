@@ -63,6 +63,8 @@ export function AppointmentSection() {
               src="https://images.unsplash.com/photo-1583336663277-620dc1996580" 
               alt="Veterinarian examining a pet" 
               className="rounded-xl shadow-lg w-full h-auto"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>

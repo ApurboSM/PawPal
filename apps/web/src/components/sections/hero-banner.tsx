@@ -5,7 +5,7 @@ import { Heart, PawPrint } from "lucide-react";
 interface HeroBannerProps {
   title: string;
   subtitle: string;
-  backgroundImage: string;
+  backgroundImage?: string;
 }
 
 export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps) {
@@ -13,10 +13,14 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
     <section 
       className="relative bg-primary/10 text-white hero-hover-effect transition-all-ease"
       style={{ 
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundBlendMode: 'soft-light'
+        ...(backgroundImage
+          ? {
+              backgroundImage: `url(${backgroundImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundBlendMode: "soft-light",
+            }
+          : {}),
       }}
     >
       {/* Color overlay with gradient */}
