@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route } from "wouter";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProtectedRoute } from "./lib/protected-route";
@@ -63,6 +63,24 @@ function Router() {
 }
 
 function App() {
+  const [mountChat, setMountChat] = useState(false);
+
+  // Defer chat widget loading until the browser is idle to keep first paint fast.
+  useEffect(() => {
+    let cancelled = false;
+    const w = window as any;
+    const idleCb =
+      typeof w.requestIdleCallback === "function"
+        ? w.requestIdleCallback(() => !cancelled && setMountChat(true))
+        : setTimeout(() => !cancelled && setMountChat(true), 1500);
+
+    return () => {
+      cancelled = true;
+      if (typeof w.cancelIdleCallback === "function") w.cancelIdleCallback(idleCb);
+      else clearTimeout(idleCb);
+    };
+  }, []);
+
   return (
     <HelmetProvider>
       <ThemeProvider attribute="class" defaultTheme="light">
@@ -72,9 +90,11 @@ function App() {
             <Suspense fallback={<PawLoadingOverlay text="PawPal" />}>
               <Router />
             </Suspense>
-            <Suspense fallback={null}>
-              <ChatWidget />
-            </Suspense>
+            {mountChat && (
+              <Suspense fallback={null}>
+                <ChatWidget />
+              </Suspense>
+            )}
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
