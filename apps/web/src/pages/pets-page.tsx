@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
 import type { Pet } from "@pawpal/shared/schema";
@@ -66,11 +66,10 @@ export default function PetsPage() {
     queryKey: ["/api/pets?status=available"],
   });
   
-  // Apply filters function
-  const getFilteredPets = () => {
+  const filteredPets = useMemo(() => {
     if (!pets) return [];
-    
-    return pets.filter(pet => {
+
+    return pets.filter((pet) => {
       // Search term filter (name or breed)
       if (
         searchTerm && 
@@ -112,9 +111,7 @@ export default function PetsPage() {
       
       return true;
     });
-  };
-  
-  const filteredPets = getFilteredPets();
+  }, [pets, searchTerm, species, ageRange, gender, size, goodWith]);
   
   const resetFilters = () => {
     setSearchTerm("");
