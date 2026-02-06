@@ -173,7 +173,11 @@ export function registerRoutes(app: Express): Server {
 
       res.json(pets);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch pets" });
+      console.error("Failed to fetch pets", error);
+      res.status(500).json({
+        message: "Failed to fetch pets",
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   });
 
