@@ -31,7 +31,7 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
         className="absolute inset-y-0 right-0 hidden md:block w-1/2 bg-center bg-cover opacity-50 pointer-events-none"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=1200&q=80')",
+            "url('/asset/pet.png')",
         }}
       ></div>
       
