@@ -25,6 +25,15 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
     >
       {/* Color overlay with gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary/70 to-secondary/70 opacity-60 transition-all-ease"></div>
+
+      {/* Right-side pets image overlay */}
+      <div
+        className="absolute inset-y-0 right-0 hidden md:block w-1/2 bg-center bg-cover opacity-50 pointer-events-none"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=1200&q=80')",
+        }}
+      ></div>
       
       {/* Main content */}
       <div className="container mx-auto px-4 py-24 md:py-36 relative z-10">
