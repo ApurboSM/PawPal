@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { EmergencySectionSkeleton } from "@/components/skeletons/page-skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -1200,10 +1201,7 @@ export default function EmergencyPage() {
                     </h3>
                     
                     {isLoadingContacts ? (
-                      <div className="text-center py-12">
-                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-400 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                        <p className="mt-2 text-muted-foreground">Loading your emergency contacts...</p>
-                      </div>
+                      <EmergencySectionSkeleton />
                     ) : isErrorContacts ? (
                       <div className="text-center py-12 bg-muted/20 rounded-xl">
                         <AlertTriangle className="h-12 w-12 mx-auto text-red-400 mb-3" />
@@ -1302,10 +1300,7 @@ export default function EmergencyPage() {
                     </h3>
                     
                     {isLoadingRecords ? (
-                      <div className="text-center py-12">
-                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-400 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                        <p className="mt-2 text-muted-foreground">Loading your pet's medical records...</p>
-                      </div>
+                      <EmergencySectionSkeleton />
                     ) : isErrorRecords ? (
                       <div className="text-center py-12 bg-muted/20 rounded-xl">
                         <AlertTriangle className="h-12 w-12 mx-auto text-red-400 mb-3" />
