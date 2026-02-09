@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Redirect } from "wouter";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,19 +16,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AuthSkeleton } from "@/components/skeletons/page-skeletons";
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, loginMutation, registerMutation, isLoading: isAuthLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("login");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showPawAnimation, setShowPawAnimation] = useState<{ login: boolean; register: boolean }>({ login: false, register: false });
-  
-  // Loading animation at startup
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    
-    return () => clearTimeout(timer);
-  }, []);
   
   // Login form
   const loginForm = useForm({
@@ -73,7 +63,7 @@ export default function AuthPage() {
     return <Redirect to="/" />;
   }
 
-  if (isLoading) {
+  if (isAuthLoading) {
     return (
       <>
         <Helmet>
@@ -99,7 +89,12 @@ export default function AuthPage() {
       
       <Navbar />
       
-      <div className="min-h-screen bg-neutral-100 py-12">
+      {isAuthLoading ? (
+        <main className="min-h-screen bg-neutral-100">
+          <AuthSkeleton />
+        </main>
+      ) : (
+        <div className="min-h-screen bg-neutral-100 py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-8 items-stretch max-w-6xl mx-auto">
             {/* Auth Card */}
@@ -345,6 +340,7 @@ export default function AuthPage() {
           </div>
         </div>
       </div>
+      )}
       
       <Footer />
     </>
