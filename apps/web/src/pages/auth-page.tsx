@@ -269,7 +269,7 @@ export default function AuthPage() {
                             disabled={registerMutation.isPending}
                           >
                             {registerMutation.isPending ? (
-                              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...</>
+                              <Skeleton className="h-4 w-28" />
                             ) : (
                               <><PawPrint className="mr-2 h-4 w-4" /> Sign Up</>
                             )}

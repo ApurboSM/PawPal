@@ -70,7 +70,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
-  Loader2,
   Plus,
   Pencil,
   Trash2,
@@ -82,6 +81,8 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ListRowsSkeleton } from "@/components/skeletons/page-skeletons";
 
 // Pet form schema
 const petFormSchema = z.object({
@@ -572,9 +573,7 @@ export default function AdminPage() {
                   </div>
                   
                   {isPetsLoading ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-[#4A6FA5]" />
-                    </div>
+                    <ListRowsSkeleton rows={4} />
                   ) : filteredPets && filteredPets.length > 0 ? (
                     <div className="overflow-auto">
                       <Table>
@@ -955,7 +954,7 @@ export default function AdminPage() {
                           disabled={createPetMutation.isPending}
                         >
                           {createPetMutation.isPending ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...</>
+                            <Skeleton className="h-4 w-20" />
                           ) : (
                             'Add Pet'
                           )}
@@ -1269,7 +1268,7 @@ export default function AdminPage() {
                           disabled={updatePetMutation.isPending}
                         >
                           {updatePetMutation.isPending ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...</>
+                            <Skeleton className="h-4 w-24" />
                           ) : (
                             'Update Pet'
                           )}
@@ -1298,7 +1297,7 @@ export default function AdminPage() {
                       className="bg-red-500 hover:bg-red-600"
                     >
                       {deletePetMutation.isPending ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...</>
+                        <Skeleton className="h-4 w-20" />
                       ) : (
                         'Delete'
                       )}
@@ -1336,9 +1335,7 @@ export default function AdminPage() {
                   </div>
                   
                   {isApplicationsLoading ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-[#4A6FA5]" />
-                    </div>
+                    <ListRowsSkeleton rows={4} />
                   ) : filteredApplications.length > 0 ? (
                     <div className="overflow-auto">
                       <Table>
@@ -1521,7 +1518,7 @@ export default function AdminPage() {
                           disabled={updateApplicationMutation.isPending}
                         >
                           {updateApplicationMutation.isPending ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...</>
+                            <Skeleton className="h-4 w-24" />
                           ) : (
                             'Update Status'
                           )}
@@ -1552,9 +1549,7 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   {isResourcesLoading ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-[#4A6FA5]" />
-                    </div>
+                    <ListRowsSkeleton rows={4} />
                   ) : resources && resources.length > 0 ? (
                     <div className="overflow-auto">
                       <Table>
@@ -1734,7 +1729,7 @@ export default function AdminPage() {
                           disabled={createResourceMutation.isPending}
                         >
                           {createResourceMutation.isPending ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...</>
+                            <Skeleton className="h-4 w-20" />
                           ) : (
                             'Add Resource'
                           )}
@@ -1867,7 +1862,7 @@ export default function AdminPage() {
                           disabled={updateResourceMutation.isPending}
                         >
                           {updateResourceMutation.isPending ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...</>
+                            <Skeleton className="h-4 w-24" />
                           ) : (
                             'Update Resource'
                           )}
@@ -1896,7 +1891,7 @@ export default function AdminPage() {
                       className="bg-red-500 hover:bg-red-600"
                     >
                       {deleteResourceMutation.isPending ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...</>
+                        <Skeleton className="h-4 w-20" />
                       ) : (
                         'Delete'
                       )}
