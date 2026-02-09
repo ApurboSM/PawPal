@@ -91,6 +91,9 @@ const appointmentSchema = z.object({
   date: z.date({
     required_error: "Please select a date",
   }),
+  time: z
+    .string()
+    .regex(/^([01][0-9]|2[0-3]):[0-5][0-9]$/, "Please select a valid time"),
   notes: z.string().optional(),
 });
 
@@ -126,6 +129,7 @@ export default function AppointmentPage() {
       petId: null,
       type: "",
       date: undefined,
+      time: "09:00",
       notes: "",
     },
   });
@@ -178,7 +182,14 @@ export default function AppointmentPage() {
   
   // Handle form submission
   const onSubmit = (data: AppointmentFormValues) => {
-    createAppointmentMutation.mutate(data);
+    const [hours, minutes] = data.time.split(":").map((v) => Number(v));
+    const dateTime = new Date(data.date);
+    dateTime.setHours(hours, minutes, 0, 0);
+
+    createAppointmentMutation.mutate({
+      ...data,
+      date: dateTime,
+    });
   };
   
   // Handle appointment deletion
@@ -191,6 +202,35 @@ export default function AppointmentPage() {
   // Format appointment date
   const formatAppointmentDate = (date: Date) => {
     return format(new Date(date), "PPP 'at' p");
+  };
+
+  const hourOptions = Array.from({ length: 12 }, (_, i) =>
+    String(i + 1).padStart(2, "0"),
+  );
+  const minuteOptions = Array.from({ length: 12 }, (_, i) =>
+    String(i * 5).padStart(2, "0"),
+  );
+  const periodOptions = ["AM", "PM"];
+
+  const parseTimeParts = (value?: string) => {
+    if (!value) {
+      return { hour: "09", minute: "00", period: "AM" };
+    }
+    const [h, m] = value.split(":");
+    const hour24 = Number(h);
+    const period = hour24 >= 12 ? "PM" : "AM";
+    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    return {
+      hour: String(hour12).padStart(2, "0"),
+      minute: m ?? "00",
+      period,
+    };
+  };
+
+  const to24Hour = (hour: string, minute: string, period: string) => {
+    let h = Number(hour) % 12;
+    if (period === "PM") h += 12;
+    return `${String(h).padStart(2, "0")}:${minute}`;
   };
   
   // Get pet name by ID
@@ -313,29 +353,117 @@ export default function AppointmentPage() {
                           )}
                         />
                         
-                        {/* Date Selection */}
-                        <FormField
-                          control={form.control}
-                          name="date"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Appointment Date</FormLabel>
-                              <div className="border rounded-md p-4">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) => 
-                                    isBefore(date, startOfDay(new Date())) || 
-                                    date.getDay() === 0 // Disable Sundays
-                                  }
-                                  initialFocus
-                                />
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        {/* Date + Time Selection */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="date"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel>Appointment Date</FormLabel>
+                                <div className="border rounded-md p-4">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) =>
+                                      isBefore(date, startOfDay(new Date())) ||
+                                      date.getDay() === 0 // Disable Sundays
+                                    }
+                                    initialFocus
+                                  />
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="time"
+                            render={({ field }) => {
+                              const parts = parseTimeParts(field.value);
+                              const updateTime = (next: {
+                                hour?: string;
+                                minute?: string;
+                                period?: string;
+                              }) => {
+                                const hour = next.hour ?? parts.hour;
+                                const minute = next.minute ?? parts.minute;
+                                const period = next.period ?? parts.period;
+                                field.onChange(to24Hour(hour, minute, period));
+                              };
+
+                              return (
+                                <FormItem className="flex flex-col">
+                                  <FormLabel>Appointment Time</FormLabel>
+                                  <div className="border rounded-md p-4 h-full">
+                                    <div className="flex items-center gap-2 text-sm text-neutral-600 mb-4">
+                                      <Clock className="h-4 w-4" />
+                                      Select time
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3">
+                                      <Select
+                                        value={parts.hour}
+                                        onValueChange={(value) =>
+                                          updateTime({ hour: value })
+                                        }
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Hour" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {hourOptions.map((hour) => (
+                                            <SelectItem key={hour} value={hour}>
+                                              {hour}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+
+                                      <Select
+                                        value={parts.minute}
+                                        onValueChange={(value) =>
+                                          updateTime({ minute: value })
+                                        }
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Min" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {minuteOptions.map((minute) => (
+                                            <SelectItem key={minute} value={minute}>
+                                              {minute}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+
+                                      <Select
+                                        value={parts.period}
+                                        onValueChange={(value) =>
+                                          updateTime({ period: value })
+                                        }
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="AM/PM" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {periodOptions.map((period) => (
+                                            <SelectItem key={period} value={period}>
+                                              {period}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        </div>
                         
                         {/* Additional Notes */}
                         <FormField
