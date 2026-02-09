@@ -11,8 +11,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useAuth, loginSchema, registerSchema, type RegisterData } from "@/hooks/use-auth";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
-import { Loader2, PawPrint } from "lucide-react";
-import { PawLoadingOverlay } from "@/components/ui/paw-loading-overlay";
+import { PawPrint } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AuthSkeleton } from "@/components/skeletons/page-skeletons";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -72,15 +73,29 @@ export default function AuthPage() {
     return <Redirect to="/" />;
   }
 
+  if (isLoading) {
+    return (
+      <>
+        <Helmet>
+          <title>Login or Sign Up - PawPal</title>
+          <meta name="description" content="Join PawPal to find your perfect pet companion. Login or sign up to access adoption applications, appointments, and more." />
+        </Helmet>
+
+        <Navbar />
+        <main className="min-h-screen bg-neutral-100">
+          <AuthSkeleton />
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Helmet>
         <title>Login or Sign Up - PawPal</title>
         <meta name="description" content="Join PawPal to find your perfect pet companion. Login or sign up to access adoption applications, appointments, and more." />
       </Helmet>
-      
-      {/* Show loading animation */}
-      {isLoading && <PawLoadingOverlay />}
       
       <Navbar />
       
@@ -145,7 +160,7 @@ export default function AuthPage() {
                             disabled={loginMutation.isPending}
                           >
                             {loginMutation.isPending ? (
-                              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging in...</>
+                              <Skeleton className="h-4 w-20" />
                             ) : (
                               <><PawPrint className="mr-2 h-4 w-4" /> Login</>
                             )}
@@ -191,7 +206,7 @@ export default function AuthPage() {
                               </FormItem>
                             )}
                           />
-                          
+                                <Skeleton className="h-4 w-28" />
                           <FormField
                             control={registerForm.control}
                             name="email"
