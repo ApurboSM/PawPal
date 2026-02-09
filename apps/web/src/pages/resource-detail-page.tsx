@@ -4,7 +4,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { DetailSkeleton } from "@/components/skeletons/page-skeletons";
 import { useLocation, useParams } from "wouter";
 
 export default function ResourceDetailPage() {
@@ -24,9 +25,7 @@ export default function ResourceDetailPage() {
       <>
         <Navbar />
         <main className="min-h-screen bg-neutral-100">
-          <div className="container mx-auto px-4 py-12 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-[#4A6FA5]" />
-          </div>
+          <DetailSkeleton />
         </main>
         <Footer />
       </>
