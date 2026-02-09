@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import type { Appointment, AdoptionApplication, Pet } from "@pawpal/shared/schema";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { ProfileSkeleton } from "@/components/skeletons/page-skeletons";
 import { useAuth } from "@/hooks/use-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -179,9 +180,7 @@ export default function ProfilePage() {
       <>
         <Navbar />
         <main className="min-h-screen bg-neutral-100 py-10">
-          <div className="container mx-auto px-4">
-            <div className="rounded-lg border bg-white p-6 text-neutral-600">Loading profile…</div>
-          </div>
+          <ProfileSkeleton />
         </main>
         <Footer />
       </>
