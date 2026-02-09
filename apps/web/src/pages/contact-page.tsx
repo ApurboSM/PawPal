@@ -33,7 +33,8 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Phone, Mail, Clock, Loader2, CheckCircle } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, CheckCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Form schema
 const contactFormSchema = z.object({
@@ -320,7 +321,7 @@ export default function ContactPage() {
                           disabled={isLoading}
                         >
                           {isLoading ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending Message...</>
+                            <Skeleton className="h-4 w-28" />
                           ) : (
                             'Send Message'
                           )}

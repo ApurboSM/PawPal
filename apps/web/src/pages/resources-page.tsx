@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { CardGridSkeleton } from "@/components/skeletons/page-skeletons";
 import { useLocation } from "wouter";
 
 export default function ResourcesPage() {
@@ -115,9 +115,7 @@ export default function ResourcesPage() {
           
           {/* Resources Grid */}
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-[#4A6FA5]" />
-            </div>
+            <CardGridSkeleton cards={6} />
           ) : isError ? (
             <div className="text-center py-12">
               <p className="text-red-500">Error loading resources. Please try again later.</p>
