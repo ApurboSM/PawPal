@@ -26,6 +26,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Calendar, MapPin, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DetailSkeleton } from "@/components/skeletons/page-skeletons";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
@@ -427,11 +428,11 @@ export default function PetDetailPage() {
                               className="bg-[#4A6FA5] hover:bg-[#3A5A87]"
                               disabled={applicationMutation.isPending}
                             >
-                              {applicationMutation.isPending ? (
-                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
-                              ) : (
-                                "Submit Application"
-                              )}
+                                {applicationMutation.isPending ? (
+                                  <Skeleton className="h-4 w-28" />
+                                ) : (
+                                  "Submit Application"
+                                )}
                             </Button>
                           </DialogFooter>
                         </form>
