@@ -28,7 +28,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, invalidatePetsQueries, queryClient } from "@/lib/queryClient";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -615,10 +616,7 @@ export default function PetRegisterPage() {
                       disabled={createListingMutation.isPending}
                     >
                       {createListingMutation.isPending ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Saving...
-                        </>
+                        <Skeleton className="h-4 w-20" />
                       ) : (
                         "Create Listing"
                       )}
