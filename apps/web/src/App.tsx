@@ -5,7 +5,6 @@ import { ProtectedRoute } from "./lib/protected-route";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/use-auth";
 import { HelmetProvider } from "react-helmet-async";
-import { RouteLoadingOverlay } from "@/components/layout/route-loading-overlay";
 import { PawLoadingOverlay } from "@/components/ui/paw-loading-overlay";
 
 // Pages
@@ -86,7 +85,6 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="light">
         <AuthProvider>
           <TooltipProvider>
-            <RouteLoadingOverlay />
             <Suspense fallback={<PawLoadingOverlay text="PawPal" />}>
               <Router />
             </Suspense>
