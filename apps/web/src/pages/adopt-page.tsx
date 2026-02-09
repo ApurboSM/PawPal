@@ -16,7 +16,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { Heart, Search, SlidersHorizontal } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CardGridSkeleton, ListRowsSkeleton } from "@/components/skeletons/page-skeletons";
 import { 
   Sheet,
   SheetContent,
@@ -388,7 +390,7 @@ const AdoptPage = () => {
           <div className="flex justify-between items-center">
             <div className="text-neutral-600">
               {isLoading ? (
-                <span>Loading pets...</span>
+                <Skeleton className="h-4 w-28" />
               ) : pets && pets.length > 0 ? (
                 <span>Showing {pets.length} pets</span>
               ) : (
@@ -403,9 +405,7 @@ const AdoptPage = () => {
 
           <TabsContent value="grid" className="mt-6">
             {isLoading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              </div>
+              <CardGridSkeleton cards={8} />
             ) : pets && pets.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {pets.map((pet) => (
@@ -434,9 +434,7 @@ const AdoptPage = () => {
 
           <TabsContent value="list" className="mt-6">
             {isLoading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              </div>
+              <ListRowsSkeleton rows={6} />
             ) : pets && pets.length > 0 ? (
               <div className="space-y-4">
                 {pets.map((pet) => (
