@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Loader2, Calendar, MapPin, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import { Heart, Calendar, MapPin, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import { DetailSkeleton } from "@/components/skeletons/page-skeletons";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -171,9 +172,9 @@ export default function PetDetailPage() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center bg-neutral-100">
-          <Loader2 className="h-10 w-10 animate-spin text-[#4A6FA5]" />
-        </div>
+        <main className="min-h-screen bg-neutral-100">
+          <DetailSkeleton />
+        </main>
         <Footer />
       </>
     );
