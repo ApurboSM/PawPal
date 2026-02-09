@@ -28,7 +28,8 @@ import {
   AccordionTrigger 
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { CardGridSkeleton } from "@/components/skeletons/page-skeletons";
 import { Separator } from "@/components/ui/separator";
 
 export default function PetsPage() {
@@ -325,9 +326,7 @@ export default function PetsPage() {
             {/* Pets Grid */}
             <div className="w-full lg:w-3/4">
               {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-[#4A6FA5]" />
-                </div>
+                <CardGridSkeleton cards={6} />
               ) : isError ? (
                 <div className="text-center py-12">
                   <p className="text-red-500">Error loading pets. Please try again later.</p>
