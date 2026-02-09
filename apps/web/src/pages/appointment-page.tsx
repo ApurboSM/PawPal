@@ -204,13 +204,14 @@ export default function AppointmentPage() {
     return format(new Date(date), "PPP 'at' p");
   };
 
-  const hourOptions = Array.from({ length: 12 }, (_, i) =>
-    String(i + 1).padStart(2, "0"),
-  );
-  const minuteOptions = Array.from({ length: 12 }, (_, i) =>
-    String(i * 5).padStart(2, "0"),
-  );
-  const periodOptions = ["AM", "PM"];
+  const hourDial = Array.from({ length: 12 }, (_, i) => ({
+    value: String(i + 1).padStart(2, "0"),
+    angle: i * 30 - 90,
+  }));
+  const minuteDial = Array.from({ length: 12 }, (_, i) => ({
+    value: String(i * 5).padStart(2, "0"),
+    angle: i * 30 - 90,
+  }));
 
   const parseTimeParts = (value?: string) => {
     if (!value) {
@@ -398,64 +399,89 @@ export default function AppointmentPage() {
                                 <FormItem className="flex flex-col">
                                   <FormLabel>Appointment Time</FormLabel>
                                   <div className="border rounded-md p-4 h-full">
-                                    <div className="flex items-center gap-2 text-sm text-neutral-600 mb-4">
-                                      <Clock className="h-4 w-4" />
-                                      Select time
+                                    <div className="flex items-center justify-between mb-4">
+                                      <div className="flex items-center gap-2 text-sm text-neutral-600">
+                                        <Clock className="h-4 w-4" />
+                                        Select time
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          type="button"
+                                          className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
+                                            parts.period === "AM"
+                                              ? "bg-[#4A6FA5] text-white"
+                                              : "bg-neutral-100 text-neutral-600"
+                                          }`}
+                                          onClick={() => updateTime({ period: "AM" })}
+                                        >
+                                          AM
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
+                                            parts.period === "PM"
+                                              ? "bg-[#4A6FA5] text-white"
+                                              : "bg-neutral-100 text-neutral-600"
+                                          }`}
+                                          onClick={() => updateTime({ period: "PM" })}
+                                        >
+                                          PM
+                                        </button>
+                                      </div>
                                     </div>
-                                    <div className="grid grid-cols-3 gap-3">
-                                      <Select
-                                        value={parts.hour}
-                                        onValueChange={(value) =>
-                                          updateTime({ hour: value })
-                                        }
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Hour" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {hourOptions.map((hour) => (
-                                            <SelectItem key={hour} value={hour}>
-                                              {hour}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
 
-                                      <Select
-                                        value={parts.minute}
-                                        onValueChange={(value) =>
-                                          updateTime({ minute: value })
-                                        }
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Min" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {minuteOptions.map((minute) => (
-                                            <SelectItem key={minute} value={minute}>
-                                              {minute}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
+                                    <div className="flex items-center justify-center">
+                                      <div className="relative h-56 w-56">
+                                        <div className="absolute inset-0 rounded-full border border-neutral-200 bg-white shadow-sm"></div>
+                                        <div className="absolute inset-4 rounded-full border border-neutral-100 bg-gradient-to-br from-neutral-50 to-white"></div>
 
-                                      <Select
-                                        value={parts.period}
-                                        onValueChange={(value) =>
-                                          updateTime({ period: value })
-                                        }
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="AM/PM" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {periodOptions.map((period) => (
-                                            <SelectItem key={period} value={period}>
-                                              {period}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
+                                        {hourDial.map((hour) => (
+                                          <button
+                                            key={`hour-${hour.value}`}
+                                            type="button"
+                                            className={`absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full text-xs font-semibold transition ${
+                                              parts.hour === hour.value
+                                                ? "bg-[#4A6FA5] text-white shadow"
+                                                : "bg-white text-neutral-600 hover:bg-neutral-100"
+                                            }`}
+                                            style={{
+                                              transform: `translate(-50%, -50%) rotate(${hour.angle}deg) translate(82px) rotate(${-hour.angle}deg)`,
+                                            }}
+                                            onClick={() => updateTime({ hour: hour.value })}
+                                          >
+                                            {hour.value}
+                                          </button>
+                                        ))}
+
+                                        {minuteDial.map((minute) => (
+                                          <button
+                                            key={`minute-${minute.value}`}
+                                            type="button"
+                                            className={`absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full text-[11px] font-semibold transition ${
+                                              parts.minute === minute.value
+                                                ? "bg-[#FF6B98] text-white shadow"
+                                                : "bg-white text-neutral-500 hover:bg-neutral-100"
+                                            }`}
+                                            style={{
+                                              transform: `translate(-50%, -50%) rotate(${minute.angle}deg) translate(48px) rotate(${-minute.angle}deg)`,
+                                            }}
+                                            onClick={() => updateTime({ minute: minute.value })}
+                                          >
+                                            {minute.value}
+                                          </button>
+                                        ))}
+
+                                        <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#4A6FA5]"></div>
+                                      </div>
+                                    </div>
+
+                                    <div className="mt-4 flex items-center justify-center gap-2 text-sm font-semibold text-neutral-700">
+                                      <span className="rounded-full bg-[#4A6FA5]/10 px-3 py-1">
+                                        {parts.hour}:{parts.minute}
+                                      </span>
+                                      <span className="rounded-full bg-[#FF6B98]/10 px-3 py-1">
+                                        {parts.period}
+                                      </span>
                                     </div>
                                   </div>
                                   <FormMessage />
