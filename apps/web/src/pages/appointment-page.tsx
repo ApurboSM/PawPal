@@ -68,7 +68,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { 
-  Loader2, 
   Calendar as CalendarIcon, 
   Clock, 
   Info, 
@@ -76,6 +75,8 @@ import {
   XCircle, 
   ClipboardList 
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ListRowsSkeleton } from "@/components/skeletons/page-skeletons";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -290,7 +291,9 @@ export default function AppointmentPage() {
                                   <SelectItem value="none">None (For Meet & Greet)</SelectItem>
                                   {isPetsLoading ? (
                                     <SelectItem value="loading" disabled>
-                                      Loading pets...
+                                      <div className="w-full">
+                                        <Skeleton className="h-4 w-24" />
+                                      </div>
                                     </SelectItem>
                                   ) : pets && pets.length > 0 ? (
                                     pets.map(pet => (
@@ -359,7 +362,7 @@ export default function AppointmentPage() {
                           disabled={createAppointmentMutation.isPending}
                         >
                           {createAppointmentMutation.isPending ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Scheduling...</>
+                            <Skeleton className="h-4 w-20" />
                           ) : (
                             'Schedule Appointment'
                           )}
@@ -460,9 +463,7 @@ export default function AppointmentPage() {
                 </CardHeader>
                 <CardContent>
                   {isAppointmentsLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="h-8 w-8 animate-spin text-[#4A6FA5]" />
-                    </div>
+                    <ListRowsSkeleton rows={4} />
                   ) : appointments && appointments.length > 0 ? (
                     <Table>
                       <TableHeader>
@@ -597,7 +598,7 @@ export default function AppointmentPage() {
                                           className="bg-red-500 hover:bg-red-600"
                                         >
                                           {deleteAppointmentMutation.isPending ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <Skeleton className="h-4 w-24" />
                                           ) : (
                                             "Yes, cancel appointment"
                                           )}
