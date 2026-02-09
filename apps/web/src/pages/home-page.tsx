@@ -6,6 +6,7 @@ import { HowItWorks } from "@/components/sections/how-it-works";
 import { PetCategories } from "@/components/sections/pet-categories";
 import { LazyMount } from "@/components/layout/lazy-mount";
 import { Helmet } from "react-helmet";
+import { CardGridSkeleton, FormSkeleton } from "@/components/skeletons/page-skeletons";
 
 const FeaturedPets = lazy(() =>
   import("@/components/sections/featured-pets").then((m) => ({
@@ -54,9 +55,23 @@ export default function HomePage() {
         {/* Defer heavier sections until they are near the viewport */}
         <LazyMount
           rootMargin="900px"
-          placeholder={<div className="py-16 bg-background" />}
+          placeholder={
+            <div className="py-16 bg-background">
+              <div className="container mx-auto px-4">
+                <CardGridSkeleton cards={4} />
+              </div>
+            </div>
+          }
         >
-          <Suspense fallback={<div className="py-16 bg-background" />}>
+          <Suspense
+            fallback={
+              <div className="py-16 bg-background">
+                <div className="container mx-auto px-4">
+                  <CardGridSkeleton cards={4} />
+                </div>
+              </div>
+            }
+          >
             <FeaturedPets />
           </Suspense>
         </LazyMount>
@@ -65,26 +80,90 @@ export default function HomePage() {
         
         <PetCategories />
 
-        <LazyMount placeholder={<div className="py-16 bg-neutral-100" />}>
-          <Suspense fallback={<div className="py-16 bg-neutral-100" />}>
+        <LazyMount
+          placeholder={
+            <div className="py-16 bg-neutral-100">
+              <div className="container mx-auto px-4">
+                <CardGridSkeleton cards={3} />
+              </div>
+            </div>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="py-16 bg-neutral-100">
+                <div className="container mx-auto px-4">
+                  <CardGridSkeleton cards={3} />
+                </div>
+              </div>
+            }
+          >
             <ResourcesSection />
           </Suspense>
         </LazyMount>
 
-        <LazyMount placeholder={<div className="py-16 bg-white" />}>
-          <Suspense fallback={<div className="py-16 bg-white" />}>
+        <LazyMount
+          placeholder={
+            <div className="py-16 bg-white">
+              <div className="container mx-auto px-4">
+                <FormSkeleton />
+              </div>
+            </div>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="py-16 bg-white">
+                <div className="container mx-auto px-4">
+                  <FormSkeleton />
+                </div>
+              </div>
+            }
+          >
             <AppointmentSection />
           </Suspense>
         </LazyMount>
 
-        <LazyMount placeholder={<div className="py-16 bg-neutral-100" />}>
-          <Suspense fallback={<div className="py-16 bg-neutral-100" />}>
+        <LazyMount
+          placeholder={
+            <div className="py-16 bg-neutral-100">
+              <div className="container mx-auto px-4">
+                <CardGridSkeleton cards={2} />
+              </div>
+            </div>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="py-16 bg-neutral-100">
+                <div className="container mx-auto px-4">
+                  <CardGridSkeleton cards={2} />
+                </div>
+              </div>
+            }
+          >
             <Testimonials />
           </Suspense>
         </LazyMount>
 
-        <LazyMount placeholder={<div className="py-16 bg-background" />}>
-          <Suspense fallback={<div className="py-16 bg-background" />}>
+        <LazyMount
+          placeholder={
+            <div className="py-16 bg-background">
+              <div className="container mx-auto px-4">
+                <FormSkeleton />
+              </div>
+            </div>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="py-16 bg-background">
+                <div className="container mx-auto px-4">
+                  <FormSkeleton />
+                </div>
+              </div>
+            }
+          >
             <Newsletter />
           </Suspense>
         </LazyMount>
