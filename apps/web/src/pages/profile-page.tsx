@@ -86,6 +86,18 @@ export default function ProfilePage() {
       ),
     [appointments],
   );
+  const now = Date.now();
+  const upcomingAppointments = useMemo(
+    () => appointmentHistory.filter((a) => new Date(a.date!).getTime() >= now),
+    [appointmentHistory, now],
+  );
+  const pastAppointments = useMemo(
+    () =>
+      appointmentHistory
+        .filter((a) => new Date(a.date!).getTime() < now)
+        .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime()),
+    [appointmentHistory, now],
+  );
 
   const adoptedApps = useMemo(
     () => adoptionApplications.filter((a) => (a.status ?? "pending") === "approved"),
@@ -551,38 +563,92 @@ export default function ProfilePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {appointmentHistory.length === 0 ? (
-                    <div className="text-neutral-600">No appointments yet.</div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Pet</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {appointmentHistory.map((a) => (
-                          <TableRow key={a.id}>
-                            <TableCell className="font-medium">#{a.id}</TableCell>
-                            <TableCell>{a.type}</TableCell>
-                            <TableCell>{format(new Date(a.date!), "PPP p")}</TableCell>
-                            <TableCell>
-                              {a.petId ? (
-                                <Link href={`/pets/${a.petId}`} className="text-[#4A6FA5] underline">
-                                  {petById.get(a.petId)?.name ?? `Pet #${a.petId}`}
-                                </Link>
-                              ) : (
-                                "—"
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
+                  <Tabs defaultValue="upcoming" className="space-y-4">
+                    <TabsList>
+                      <TabsTrigger value="upcoming">
+                        Upcoming Appointments
+                        <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
+                          {upcomingAppointments.length}
+                        </span>
+                      </TabsTrigger>
+                      <TabsTrigger value="past">
+                        Past Appointments
+                        <span className="ml-2 text-xs bg-[#6B8DB9] text-white rounded-full px-2 py-0.5">
+                          {pastAppointments.length}
+                        </span>
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="upcoming">
+                      {upcomingAppointments.length === 0 ? (
+                        <div className="text-neutral-600">No upcoming appointments.</div>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Pet</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {upcomingAppointments.map((a) => (
+                              <TableRow key={a.id}>
+                                <TableCell className="font-medium">#{a.id}</TableCell>
+                                <TableCell>{a.type}</TableCell>
+                                <TableCell>{format(new Date(a.date!), "PPP p")}</TableCell>
+                                <TableCell>
+                                  {a.petId ? (
+                                    <Link href={`/pets/${a.petId}`} className="text-[#4A6FA5] underline">
+                                      {petById.get(a.petId)?.name ?? `Pet #${a.petId}`}
+                                    </Link>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="past">
+                      {pastAppointments.length === 0 ? (
+                        <div className="text-neutral-600">No past appointments yet.</div>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Pet</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {pastAppointments.map((a) => (
+                              <TableRow key={a.id}>
+                                <TableCell className="font-medium">#{a.id}</TableCell>
+                                <TableCell>{a.type}</TableCell>
+                                <TableCell>{format(new Date(a.date!), "PPP p")}</TableCell>
+                                <TableCell>
+                                  {a.petId ? (
+                                    <Link href={`/pets/${a.petId}`} className="text-[#4A6FA5] underline">
+                                      {petById.get(a.petId)?.name ?? `Pet #${a.petId}`}
+                                    </Link>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
             </TabsContent>
