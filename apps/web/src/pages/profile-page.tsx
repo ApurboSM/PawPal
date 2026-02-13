@@ -573,25 +573,25 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="appointment-history">
-              <Card className="bg-[#9B3F6F] border-[#7E2F58] text-white shadow-lg">
+              <Card className="bg-[#EAB7CC] border-[#DC99B5] text-[#673E56] shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-white" />
+                    <Calendar className="h-5 w-5 text-[#87516B]" />
                     Appointment History
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="upcoming" className="space-y-4">
-                    <TabsList className="bg-[#7E2F58]">
+                    <TabsList className="bg-[#DC99B5]">
                       <TabsTrigger value="upcoming">
                         Upcoming Appointments
-                        <span className="ml-2 text-xs bg-white/20 text-white rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/65 text-[#77415B] rounded-full px-2 py-0.5">
                           {upcomingAppointments.length}
                         </span>
                       </TabsTrigger>
                       <TabsTrigger value="past">
                         Past Appointments
-                        <span className="ml-2 text-xs bg-white/20 text-white rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/65 text-[#77415B] rounded-full px-2 py-0.5">
                           {pastAppointments.length}
                         </span>
                       </TabsTrigger>
@@ -599,30 +599,30 @@ export default function ProfilePage() {
 
                     <TabsContent value="upcoming">
                       {upcomingAppointments.length === 0 ? (
-                        <div className="text-white/85">No upcoming appointments.</div>
+                        <div className="text-[#77415B]">No upcoming appointments.</div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {upcomingAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-white/20 bg-[#B24F80] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-[#E7B1C6] bg-[#F4CCDC] text-[#673E56] shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-white/80 mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-white">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-[#87516B] mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-[#673E56]">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
-                                    <Badge className="bg-white/20 text-white border border-white/30">Upcoming</Badge>
+                                    <Badge className="bg-[#CC7A9E] text-white border border-[#BF6B90]">Upcoming</Badge>
                                   </div>
 
                                   <div className="space-y-2 text-sm">
-                                    <p className="text-white/95">
+                                    <p className="text-[#673E56]">
                                       <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
                                     </p>
-                                    <p className="text-white/95">
+                                    <p className="text-[#673E56]">
                                       <span className="font-medium">Pet:</span>{" "}
                                       {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
                                     </p>
-                                    <p className="text-white/85 line-clamp-2">
+                                    <p className="text-[#673E56]/80 line-clamp-2">
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>
@@ -636,30 +636,30 @@ export default function ProfilePage() {
 
                     <TabsContent value="past">
                       {pastAppointments.length === 0 ? (
-                        <div className="text-white/85">No past appointments yet.</div>
+                        <div className="text-[#77415B]">No past appointments yet.</div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {pastAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-white/20 bg-[#B24F80] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-[#E7B1C6] bg-[#F4CCDC] text-[#673E56] shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-white/80 mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-white">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-[#87516B] mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-[#673E56]">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
-                                    <Badge className="bg-white/20 text-white border border-white/30">Past</Badge>
+                                    <Badge className="bg-[#CC7A9E] text-white border border-[#BF6B90]">Past</Badge>
                                   </div>
 
                                   <div className="space-y-2 text-sm">
-                                    <p className="text-white/95">
+                                    <p className="text-[#673E56]">
                                       <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
                                     </p>
-                                    <p className="text-white/95">
+                                    <p className="text-[#673E56]">
                                       <span className="font-medium">Pet:</span>{" "}
                                       {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
                                     </p>
-                                    <p className="text-white/85 line-clamp-2">
+                                    <p className="text-[#673E56]/80 line-clamp-2">
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>
