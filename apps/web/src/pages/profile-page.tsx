@@ -579,7 +579,7 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="appointment-history">
-              <Card className="bg-[#F0C7D8] border-[#E2A8C0] text-[#70485F] shadow-lg">
+              <Card className="bg-[#FFF7EE] border-[#F0E2D1] text-[#70485F] shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-[#94627A]" />
@@ -588,7 +588,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="upcoming" className="space-y-4">
-                    <TabsList className="bg-[#E2A8C0]">
+                    <TabsList className="bg-[#F6EBD9]">
                       <TabsTrigger value="upcoming">
                         Upcoming Appointments
                         <span className="ml-2 text-xs bg-white/70 text-[#845069] rounded-full px-2 py-0.5">
