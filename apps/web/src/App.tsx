@@ -15,6 +15,7 @@ const PetDetailPage = lazy(() => import("@/pages/pet-detail-page"));
 const ResourcesPage = lazy(() => import("@/pages/resources-page"));
 const ResourceDetailPage = lazy(() => import("@/pages/resource-detail-page"));
 const AppointmentPage = lazy(() => import("@/pages/appointment-page"));
+const AppointmentDetailPage = lazy(() => import("@/pages/appointment-detail-page"));
 const AdminPage = lazy(() => import("@/pages/admin-page"));
 const ContactPage = lazy(() => import("@/pages/contact-page"));
 const EmergencyPage = lazy(() => import("@/pages/emergency-page"));
@@ -33,6 +34,7 @@ const PetDetailPageRoute = () => <PetDetailPage />;
 const ResourcesPageRoute = () => <ResourcesPage />;
 const ResourceDetailPageRoute = () => <ResourceDetailPage />;
 const AppointmentPageRoute = () => <AppointmentPage />;
+const AppointmentDetailPageRoute = () => <AppointmentDetailPage />;
 const AdminPageRoute = () => <AdminPage />;
 const ContactPageRoute = () => <ContactPage />;
 const EmergencyPageRoute = () => <EmergencyPage />;
@@ -52,6 +54,7 @@ function Router() {
       <Route path="/resources/:id" component={ResourceDetailPageRoute} />
       <Route path="/emergency" component={EmergencyPageRoute} />
       <ProtectedRoute path="/appointments" component={AppointmentPageRoute} />
+      <ProtectedRoute path="/appointments/:id" component={AppointmentDetailPageRoute} />
       <ProtectedRoute path="/profile" component={ProfilePageRoute} />
       <ProtectedRoute path="/admin" component={AdminPageRoute} />
       <Route path="/contact" component={ContactPageRoute} />
