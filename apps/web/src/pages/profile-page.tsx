@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import type { Appointment, AdoptionApplication, Pet } from "@pawpal/shared/schema";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -59,6 +59,17 @@ type EditPetDraft = Pick<
 >;
 
 export default function ProfilePage() {
+  const search = useSearch();
+  const tabParam = new URLSearchParams(search).get("tab");
+  const allowedTabs = new Set([
+    "my-profile",
+    "my-pets",
+    "settings",
+    "appointment-history",
+    "adopt-sell",
+  ]);
+  const initialTab = tabParam && allowedTabs.has(tabParam) ? tabParam : "my-profile";
+
   const { user } = useAuth();
   const { toast } = useToast();
   const [editPet, setEditPet] = useState<EditPetDraft | null>(null);
@@ -242,7 +253,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <Tabs defaultValue="my-profile">
+          <Tabs defaultValue={initialTab}>
             <TabsList className="mb-6 flex flex-wrap">
               <TabsTrigger value="my-profile">My Profile</TabsTrigger>
               <TabsTrigger value="my-pets">
@@ -562,25 +573,25 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="appointment-history">
-              <Card>
+              <Card className="bg-[#3E7FBE] border-[#2E679D] text-white shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-[#4A6FA5]" />
+                    <Calendar className="h-5 w-5 text-white" />
                     Appointment History
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="upcoming" className="space-y-4">
-                    <TabsList>
+                    <TabsList className="bg-[#2E679D]">
                       <TabsTrigger value="upcoming">
                         Upcoming Appointments
-                        <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/20 text-white rounded-full px-2 py-0.5">
                           {upcomingAppointments.length}
                         </span>
                       </TabsTrigger>
                       <TabsTrigger value="past">
                         Past Appointments
-                        <span className="ml-2 text-xs bg-[#6B8DB9] text-white rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/20 text-white rounded-full px-2 py-0.5">
                           {pastAppointments.length}
                         </span>
                       </TabsTrigger>
@@ -588,30 +599,30 @@ export default function ProfilePage() {
 
                     <TabsContent value="upcoming">
                       {upcomingAppointments.length === 0 ? (
-                        <div className="text-neutral-600">No upcoming appointments.</div>
+                        <div className="text-white/85">No upcoming appointments.</div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {upcomingAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border-0 shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-white/20 bg-[#5E98CF] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-neutral-500 mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-neutral-800">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-white/80 mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-white">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
-                                    <Badge className="bg-[#4A6FA5] text-white">Upcoming</Badge>
+                                    <Badge className="bg-white/20 text-white border border-white/30">Upcoming</Badge>
                                   </div>
 
                                   <div className="space-y-2 text-sm">
-                                    <p className="text-neutral-700">
+                                    <p className="text-white/95">
                                       <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
                                     </p>
-                                    <p className="text-neutral-700">
+                                    <p className="text-white/95">
                                       <span className="font-medium">Pet:</span>{" "}
                                       {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
                                     </p>
-                                    <p className="text-neutral-600 line-clamp-2">
+                                    <p className="text-white/85 line-clamp-2">
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>
@@ -625,30 +636,30 @@ export default function ProfilePage() {
 
                     <TabsContent value="past">
                       {pastAppointments.length === 0 ? (
-                        <div className="text-neutral-600">No past appointments yet.</div>
+                        <div className="text-white/85">No past appointments yet.</div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {pastAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border-0 shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-white/20 bg-[#5E98CF] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-neutral-500 mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-neutral-800">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-white/80 mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-white">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
-                                    <Badge className="bg-neutral-500 text-white">Past</Badge>
+                                    <Badge className="bg-white/20 text-white border border-white/30">Past</Badge>
                                   </div>
 
                                   <div className="space-y-2 text-sm">
-                                    <p className="text-neutral-700">
+                                    <p className="text-white/95">
                                       <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
                                     </p>
-                                    <p className="text-neutral-700">
+                                    <p className="text-white/95">
                                       <span className="font-medium">Pet:</span>{" "}
                                       {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
                                     </p>
-                                    <p className="text-neutral-600 line-clamp-2">
+                                    <p className="text-white/85 line-clamp-2">
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>

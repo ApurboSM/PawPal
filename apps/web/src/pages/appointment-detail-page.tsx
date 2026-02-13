@@ -67,7 +67,7 @@ export default function AppointmentDetailPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-neutral-600 mb-4">We couldn’t find this appointment or you may not have access to it.</p>
-                <Button onClick={() => setLocation("/profile")}>Back to Profile</Button>
+                <Button onClick={() => setLocation("/profile?tab=appointment-history")}>Back to Profile</Button>
               </CardContent>
             </Card>
           </div>
@@ -90,7 +90,7 @@ export default function AppointmentDetailPage() {
 
       <main className="min-h-screen bg-neutral-100 py-12">
         <div className="container mx-auto px-4 space-y-6">
-          <Button variant="ghost" onClick={() => setLocation("/profile")} className="text-[#4A6FA5]">
+          <Button variant="ghost" onClick={() => setLocation("/profile?tab=appointment-history")} className="text-[#4A6FA5]">
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
           </Button>
 
