@@ -46,6 +46,13 @@ import {
 import { format } from "date-fns";
 import { Calendar, MapPin, Phone, User, PawPrint, Pencil, Trash2, Settings } from "lucide-react";
 
+const appointmentTypeLabel = (type: string) => {
+  if (type === "meet_and_greet") return "Meet & Greet";
+  if (type === "veterinary_care") return "Veterinary Care";
+  if (type === "grooming") return "Grooming Services";
+  return type;
+};
+
 type EditPetDraft = Pick<
   Pet,
   "id" | "name" | "species" | "breed" | "age" | "gender" | "size" | "description" | "location" | "healthDetails" | "status" | "imageUrl"
@@ -583,34 +590,36 @@ export default function ProfilePage() {
                       {upcomingAppointments.length === 0 ? (
                         <div className="text-neutral-600">No upcoming appointments.</div>
                       ) : (
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Date</TableHead>
-                              <TableHead>Pet</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {upcomingAppointments.map((a) => (
-                              <TableRow key={a.id}>
-                                <TableCell className="font-medium">#{a.id}</TableCell>
-                                <TableCell>{a.type}</TableCell>
-                                <TableCell>{format(new Date(a.date!), "PPP p")}</TableCell>
-                                <TableCell>
-                                  {a.petId ? (
-                                    <Link href={`/pets/${a.petId}`} className="text-[#4A6FA5] underline">
-                                      {petById.get(a.petId)?.name ?? `Pet #${a.petId}`}
-                                    </Link>
-                                  ) : (
-                                    "—"
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {upcomingAppointments.map((a) => (
+                            <Link key={a.id} href={`/appointments/${a.id}`}>
+                              <Card className="h-full border-0 shadow-md hover:shadow-lg transition-all cursor-pointer">
+                                <CardContent className="p-5">
+                                  <div className="flex items-start justify-between gap-3 mb-4">
+                                    <div>
+                                      <p className="text-xs text-neutral-500 mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-neutral-800">{appointmentTypeLabel(a.type)}</h3>
+                                    </div>
+                                    <Badge className="bg-[#4A6FA5] text-white">Upcoming</Badge>
+                                  </div>
+
+                                  <div className="space-y-2 text-sm">
+                                    <p className="text-neutral-700">
+                                      <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
+                                    </p>
+                                    <p className="text-neutral-700">
+                                      <span className="font-medium">Pet:</span>{" "}
+                                      {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
+                                    </p>
+                                    <p className="text-neutral-600 line-clamp-2">
+                                      {a.notes?.trim() || "No additional notes."}
+                                    </p>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </Link>
+                          ))}
+                        </div>
                       )}
                     </TabsContent>
 
@@ -618,34 +627,36 @@ export default function ProfilePage() {
                       {pastAppointments.length === 0 ? (
                         <div className="text-neutral-600">No past appointments yet.</div>
                       ) : (
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Date</TableHead>
-                              <TableHead>Pet</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {pastAppointments.map((a) => (
-                              <TableRow key={a.id}>
-                                <TableCell className="font-medium">#{a.id}</TableCell>
-                                <TableCell>{a.type}</TableCell>
-                                <TableCell>{format(new Date(a.date!), "PPP p")}</TableCell>
-                                <TableCell>
-                                  {a.petId ? (
-                                    <Link href={`/pets/${a.petId}`} className="text-[#4A6FA5] underline">
-                                      {petById.get(a.petId)?.name ?? `Pet #${a.petId}`}
-                                    </Link>
-                                  ) : (
-                                    "—"
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {pastAppointments.map((a) => (
+                            <Link key={a.id} href={`/appointments/${a.id}`}>
+                              <Card className="h-full border-0 shadow-md hover:shadow-lg transition-all cursor-pointer">
+                                <CardContent className="p-5">
+                                  <div className="flex items-start justify-between gap-3 mb-4">
+                                    <div>
+                                      <p className="text-xs text-neutral-500 mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-neutral-800">{appointmentTypeLabel(a.type)}</h3>
+                                    </div>
+                                    <Badge className="bg-neutral-500 text-white">Past</Badge>
+                                  </div>
+
+                                  <div className="space-y-2 text-sm">
+                                    <p className="text-neutral-700">
+                                      <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
+                                    </p>
+                                    <p className="text-neutral-700">
+                                      <span className="font-medium">Pet:</span>{" "}
+                                      {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
+                                    </p>
+                                    <p className="text-neutral-600 line-clamp-2">
+                                      {a.notes?.trim() || "No additional notes."}
+                                    </p>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </Link>
+                          ))}
+                        </div>
                       )}
                     </TabsContent>
                   </Tabs>
