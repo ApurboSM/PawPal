@@ -79,10 +79,12 @@ export default function ProfilePage() {
   });
 
   const petById = useMemo(() => new Map(myPets.map((p) => [p.id, p])), [myPets]);
-  const now = Date.now();
-  const pastAppointments = useMemo(
-    () => appointments.filter((a) => new Date(a.date!).getTime() < now).sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime()),
-    [appointments, now],
+  const appointmentHistory = useMemo(
+    () =>
+      [...appointments].sort(
+        (a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime(),
+      ),
+    [appointments],
   );
 
   const adoptedApps = useMemo(
@@ -237,7 +239,7 @@ export default function ProfilePage() {
               <TabsTrigger value="appointment-history">
                 Appointment History
                 <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
-                  {pastAppointments.length}
+                  {appointmentHistory.length}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="adopt-sell">Adopt / Sell</TabsTrigger>
@@ -549,8 +551,8 @@ export default function ProfilePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {pastAppointments.length === 0 ? (
-                    <div className="text-neutral-600">No past appointments yet.</div>
+                  {appointmentHistory.length === 0 ? (
+                    <div className="text-neutral-600">No appointments yet.</div>
                   ) : (
                     <Table>
                       <TableHeader>
@@ -562,7 +564,7 @@ export default function ProfilePage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {pastAppointments.map((a) => (
+                        {appointmentHistory.map((a) => (
                           <TableRow key={a.id}>
                             <TableCell className="font-medium">#{a.id}</TableCell>
                             <TableCell>{a.type}</TableCell>
