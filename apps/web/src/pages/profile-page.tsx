@@ -86,6 +86,11 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
+  const { data: allPets = [] } = useQuery<Pet[]>({
+    queryKey: ["/api/pets"],
+    enabled: !!user,
+  });
+
   const { data: appointments = [] } = useQuery<Appointment[]>({
     queryKey: ["/api/appointments"],
     enabled: !!user,
@@ -97,6 +102,7 @@ export default function ProfilePage() {
   });
 
   const petById = useMemo(() => new Map(myPets.map((p) => [p.id, p])), [myPets]);
+  const allPetById = useMemo(() => new Map(allPets.map((p) => [p.id, p])), [allPets]);
   const appointmentHistory = useMemo(
     () =>
       [...appointments].sort(
@@ -573,25 +579,25 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="appointment-history">
-              <Card className="bg-[#EAB7CC] border-[#DC99B5] text-[#673E56] shadow-lg">
+              <Card className="bg-[#F0C7D8] border-[#E2A8C0] text-[#70485F] shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-[#87516B]" />
+                    <Calendar className="h-5 w-5 text-[#94627A]" />
                     Appointment History
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="upcoming" className="space-y-4">
-                    <TabsList className="bg-[#DC99B5]">
+                    <TabsList className="bg-[#E2A8C0]">
                       <TabsTrigger value="upcoming">
                         Upcoming Appointments
-                        <span className="ml-2 text-xs bg-white/65 text-[#77415B] rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/70 text-[#845069] rounded-full px-2 py-0.5">
                           {upcomingAppointments.length}
                         </span>
                       </TabsTrigger>
                       <TabsTrigger value="past">
                         Past Appointments
-                        <span className="ml-2 text-xs bg-white/65 text-[#77415B] rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/70 text-[#845069] rounded-full px-2 py-0.5">
                           {pastAppointments.length}
                         </span>
                       </TabsTrigger>
@@ -599,30 +605,30 @@ export default function ProfilePage() {
 
                     <TabsContent value="upcoming">
                       {upcomingAppointments.length === 0 ? (
-                        <div className="text-[#77415B]">No upcoming appointments.</div>
+                        <div className="text-[#845069]">No upcoming appointments.</div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {upcomingAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-[#E7B1C6] bg-[#F4CCDC] text-[#673E56] shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-[#EDC2D3] bg-[#F8DCE8] text-[#70485F] shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-[#87516B] mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-[#673E56]">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-[#94627A] mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-[#70485F]">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
-                                    <Badge className="bg-[#CC7A9E] text-white border border-[#BF6B90]">Upcoming</Badge>
+                                    <Badge className="bg-[#D58BAA] text-white border border-[#C97C9E]">Upcoming</Badge>
                                   </div>
 
                                   <div className="space-y-2 text-sm">
-                                    <p className="text-[#673E56]">
+                                    <p className="text-[#70485F]">
                                       <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
                                     </p>
-                                    <p className="text-[#673E56]">
+                                    <p className="text-[#70485F]">
                                       <span className="font-medium">Pet:</span>{" "}
-                                      {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
+                                      {a.petId ? allPetById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
                                     </p>
-                                    <p className="text-[#673E56]/80 line-clamp-2">
+                                    <p className="text-[#70485F]/80 line-clamp-2">
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>
@@ -636,30 +642,30 @@ export default function ProfilePage() {
 
                     <TabsContent value="past">
                       {pastAppointments.length === 0 ? (
-                        <div className="text-[#77415B]">No past appointments yet.</div>
+                        <div className="text-[#845069]">No past appointments yet.</div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {pastAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-[#E7B1C6] bg-[#F4CCDC] text-[#673E56] shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-[#EDC2D3] bg-[#F8DCE8] text-[#70485F] shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-[#87516B] mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-[#673E56]">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-[#94627A] mb-1">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-[#70485F]">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
-                                    <Badge className="bg-[#CC7A9E] text-white border border-[#BF6B90]">Past</Badge>
+                                    <Badge className="bg-[#D58BAA] text-white border border-[#C97C9E]">Past</Badge>
                                   </div>
 
                                   <div className="space-y-2 text-sm">
-                                    <p className="text-[#673E56]">
+                                    <p className="text-[#70485F]">
                                       <span className="font-medium">Date:</span> {format(new Date(a.date!), "PPP p")}
                                     </p>
-                                    <p className="text-[#673E56]">
+                                    <p className="text-[#70485F]">
                                       <span className="font-medium">Pet:</span>{" "}
-                                      {a.petId ? petById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
+                                      {a.petId ? allPetById.get(a.petId)?.name ?? `Pet #${a.petId}` : "None selected"}
                                     </p>
-                                    <p className="text-[#673E56]/80 line-clamp-2">
+                                    <p className="text-[#70485F]/80 line-clamp-2">
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>
