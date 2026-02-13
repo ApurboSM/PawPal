@@ -146,6 +146,7 @@ export default function AppointmentPage() {
         description: "Your appointment has been successfully scheduled.",
       });
       form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
       refetchAppointments();
     },
     onError: (error) => {
