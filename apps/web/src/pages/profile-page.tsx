@@ -573,7 +573,7 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="appointment-history">
-              <Card className="bg-[#3E7FBE] border-[#2E679D] text-white shadow-lg">
+              <Card className="bg-[#9B3F6F] border-[#7E2F58] text-white shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-white" />
@@ -582,7 +582,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="upcoming" className="space-y-4">
-                    <TabsList className="bg-[#2E679D]">
+                    <TabsList className="bg-[#7E2F58]">
                       <TabsTrigger value="upcoming">
                         Upcoming Appointments
                         <span className="ml-2 text-xs bg-white/20 text-white rounded-full px-2 py-0.5">
@@ -604,7 +604,7 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {upcomingAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-white/20 bg-[#5E98CF] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-white/20 bg-[#B24F80] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
@@ -641,7 +641,7 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {pastAppointments.map((a) => (
                             <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-white/20 bg-[#5E98CF] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
+                              <Card className="h-full border border-white/20 bg-[#B24F80] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
