@@ -579,25 +579,25 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="appointment-history">
-              <Card className="bg-[#FFFAF2] border-[#F3E7D8] text-[#70485F] shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-[#94627A]" />
+              <Card className="bg-gradient-to-br from-[#FFF9F4] via-[#FFEFF6] to-[#FDE6F0] border-[#F3D7E6] text-[#70485F] shadow-xl overflow-hidden">
+                <CardHeader className="pb-4 border-b border-white/60">
+                  <CardTitle className="flex items-center gap-2 text-[#6F3450] tracking-tight">
+                    <Calendar className="h-5 w-5 text-[#A05B7A]" />
                     Appointment History
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="upcoming" className="space-y-4">
-                    <TabsList className="bg-[#FBF2E6]">
-                      <TabsTrigger value="upcoming">
+                    <TabsList className="bg-white/80 backdrop-blur-sm border border-[#F1DCE7] rounded-2xl p-1 h-auto inline-flex w-auto">
+                      <TabsTrigger value="upcoming" className="rounded-xl px-4 py-2 data-[state=active]:bg-[#C97A9E] data-[state=active]:text-white data-[state=active]:shadow-sm">
                         Upcoming Appointments
-                        <span className="ml-2 text-xs bg-white/70 text-[#845069] rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/75 text-[#845069] rounded-full px-2 py-0.5">
                           {upcomingAppointments.length}
                         </span>
                       </TabsTrigger>
-                      <TabsTrigger value="past">
+                      <TabsTrigger value="past" className="rounded-xl px-4 py-2 data-[state=active]:bg-[#C97A9E] data-[state=active]:text-white data-[state=active]:shadow-sm">
                         Past Appointments
-                        <span className="ml-2 text-xs bg-white/70 text-[#845069] rounded-full px-2 py-0.5">
+                        <span className="ml-2 text-xs bg-white/75 text-[#845069] rounded-full px-2 py-0.5">
                           {pastAppointments.length}
                         </span>
                       </TabsTrigger>
@@ -607,15 +607,15 @@ export default function ProfilePage() {
                       {upcomingAppointments.length === 0 ? (
                         <div className="text-[#845069]">No upcoming appointments.</div>
                       ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           {upcomingAppointments.map((a) => (
-                            <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-[#EDC2D3] bg-[#F8DCE8] text-[#70485F] shadow-md hover:shadow-lg transition-all cursor-pointer">
+                            <Link key={a.id} href={`/appointments/${a.id}`} className="block">
+                              <Card className="h-full border border-[#ECD3DF] bg-white/90 text-[#70485F] shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-[#94627A] mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-[#70485F]">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-[#9A6A80] mb-1 uppercase tracking-wide">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-[#5F2F47]">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
                                     <Badge className="bg-[#D58BAA] text-white border border-[#C97C9E]">Upcoming</Badge>
                                   </div>
@@ -632,6 +632,7 @@ export default function ProfilePage() {
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>
+                                  <div className="mt-4 text-sm font-medium text-[#B35C84]">View details →</div>
                                 </CardContent>
                               </Card>
                             </Link>
@@ -644,17 +645,17 @@ export default function ProfilePage() {
                       {pastAppointments.length === 0 ? (
                         <div className="text-[#845069]">No past appointments yet.</div>
                       ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           {pastAppointments.map((a) => (
-                            <Link key={a.id} href={`/appointments/${a.id}`}>
-                              <Card className="h-full border border-[#EDC2D3] bg-[#F8DCE8] text-[#70485F] shadow-md hover:shadow-lg transition-all cursor-pointer">
+                            <Link key={a.id} href={`/appointments/${a.id}`} className="block">
+                              <Card className="h-full border border-[#ECD3DF] bg-white/90 text-[#70485F] shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer">
                                 <CardContent className="p-5">
                                   <div className="flex items-start justify-between gap-3 mb-4">
                                     <div>
-                                      <p className="text-xs text-[#94627A] mb-1">Appointment #{a.id}</p>
-                                      <h3 className="font-semibold text-lg text-[#70485F]">{appointmentTypeLabel(a.type)}</h3>
+                                      <p className="text-xs text-[#9A6A80] mb-1 uppercase tracking-wide">Appointment #{a.id}</p>
+                                      <h3 className="font-semibold text-lg text-[#5F2F47]">{appointmentTypeLabel(a.type)}</h3>
                                     </div>
-                                    <Badge className="bg-[#D58BAA] text-white border border-[#C97C9E]">Past</Badge>
+                                    <Badge className="bg-[#BFA8B3] text-white border border-[#AF95A1]">Past</Badge>
                                   </div>
 
                                   <div className="space-y-2 text-sm">
@@ -669,6 +670,7 @@ export default function ProfilePage() {
                                       {a.notes?.trim() || "No additional notes."}
                                     </p>
                                   </div>
+                                  <div className="mt-4 text-sm font-medium text-[#B35C84]">View details →</div>
                                 </CardContent>
                               </Card>
                             </Link>
