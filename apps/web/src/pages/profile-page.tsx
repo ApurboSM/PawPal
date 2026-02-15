@@ -260,26 +260,28 @@ export default function ProfilePage() {
           </div>
 
           <Tabs defaultValue={initialTab}>
-            <TabsList className="mb-6 flex flex-wrap">
-              <TabsTrigger value="my-profile">My Profile</TabsTrigger>
-              <TabsTrigger value="my-pets">
+            <div className="mb-6 overflow-x-auto">
+              <TabsList className="flex w-max min-w-full">
+                <TabsTrigger value="my-profile" className="whitespace-nowrap">My Profile</TabsTrigger>
+                <TabsTrigger value="my-pets" className="whitespace-nowrap">
                 My Pets
                 <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
                   {myPets.length}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
+              <TabsTrigger value="settings" className="flex items-center gap-2 whitespace-nowrap">
                 <Settings className="h-4 w-4" />
                 Settings
               </TabsTrigger>
-              <TabsTrigger value="appointment-history">
+              <TabsTrigger value="appointment-history" className="whitespace-nowrap">
                 Appointment History
                 <span className="ml-2 text-xs bg-[#4A6FA5] text-white rounded-full px-2 py-0.5">
                   {appointmentHistory.length}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="adopt-sell">Adopt / Sell</TabsTrigger>
-            </TabsList>
+              <TabsTrigger value="adopt-sell" className="whitespace-nowrap">Adopt / Sell</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="my-profile">
               <Card>
@@ -410,7 +412,8 @@ export default function ProfilePage() {
                       .
                     </div>
                   ) : (
-                    <Table>
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[680px]">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Pet</TableHead>
@@ -572,7 +575,8 @@ export default function ProfilePage() {
                           </TableRow>
                         ))}
                       </TableBody>
-                    </Table>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -588,7 +592,8 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="upcoming" className="space-y-4">
-                    <TabsList className="bg-white/80 backdrop-blur-sm border border-[#F1DCE7] rounded-2xl p-1 h-auto inline-flex w-auto">
+                    <div className="overflow-x-auto">
+                      <TabsList className="bg-white/80 backdrop-blur-sm border border-[#F1DCE7] rounded-2xl p-1 h-auto inline-flex w-max min-w-full sm:min-w-0">
                       <TabsTrigger value="upcoming" className="rounded-xl px-4 py-2 data-[state=active]:bg-[#C97A9E] data-[state=active]:text-white data-[state=active]:shadow-sm">
                         Upcoming Appointments
                         <span className="ml-2 text-xs bg-white/75 text-[#845069] rounded-full px-2 py-0.5">
@@ -602,6 +607,7 @@ export default function ProfilePage() {
                         </span>
                       </TabsTrigger>
                     </TabsList>
+                  </div>
 
                     <TabsContent value="upcoming">
                       {upcomingAppointments.length === 0 ? (
@@ -693,7 +699,8 @@ export default function ProfilePage() {
                     {adoptedApps.length === 0 ? (
                       <div className="text-neutral-600">No approved adoptions yet.</div>
                     ) : (
-                      <Table>
+                      <div className="overflow-x-auto">
+                        <Table className="min-w-[460px]">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Application</TableHead>
@@ -716,7 +723,8 @@ export default function ProfilePage() {
                             </TableRow>
                           ))}
                         </TableBody>
-                      </Table>
+                        </Table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -729,7 +737,8 @@ export default function ProfilePage() {
                     {sellHistoryPets.length === 0 ? (
                       <div className="text-neutral-600">No adopted/pending listings yet.</div>
                     ) : (
-                      <Table>
+                      <div className="overflow-x-auto">
+                        <Table className="min-w-[420px]">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Pet</TableHead>
@@ -750,7 +759,8 @@ export default function ProfilePage() {
                             </TableRow>
                           ))}
                         </TableBody>
-                      </Table>
+                        </Table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
