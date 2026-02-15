@@ -939,7 +939,7 @@ export default function EmergencyPage() {
                             {contact.phone}
                           </a>
                           
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <Button variant="outline" className="text-sm">
                               <MapPin className="h-4 w-4 mr-2" />
                               Directions
