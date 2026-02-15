@@ -259,17 +259,19 @@ export default function AppointmentPage() {
           </p>
           
           <Tabs defaultValue="book">
-            <TabsList className="mb-8">
-              <TabsTrigger value="book">Book Appointment</TabsTrigger>
-              <TabsTrigger value="upcoming">
+            <div className="mb-8 overflow-x-auto">
+              <TabsList className="min-w-max">
+                <TabsTrigger value="book" className="whitespace-nowrap">Book Appointment</TabsTrigger>
+                <TabsTrigger value="upcoming" className="whitespace-nowrap">
                 Upcoming Appointments
                 {appointments && appointments.length > 0 && (
                   <span className="ml-2 bg-[#4A6FA5] text-white text-xs rounded-full px-2 py-0.5">
                     {appointments.length}
                   </span>
                 )}
-              </TabsTrigger>
-            </TabsList>
+                </TabsTrigger>
+              </TabsList>
+            </div>
             
             <TabsContent value="book">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -399,7 +401,7 @@ export default function AppointmentPage() {
                               return (
                                 <FormItem className="flex flex-col">
                                   <FormLabel>Appointment Time</FormLabel>
-                                  <div className="border rounded-md p-4 h-full">
+                                  <div className="border rounded-md p-3 sm:p-4 h-full">
                                     <div className="flex items-center justify-between mb-4">
                                       <div className="flex items-center gap-2 text-sm text-neutral-600">
                                         <Clock className="h-4 w-4" />
@@ -432,7 +434,7 @@ export default function AppointmentPage() {
                                     </div>
 
                                     <div className="flex items-center justify-center">
-                                      <div className="relative h-56 w-56">
+                                      <div className="relative h-48 w-48 sm:h-56 sm:w-56">
                                         <div className="absolute inset-0 rounded-full border border-neutral-200 bg-white shadow-sm"></div>
                                         <div className="absolute inset-4 rounded-full border border-neutral-100 bg-gradient-to-br from-neutral-50 to-white"></div>
 
@@ -440,13 +442,13 @@ export default function AppointmentPage() {
                                           <button
                                             key={`hour-${hour.value}`}
                                             type="button"
-                                            className={`absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full text-xs font-semibold transition ${
+                                            className={`absolute left-1/2 top-1/2 h-8 w-8 sm:h-9 sm:w-9 -translate-x-1/2 -translate-y-1/2 rounded-full text-[11px] sm:text-xs font-semibold transition ${
                                               parts.hour === hour.value
                                                 ? "bg-[#4A6FA5] text-white shadow"
                                                 : "bg-white text-neutral-600 hover:bg-neutral-100"
                                             }`}
                                             style={{
-                                              transform: `translate(-50%, -50%) rotate(${hour.angle}deg) translate(82px) rotate(${-hour.angle}deg)`,
+                                              transform: `translate(-50%, -50%) rotate(${hour.angle}deg) translate(76px) rotate(${-hour.angle}deg)`,
                                             }}
                                             onClick={() => updateTime({ hour: hour.value })}
                                           >
@@ -458,13 +460,13 @@ export default function AppointmentPage() {
                                           <button
                                             key={`minute-${minute.value}`}
                                             type="button"
-                                            className={`absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full text-[11px] font-semibold transition ${
+                                            className={`absolute left-1/2 top-1/2 h-7 w-7 sm:h-8 sm:w-8 -translate-x-1/2 -translate-y-1/2 rounded-full text-[10px] sm:text-[11px] font-semibold transition ${
                                               parts.minute === minute.value
                                                 ? "bg-[#FF6B98] text-white shadow"
                                                 : "bg-white text-neutral-500 hover:bg-neutral-100"
                                             }`}
                                             style={{
-                                              transform: `translate(-50%, -50%) rotate(${minute.angle}deg) translate(48px) rotate(${-minute.angle}deg)`,
+                                              transform: `translate(-50%, -50%) rotate(${minute.angle}deg) translate(44px) rotate(${-minute.angle}deg)`,
                                             }}
                                             onClick={() => updateTime({ minute: minute.value })}
                                           >
@@ -620,7 +622,8 @@ export default function AppointmentPage() {
                   {isAppointmentsLoading ? (
                     <ListRowsSkeleton rows={4} />
                   ) : appointments && appointments.length > 0 ? (
-                    <Table>
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[760px]">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Type</TableHead>
@@ -767,7 +770,8 @@ export default function AppointmentPage() {
                           </TableRow>
                         ))}
                       </TableBody>
-                    </Table>
+                      </Table>
+                    </div>
                   ) : (
                     <div className="text-center py-12">
                       <ClipboardList className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
