@@ -88,13 +88,8 @@ export default function AuthPage() {
       </Helmet>
       
       <Navbar />
-      
-      {isAuthLoading ? (
-        <main className="min-h-screen bg-neutral-100">
-          <AuthSkeleton />
-        </main>
-      ) : (
-        <div className="min-h-screen bg-neutral-100 py-12">
+
+      <div className="min-h-screen bg-neutral-100 py-8 sm:py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-8 items-stretch max-w-6xl mx-auto">
             {/* Auth Card */}
@@ -201,7 +196,7 @@ export default function AuthPage() {
                               </FormItem>
                             )}
                           />
-                                <Skeleton className="h-4 w-28" />
+
                           <FormField
                             control={registerForm.control}
                             name="email"
@@ -289,15 +284,15 @@ export default function AuthPage() {
             </div>
             
             {/* Hero Section */}
-            <div className="w-full lg:w-1/2 bg-[#FF6B98] rounded-xl p-8 flex flex-col justify-center text-white">
+            <div className="w-full lg:w-1/2 bg-[#FF6B98] rounded-xl p-6 sm:p-8 flex flex-col justify-center text-white">
               <div className="mb-6 flex items-center">
                 <PawPrint className="h-10 w-10 mr-2 text-white" />
-                <h2 className="text-3xl font-bold">PawPal</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold">PawPal</h2>
               </div>
               
-              <h1 className="text-4xl font-bold mb-4">Find Your Forever Friend</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold mb-4">Find Your Forever Friend</h1>
               
-              <p className="text-lg mb-6">
+              <p className="text-base sm:text-lg mb-6">
                 Creating connections between loving people and pets in need of homes. Join our community to:
               </p>
               
@@ -340,7 +335,6 @@ export default function AuthPage() {
           </div>
         </div>
       </div>
-      )}
       
       <Footer />
     </>
