@@ -146,12 +146,12 @@ const AdoptPage = () => {
               />
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <Select 
                 value={filters.species} 
                 onValueChange={(value) => handleFilterChange("species", value)}
               >
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Pet Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -165,7 +165,7 @@ const AdoptPage = () => {
               {/* Mobile Filter Button */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="md:hidden">
+                  <Button variant="outline" className="md:hidden w-full sm:w-auto">
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
                     Filters
                   </Button>
@@ -283,20 +283,20 @@ const AdoptPage = () => {
                 </SheetContent>
               </Sheet>
               
-              <Button onClick={clearFilters} variant="ghost" size="sm">
+              <Button onClick={clearFilters} variant="ghost" size="sm" className="hidden md:inline-flex">
                 Clear
               </Button>
             </div>
           </div>
           
           {/* Desktop Filters */}
-          <div className="hidden md:flex mt-4 space-x-6">
+          <div className="hidden md:flex mt-4 gap-4 lg:gap-6 flex-wrap">
             <div>
               <Select 
                 value={filters.age} 
                 onValueChange={(value) => handleFilterChange("age", value)}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[130px] lg:w-[140px]">
                   <SelectValue placeholder="Age" />
                 </SelectTrigger>
                 <SelectContent>
@@ -313,7 +313,7 @@ const AdoptPage = () => {
                 value={filters.gender} 
                 onValueChange={(value) => handleFilterChange("gender", value)}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[130px] lg:w-[140px]">
                   <SelectValue placeholder="Gender" />
                 </SelectTrigger>
                 <SelectContent>
@@ -328,7 +328,7 @@ const AdoptPage = () => {
                 value={filters.size} 
                 onValueChange={(value) => handleFilterChange("size", value)}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[130px] lg:w-[140px]">
                   <SelectValue placeholder="Size" />
                 </SelectTrigger>
                 <SelectContent>
@@ -387,7 +387,7 @@ const AdoptPage = () => {
 
         {/* Pet Listings */}
         <Tabs defaultValue="grid" className="mb-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <div className="text-neutral-600">
               {isLoading ? (
                 <Skeleton className="h-4 w-28" />
@@ -397,7 +397,7 @@ const AdoptPage = () => {
                 <span>No pets found with the current filters</span>
               )}
             </div>
-            <TabsList>
+            <TabsList className="w-full sm:w-auto">
               <TabsTrigger value="grid">Grid</TabsTrigger>
               <TabsTrigger value="list">List</TabsTrigger>
             </TabsList>
