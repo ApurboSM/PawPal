@@ -38,6 +38,16 @@ function getInitialAuthTab(): "login" | "register" {
   return tab === "register" ? "register" : "login";
 }
 
+function updateAuthTabInUrl(nextTab: "login" | "register") {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("tab", nextTab);
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
 export default function AuthPage() {
   const { user, loginMutation, registerMutation, isLoading: isAuthLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<string>(getInitialAuthTab);
@@ -60,12 +70,14 @@ export default function AuthPage() {
   }, [isSwitchingTabs]);
 
   useEffect(() => {
-    const tab = new URLSearchParams(window.location.search).get("tab");
-    const nextTab = tab === "register" ? "register" : "login";
-    if (nextTab !== activeTab) {
+    const handlePopState = () => {
+      const nextTab = getInitialAuthTab();
       setActiveTab(nextTab);
-    }
-  }, [activeTab]);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
   
   // Login form
   const loginForm = useForm({
@@ -109,8 +121,10 @@ export default function AuthPage() {
     if (nextTab === activeTab || isSubmitting) {
       return;
     }
+    const normalizedTab = nextTab === "register" ? "register" : "login";
     setIsSwitchingTabs(true);
-    setActiveTab(nextTab);
+    setActiveTab(normalizedTab);
+    updateAuthTabInUrl(normalizedTab);
   };
 
   // Redirect to home if user is already logged in
@@ -348,7 +362,15 @@ export default function AuthPage() {
             
             {/* Hero Section */}
             <div className="w-full xl:col-span-7">
-              <div className="h-full rounded-2xl bg-[#FF6B98] p-5 text-white shadow-md sm:rounded-3xl sm:p-8 lg:p-10">
+              <div
+                className="h-full min-h-[320px] rounded-2xl bg-[#FF6B98] p-5 text-white shadow-md sm:rounded-3xl sm:p-8 lg:min-h-0 lg:p-10"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(150deg, rgba(255,107,152,0.96), rgba(255,75,120,0.92)), url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.16'%3E%3Cpath d='M86 70c7 0 13 6 13 13s-6 13-13 13-13-6-13-13 6-13 13-13zm45 0c7 0 13 6 13 13s-6 13-13 13-13-6-13-13 6-13 13-13zm-22 17c18 0 33 15 33 33 0 10-8 18-18 18h-30c-10 0-18-8-18-18 0-18 15-33 33-33zm-45-35c6 0 10 5 10 11s-4 11-10 11-10-5-10-11 4-11 10-11zm90 0c6 0 10 5 10 11s-4 11-10 11-10-5-10-11 4-11 10-11z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+                  backgroundSize: "cover, 240px",
+                  backgroundPosition: "center, center",
+                }}
+              >
                 <div className="mb-5 flex items-center">
                   <PawPrint className="mr-2 h-9 w-9 text-white sm:h-10 sm:w-10" />
                   <h2 className="text-2xl font-bold sm:text-3xl">PawPal</h2>
