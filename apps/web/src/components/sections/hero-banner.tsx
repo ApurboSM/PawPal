@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Heart, PawPrint } from "lucide-react";
+import petHeroImage from "../../../../../assets/pet.png";
 
 interface HeroBannerProps {
   title: string;
@@ -11,7 +12,7 @@ interface HeroBannerProps {
 export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps) {
   return (
     <section 
-      className="relative bg-primary/10 text-white hero-hover-effect transition-all-ease"
+      className="relative overflow-hidden bg-primary/10 text-white hero-hover-effect transition-all-ease"
       style={{ 
         ...(backgroundImage
           ? {
@@ -28,10 +29,9 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
 
       {/* Right-side pets image overlay */}
       <div
-        className="absolute inset-y-0 right-0 hidden md:block w-1/2 bg-center bg-cover opacity-50 pointer-events-none"
+        className="pointer-events-none absolute inset-0 w-full bg-contain bg-right-bottom bg-no-repeat opacity-35 md:inset-y-0 md:left-auto md:right-0 md:w-1/2 md:bg-center md:bg-cover md:opacity-55"
         style={{
-          backgroundImage:
-            "url('/asset/pet.png')",
+          backgroundImage: `url(${petHeroImage})`,
         }}
       ></div>
       
