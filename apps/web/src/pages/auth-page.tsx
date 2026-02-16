@@ -29,9 +29,18 @@ function AuthFormFieldsSkeleton({ fields }: { fields: number }) {
   );
 }
 
+function getInitialAuthTab(): "login" | "register" {
+  if (typeof window === "undefined") {
+    return "login";
+  }
+
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  return tab === "register" ? "register" : "login";
+}
+
 export default function AuthPage() {
   const { user, loginMutation, registerMutation, isLoading: isAuthLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<string>("login");
+  const [activeTab, setActiveTab] = useState<string>(getInitialAuthTab);
   const [isSwitchingTabs, setIsSwitchingTabs] = useState(false);
   const [showPawAnimation, setShowPawAnimation] = useState<{ login: boolean; register: boolean }>({ login: false, register: false });
   const isSubmitting = loginMutation.isPending || registerMutation.isPending;
@@ -49,6 +58,14 @@ export default function AuthPage() {
 
     return () => window.clearTimeout(timer);
   }, [isSwitchingTabs]);
+
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    const nextTab = tab === "register" ? "register" : "login";
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+  }, [activeTab]);
   
   // Login form
   const loginForm = useForm({

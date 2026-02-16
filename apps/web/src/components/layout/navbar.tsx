@@ -117,7 +117,7 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/auth">
+                <Link href="/auth?tab=login">
                   <Button 
                     variant="outline" 
                     className="border-primary text-primary hover:bg-primary/20 hover:text-primary hover:border-primary rounded-full transition-all duration-300"
@@ -125,7 +125,7 @@ export function Navbar() {
                     Login
                   </Button>
                 </Link>
-                <Link href="/auth">
+                <Link href="/auth?tab=register">
                   <Button 
                     className="bg-primary text-white hover:bg-primary/90 hover:shadow-lg rounded-full transition-all duration-300"
                   >
@@ -226,7 +226,7 @@ export function Navbar() {
                 </>
               ) : (
                 <div className="flex flex-col space-y-3 pt-2">
-                  <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/auth?tab=login" onClick={() => setIsMenuOpen(false)}>
                     <Button 
                       variant="outline" 
                       className="border-primary text-primary hover:bg-primary/20 rounded-full w-full transition-all duration-300"
@@ -234,7 +234,7 @@ export function Navbar() {
                       Login
                     </Button>
                   </Link>
-                  <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/auth?tab=register" onClick={() => setIsMenuOpen(false)}>
                     <Button 
                       className="bg-primary text-white hover:bg-primary/90 rounded-full w-full transition-all duration-300"
                     >
