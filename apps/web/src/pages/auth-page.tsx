@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Redirect } from "wouter";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,10 +15,40 @@ import { PawPrint } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthSkeleton } from "@/components/skeletons/page-skeletons";
 
+function AuthFormFieldsSkeleton({ fields }: { fields: number }) {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: fields }).map((_, index) => (
+        <div key={index} className="space-y-2">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-11 w-full rounded-xl" />
+        </div>
+      ))}
+      <Skeleton className="h-11 w-full rounded-xl" />
+    </div>
+  );
+}
+
 export default function AuthPage() {
   const { user, loginMutation, registerMutation, isLoading: isAuthLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("login");
+  const [isSwitchingTabs, setIsSwitchingTabs] = useState(false);
   const [showPawAnimation, setShowPawAnimation] = useState<{ login: boolean; register: boolean }>({ login: false, register: false });
+  const isSubmitting = loginMutation.isPending || registerMutation.isPending;
+  const isLoginBusy = loginMutation.isPending || showPawAnimation.login;
+  const isRegisterBusy = registerMutation.isPending || showPawAnimation.register;
+
+  useEffect(() => {
+    if (!isSwitchingTabs) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsSwitchingTabs(false);
+    }, 220);
+
+    return () => window.clearTimeout(timer);
+  }, [isSwitchingTabs]);
   
   // Login form
   const loginForm = useForm({
@@ -58,6 +88,14 @@ export default function AuthPage() {
     }, 600);
   };
 
+  const onTabChange = (nextTab: string) => {
+    if (nextTab === activeTab || isSubmitting) {
+      return;
+    }
+    setIsSwitchingTabs(true);
+    setActiveTab(nextTab);
+  };
+
   // Redirect to home if user is already logged in
   if (user) {
     return <Redirect to="/" />;
@@ -89,31 +127,34 @@ export default function AuthPage() {
       
       <Navbar />
 
-      <div className="min-h-screen bg-neutral-100 py-8 sm:py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-8 items-stretch max-w-6xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-pink-50 py-6 sm:py-10">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:grid-cols-12">
             {/* Auth Card */}
-            <div className="w-full lg:w-1/2">
+            <div className="w-full xl:col-span-5">
               <Tabs
                 defaultValue="login"
                 value={activeTab}
-                onValueChange={setActiveTab}
+                onValueChange={onTabChange}
                 className="w-full"
               >
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="register">Sign Up</TabsTrigger>
+                <TabsList className="mb-4 grid h-auto w-full grid-cols-2 rounded-xl border border-rose-100 bg-white p-1 shadow-sm">
+                  <TabsTrigger value="login" className="rounded-lg py-2.5 text-sm font-semibold" disabled={isSubmitting}>Login</TabsTrigger>
+                  <TabsTrigger value="register" className="rounded-lg py-2.5 text-sm font-semibold" disabled={isSubmitting}>Sign Up</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
-                  <Card>
-                    <CardHeader>
+                  <Card className="rounded-2xl border-rose-100/80 shadow-sm sm:shadow-md">
+                    <CardHeader className="pb-3">
                       <CardTitle>Welcome Back!</CardTitle>
                       <CardDescription>
                         Login to your account to manage adoptions, appointments, and more.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
+                      {isSwitchingTabs ? (
+                        <AuthFormFieldsSkeleton fields={2} />
+                      ) : (
                       <Form {...loginForm}>
                         <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                           <FormField
@@ -123,7 +164,7 @@ export default function AuthPage() {
                               <FormItem>
                                 <FormLabel>Username</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Enter your username" {...field} />
+                                  <Input placeholder="Enter your username" className="h-11 rounded-xl" disabled={isLoginBusy} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -137,7 +178,7 @@ export default function AuthPage() {
                               <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                  <Input type="password" placeholder="Enter your password" {...field} />
+                                  <Input type="password" placeholder="Enter your password" className="h-11 rounded-xl" disabled={isLoginBusy} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -146,8 +187,8 @@ export default function AuthPage() {
                           
                           <Button 
                             type="submit" 
-                            className={`w-full bg-[#FF6B98] hover:bg-[#FF4B78] ${showPawAnimation.login ? 'animate-paw' : ''}`}
-                            disabled={loginMutation.isPending}
+                            className={`h-11 w-full rounded-xl bg-[#FF6B98] font-semibold hover:bg-[#FF4B78] ${showPawAnimation.login ? "animate-paw" : ""}`}
+                            disabled={isLoginBusy}
                           >
                             {loginMutation.isPending ? (
                               <Skeleton className="h-4 w-20" />
@@ -157,13 +198,14 @@ export default function AuthPage() {
                           </Button>
                         </form>
                       </Form>
+                      )}
                     </CardContent>
                     <CardFooter className="flex justify-center">
-                      <p className="text-sm text-neutral-600">
+                      <p className="text-center text-sm text-neutral-600">
                         Don't have an account?{" "}
                         <button 
-                          onClick={() => setActiveTab("register")}
-                          className="text-[#FF6B98] hover:underline font-medium"
+                          onClick={() => onTabChange("register")}
+                          className="font-medium text-[#FF6B98] hover:underline"
                         >
                           Sign up
                         </button>
@@ -173,14 +215,17 @@ export default function AuthPage() {
                 </TabsContent>
                 
                 <TabsContent value="register">
-                  <Card>
-                    <CardHeader>
+                  <Card className="rounded-2xl border-rose-100/80 shadow-sm sm:shadow-md">
+                    <CardHeader className="pb-3">
                       <CardTitle>Create an Account</CardTitle>
                       <CardDescription>
                         Join PawPal to start your pet adoption journey.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
+                      {isSwitchingTabs ? (
+                        <AuthFormFieldsSkeleton fields={5} />
+                      ) : (
                       <Form {...registerForm}>
                         <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                           <FormField
@@ -190,7 +235,7 @@ export default function AuthPage() {
                               <FormItem>
                                 <FormLabel>Full Name</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Enter your full name" {...field} />
+                                  <Input placeholder="Enter your full name" className="h-11 rounded-xl" disabled={isRegisterBusy} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -204,7 +249,7 @@ export default function AuthPage() {
                               <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                  <Input type="email" placeholder="Enter your email" {...field} />
+                                  <Input type="email" placeholder="Enter your email" className="h-11 rounded-xl" disabled={isRegisterBusy} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -218,7 +263,7 @@ export default function AuthPage() {
                               <FormItem>
                                 <FormLabel>Username</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Choose a username" {...field} />
+                                  <Input placeholder="Choose a username" className="h-11 rounded-xl" disabled={isRegisterBusy} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -232,7 +277,7 @@ export default function AuthPage() {
                               <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                  <Input type="password" placeholder="Create a password" {...field} />
+                                  <Input type="password" placeholder="Create a password" className="h-11 rounded-xl" disabled={isRegisterBusy} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -246,7 +291,7 @@ export default function AuthPage() {
                               <FormItem>
                                 <FormLabel>Confirm Password</FormLabel>
                                 <FormControl>
-                                  <Input type="password" placeholder="Confirm your password" {...field} />
+                                  <Input type="password" placeholder="Confirm your password" className="h-11 rounded-xl" disabled={isRegisterBusy} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -255,8 +300,8 @@ export default function AuthPage() {
                           
                           <Button 
                             type="submit" 
-                            className={`w-full bg-[#FF6B98] hover:bg-[#FF4B78] ${showPawAnimation.register ? 'animate-paw' : ''}`}
-                            disabled={registerMutation.isPending}
+                            className={`h-11 w-full rounded-xl bg-[#FF6B98] font-semibold hover:bg-[#FF4B78] ${showPawAnimation.register ? "animate-paw" : ""}`}
+                            disabled={isRegisterBusy}
                           >
                             {registerMutation.isPending ? (
                               <Skeleton className="h-4 w-28" />
@@ -266,13 +311,14 @@ export default function AuthPage() {
                           </Button>
                         </form>
                       </Form>
+                      )}
                     </CardContent>
                     <CardFooter className="flex justify-center">
-                      <p className="text-sm text-neutral-600">
+                      <p className="text-center text-sm text-neutral-600">
                         Already have an account?{" "}
                         <button 
-                          onClick={() => setActiveTab("login")}
-                          className="text-[#FF6B98] hover:underline font-medium"
+                          onClick={() => onTabChange("login")}
+                          className="font-medium text-[#FF6B98] hover:underline"
                         >
                           Login
                         </button>
@@ -284,51 +330,51 @@ export default function AuthPage() {
             </div>
             
             {/* Hero Section */}
-            <div className="w-full lg:w-1/2 bg-[#FF6B98] rounded-xl p-6 sm:p-8 flex flex-col justify-center text-white">
-              <div className="mb-6 flex items-center">
-                <PawPrint className="h-10 w-10 mr-2 text-white" />
-                <h2 className="text-2xl sm:text-3xl font-bold">PawPal</h2>
-              </div>
-              
-              <h1 className="text-3xl sm:text-4xl font-bold mb-4">Find Your Forever Friend</h1>
-              
-              <p className="text-base sm:text-lg mb-6">
-                Creating connections between loving people and pets in need of homes. Join our community to:
-              </p>
-              
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold text-[#FF6B98]">1</span>
-                  </div>
-                  <span>Browse and save your favorite pets</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold text-[#FF6B98]">2</span>
-                  </div>
-                  <span>Submit adoption applications</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold text-[#FF6B98]">3</span>
-                  </div>
-                  <span>Schedule appointments for meet & greets</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                    <span className="font-bold text-[#FF6B98]">4</span>
-                  </div>
-                  <span>Access exclusive pet care resources</span>
-                </li>
-              </ul>
-              
-              <div className="mt-auto">
-                <div className="bg-white/10 rounded-lg p-4">
-                  <p className="italic text-white/90">
+            <div className="w-full xl:col-span-7">
+              <div className="h-full rounded-2xl bg-[#FF6B98] p-5 text-white shadow-md sm:rounded-3xl sm:p-8 lg:p-10">
+                <div className="mb-5 flex items-center">
+                  <PawPrint className="mr-2 h-9 w-9 text-white sm:h-10 sm:w-10" />
+                  <h2 className="text-2xl font-bold sm:text-3xl">PawPal</h2>
+                </div>
+
+                <h1 className="mb-3 text-2xl font-bold leading-tight sm:text-4xl">Find Your Forever Friend</h1>
+                
+                <p className="mb-5 text-sm text-white/95 sm:text-lg">
+                  Creating connections between loving people and pets in need of homes. Join our community to:
+                </p>
+                
+                <ul className="mb-6 space-y-3 sm:space-y-4">
+                  <li className="flex items-start sm:items-center">
+                    <div className="mr-3 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white sm:h-8 sm:w-8">
+                      <span className="text-sm font-bold text-[#FF6B98] sm:text-base">1</span>
+                    </div>
+                    <span className="text-sm sm:text-base">Browse and save your favorite pets</span>
+                  </li>
+                  <li className="flex items-start sm:items-center">
+                    <div className="mr-3 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white sm:h-8 sm:w-8">
+                      <span className="text-sm font-bold text-[#FF6B98] sm:text-base">2</span>
+                    </div>
+                    <span className="text-sm sm:text-base">Submit adoption applications</span>
+                  </li>
+                  <li className="flex items-start sm:items-center">
+                    <div className="mr-3 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white sm:h-8 sm:w-8">
+                      <span className="text-sm font-bold text-[#FF6B98] sm:text-base">3</span>
+                    </div>
+                    <span className="text-sm sm:text-base">Schedule appointments for meet & greets</span>
+                  </li>
+                  <li className="flex items-start sm:items-center">
+                    <div className="mr-3 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white sm:h-8 sm:w-8">
+                      <span className="text-sm font-bold text-[#FF6B98] sm:text-base">4</span>
+                    </div>
+                    <span className="text-sm sm:text-base">Access exclusive pet care resources</span>
+                  </li>
+                </ul>
+                
+                <div className="rounded-xl bg-white/15 p-4 sm:mt-8">
+                  <p className="text-sm italic text-white/95 sm:text-base">
                     "Adopting from PawPal was the best decision we ever made. The process was seamless, and now we can't imagine life without our furry family member!"
                   </p>
-                  <p className="mt-2 font-semibold">— The Johnson Family</p>
+                  <p className="mt-2 text-sm font-semibold sm:text-base">— The Johnson Family</p>
                 </div>
               </div>
             </div>
