@@ -31,7 +31,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-md transition-all-ease">
       <div className="h-1 bg-gradient-to-r from-primary via-secondary to-accent"></div>
-      <nav className="container mx-auto px-4 py-3">
+      <nav className="container mx-auto px-4 py-2.5 sm:py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group">
@@ -39,13 +39,13 @@ export function Navbar() {
               <PawPrint className="h-6 w-6 text-primary group-hover:scale-110 transition-all duration-300" />
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">PawPal</span>
-              <span className="text-xs text-muted-foreground -mt-1">Where Every Tail Finds a Tale</span>
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">PawPal</span>
+              <span className="hidden sm:block text-xs text-muted-foreground -mt-1">Where Every Tail Finds a Tale</span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -84,7 +84,7 @@ export function Navbar() {
           </div>
 
           {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
             ) : user ? (
@@ -139,7 +139,7 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden text-primary p-2 rounded-full hover:bg-primary/10 transition-all duration-300" 
+            className="lg:hidden text-primary p-2 rounded-full hover:bg-primary/10 transition-all duration-300" 
             onClick={toggleMenu}
           >
             <Menu className="h-6 w-6" />
@@ -148,7 +148,7 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <div className="flex flex-col space-y-4 pt-4 pb-3 border-t mt-3 border-primary/20">
               {navItems.map((item) => (
                 <Link
