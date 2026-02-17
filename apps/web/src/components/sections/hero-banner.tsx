@@ -29,7 +29,7 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
 
       {/* Right-side pets image overlay */}
       <div
-        className="pointer-events-none absolute inset-0 w-full bg-contain bg-right-bottom bg-no-repeat opacity-30 lg:inset-y-0 lg:left-auto lg:right-0 lg:w-1/2 lg:bg-center lg:bg-cover lg:opacity-55"
+        className="pointer-events-none absolute inset-0 w-full bg-contain bg-right-bottom bg-no-repeat opacity-35 md:inset-y-0 md:left-auto md:right-0 md:w-1/2 md:bg-center md:bg-cover md:opacity-55"
         style={{
           backgroundImage: `url(${petHeroImage})`,
         }}
