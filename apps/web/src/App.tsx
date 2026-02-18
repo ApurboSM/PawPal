@@ -5,7 +5,7 @@ import { ProtectedRoute } from "./lib/protected-route";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/use-auth";
 import { HelmetProvider } from "react-helmet-async";
-import { PawLoadingOverlay } from "@/components/ui/paw-loading-overlay";
+import { RouteLoadingOverlay, RouteSkeletonFallback } from "@/components/layout/route-loading-overlay";
 
 // Pages
 const HomePage = lazy(() => import("@/pages/home-page"));
@@ -88,9 +88,10 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="light">
         <AuthProvider>
           <TooltipProvider>
-            <Suspense fallback={<PawLoadingOverlay text="PawPal" />}>
+            <Suspense fallback={<RouteSkeletonFallback />}>
               <Router />
             </Suspense>
+            <RouteLoadingOverlay />
             {mountChat && (
               <Suspense fallback={null}>
                 <ChatWidget />
