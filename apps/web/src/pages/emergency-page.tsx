@@ -675,16 +675,16 @@ export default function EmergencyPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="first-aid" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-8 gap-2 sm:gap-0">
-            <TabsTrigger value="first-aid" className="text-sm sm:text-base py-3 flex items-center justify-center">
+          <TabsList className="mb-8 grid h-auto w-full grid-cols-1 items-stretch gap-2 rounded-md bg-muted p-1 sm:grid-cols-3 sm:gap-1">
+            <TabsTrigger value="first-aid" className="flex h-[35px] w-full items-center justify-center px-3 py-0 text-sm sm:text-base">
               <HeartPulse className="h-5 w-5 mr-2 hidden sm:inline-block" />
               First Aid Instructions
             </TabsTrigger>
-            <TabsTrigger value="emergency-contacts" className="text-sm sm:text-base py-3 flex items-center justify-center">
+            <TabsTrigger value="emergency-contacts" className="flex h-[35px] w-full items-center justify-center px-3 py-0 text-sm sm:text-base">
               <Phone className="h-5 w-5 mr-2 hidden sm:inline-block" />
               Emergency Contacts
             </TabsTrigger>
-            <TabsTrigger value="my-emergency-info" className="text-sm sm:text-base py-3 flex items-center justify-center">
+            <TabsTrigger value="my-emergency-info" className="flex h-[35px] w-full items-center justify-center px-3 py-0 text-sm sm:text-base">
               <PawPrint className="h-5 w-5 mr-2 hidden sm:inline-block" />
               My Emergency Info
             </TabsTrigger>
