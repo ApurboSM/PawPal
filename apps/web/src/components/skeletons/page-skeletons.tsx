@@ -118,17 +118,47 @@ export function FormSkeleton() {
 
 export function AuthSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-1/2">
-          <FormSkeleton />
-        </div>
-        <div className="w-full lg:w-1/2">
-          <Skeleton className="h-12 w-40 mb-4" />
-          <Skeleton className="h-6 w-2/3 mb-3" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-5/6 mb-6" />
-          <Skeleton className="h-40 w-full rounded-3xl" />
+    <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-pink-50 py-6 sm:py-10">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="grid grid-cols-1 gap-6 lg:gap-8 xl:grid-cols-12">
+          <div className="w-full xl:col-span-5">
+            <Skeleton className="mb-4 h-12 w-full rounded-xl border border-rose-100/80 bg-white" />
+            <div className="rounded-2xl border border-rose-100/80 bg-white p-6 shadow-sm sm:shadow-md">
+              <Skeleton className="mb-3 h-7 w-2/3" />
+              <Skeleton className="mb-6 h-4 w-full" />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-11 w-full rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-11 w-full rounded-xl" />
+                </div>
+                <Skeleton className="h-11 w-full rounded-xl" />
+              </div>
+              <Skeleton className="mx-auto mt-6 h-4 w-40" />
+            </div>
+          </div>
+
+          <div className="w-full xl:col-span-7">
+            <div className="rounded-2xl bg-[#FF6B98] p-5 sm:rounded-3xl sm:p-8 lg:p-10">
+              <div className="mb-5 flex items-center gap-2">
+                <Skeleton className="h-9 w-9 rounded-full bg-white/30" />
+                <Skeleton className="h-8 w-32 bg-white/30" />
+              </div>
+              <Skeleton className="mb-3 h-10 w-11/12 bg-white/30 sm:h-12" />
+              <Skeleton className="mb-2 h-4 w-full bg-white/30" />
+              <Skeleton className="mb-6 h-4 w-5/6 bg-white/30" />
+              <div className="space-y-3 sm:space-y-4">
+                <Skeleton className="h-8 w-3/4 bg-white/30" />
+                <Skeleton className="h-8 w-2/3 bg-white/30" />
+                <Skeleton className="h-8 w-4/5 bg-white/30" />
+                <Skeleton className="h-8 w-3/5 bg-white/30" />
+              </div>
+              <Skeleton className="mt-8 h-24 w-full rounded-xl bg-white/30" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
