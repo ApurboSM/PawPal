@@ -17,7 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { getPetDisplayName } from "@/lib/pet-display";
 
 interface PetCardProps {
   pet: Pet;
@@ -27,7 +26,6 @@ export function PetCard({ pet }: PetCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFavorited, setIsFavorited] = useState(false);
-  const petDisplayName = getPetDisplayName(pet);
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,8 +44,8 @@ export function PetCard({ pet }: PetCardProps) {
     toast({
       title: isFavorited ? "Removed from favorites" : "Added to favorites",
       description: isFavorited 
-        ? `${petDisplayName} has been removed from your favorites.` 
-        : `${petDisplayName} has been added to your favorites.`
+        ? `${pet.name} has been removed from your favorites.` 
+        : `${pet.name} has been added to your favorites.`
     });
   };
 
@@ -92,7 +90,7 @@ export function PetCard({ pet }: PetCardProps) {
       <div className="relative overflow-hidden">
         <img 
           src={imageError ? getFallbackImage(pet.species) : pet.imageUrl} 
-          alt={`${petDisplayName} - ${pet.breed}`} 
+          alt={`${pet.name} - ${pet.breed}`} 
           className="w-full h-52 object-cover transition-all duration-500 group-hover:scale-110"
           onError={handleImageError}
           loading="lazy"
@@ -124,7 +122,7 @@ export function PetCard({ pet }: PetCardProps) {
       
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{petDisplayName}</h3>
+          <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{pet.name}</h3>
           <Badge 
             className="bg-primary/10 text-primary text-xs rounded-full border border-primary/20"
           >

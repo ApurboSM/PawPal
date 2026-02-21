@@ -31,7 +31,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Search } from "lucide-react";
 import { CardGridSkeleton } from "@/components/skeletons/page-skeletons";
 import { Separator } from "@/components/ui/separator";
-import { getPetDisplayName } from "@/lib/pet-display";
 
 export default function PetsPage() {
   const [location, setLocation] = useLocation();
@@ -72,12 +71,10 @@ export default function PetsPage() {
     if (!pets) return [];
 
     return pets.filter((pet) => {
-      const petDisplayName = getPetDisplayName(pet);
-
       // Search term filter (name or breed)
       if (
         searchTerm && 
-        !petDisplayName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !pet.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !pet.breed.toLowerCase().includes(searchTerm.toLowerCase())
       ) {
         return false;
