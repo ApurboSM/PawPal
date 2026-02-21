@@ -102,13 +102,13 @@ export function Footer() {
                 <div className="p-2 bg-primary/10 rounded-full mr-3 group-hover:bg-primary/20 transition-all-ease">
                   <MapPin className="h-4 w-4 text-primary" />
                 </div>
-                <span className="text-foreground pt-1">123 Pet Street, Animal City, AC 12345</span>
+                <span className="text-foreground pt-1">Mirpur, Dhaka, Bangladesh</span>
               </li>
               <li className="flex items-center group">
                 <div className="p-2 bg-primary/10 rounded-full mr-3 group-hover:bg-primary/20 transition-all-ease">
                   <Phone className="h-4 w-4 text-primary" />
                 </div>
-                <span className="text-foreground">(123) 456-7890</span>
+                <span className="text-foreground">+8801712345678</span>
               </li>
               <li className="flex items-center group">
                 <div className="p-2 bg-primary/10 rounded-full mr-3 group-hover:bg-primary/20 transition-all-ease">
