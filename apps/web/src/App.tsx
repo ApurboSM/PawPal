@@ -18,6 +18,9 @@ const AppointmentPage = lazy(() => import("@/pages/appointment-page"));
 const AppointmentDetailPage = lazy(() => import("@/pages/appointment-detail-page"));
 const AdminPage = lazy(() => import("@/pages/admin-page"));
 const ContactPage = lazy(() => import("@/pages/contact-page"));
+const PrivacyPolicyPage = lazy(() => import("@/pages/privacy-policy-page"));
+const TermsOfServicePage = lazy(() => import("@/pages/terms-of-service-page"));
+const CookiePolicyPage = lazy(() => import("@/pages/cookie-policy-page"));
 const EmergencyPage = lazy(() => import("@/pages/emergency-page"));
 const ProfilePage = lazy(() => import("@/pages/profile-page"));
 const PetRegisterPage = lazy(() => import("@/pages/pet-register-page"));
@@ -37,6 +40,9 @@ const AppointmentPageRoute = () => <AppointmentPage />;
 const AppointmentDetailPageRoute = () => <AppointmentDetailPage />;
 const AdminPageRoute = () => <AdminPage />;
 const ContactPageRoute = () => <ContactPage />;
+const PrivacyPolicyPageRoute = () => <PrivacyPolicyPage />;
+const TermsOfServicePageRoute = () => <TermsOfServicePage />;
+const CookiePolicyPageRoute = () => <CookiePolicyPage />;
 const EmergencyPageRoute = () => <EmergencyPage />;
 const ProfilePageRoute = () => <ProfilePage />;
 const PetRegisterPageRoute = () => <PetRegisterPage />;
@@ -58,6 +64,9 @@ function Router() {
       <ProtectedRoute path="/profile" component={ProfilePageRoute} />
       <ProtectedRoute path="/admin" component={AdminPageRoute} />
       <Route path="/contact" component={ContactPageRoute} />
+      <Route path="/privacy-policy" component={PrivacyPolicyPageRoute} />
+      <Route path="/terms-of-service" component={TermsOfServicePageRoute} />
+      <Route path="/cookie-policy" component={CookiePolicyPageRoute} />
       {/* Fallback to 404 */}
       <Route component={NotFoundRoute} />
     </Switch>

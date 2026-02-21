@@ -36,16 +36,40 @@ export function Footer() {
               finds the care and love they deserve.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10">
+              <a
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="PawPal on Facebook"
+                className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10"
+              >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10">
+              <a
+                href="https://x.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="PawPal on X"
+                className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10">
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="PawPal on Instagram"
+                className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10"
+              >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10">
+              <a
+                href="https://www.youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="PawPal on YouTube"
+                className="text-primary/70 hover:text-primary transition-all-ease p-2 bg-primary/5 rounded-full hover:bg-primary/10"
+              >
                 <Youtube className="h-5 w-5" />
               </a>
             </div>
@@ -136,7 +160,9 @@ export function Footer() {
             </p>
             <div className="flex flex-col space-y-3">
               <a
-                href="#"
+                href="https://www.apple.com/app-store/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="bg-primary/90 text-white py-3 px-4 rounded-full hover:bg-primary transition-all duration-300 flex items-center shadow-md hover:shadow-lg"
               >
                 <svg
@@ -153,7 +179,9 @@ export function Footer() {
                 </div>
               </a>
               <a
-                href="#"
+                href="https://play.google.com/store"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="bg-secondary/90 text-white py-3 px-4 rounded-full hover:bg-secondary transition-all duration-300 flex items-center shadow-md hover:shadow-lg"
               >
                 <svg
@@ -181,15 +209,15 @@ export function Footer() {
               &copy; {new Date().getFullYear()} PawPal. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-muted-foreground text-sm hover:text-primary transition-all-ease">
+              <Link href="/privacy-policy" className="text-muted-foreground text-sm hover:text-primary transition-all-ease">
                 Privacy Policy
-              </a>
-              <a href="#" className="text-muted-foreground text-sm hover:text-primary transition-all-ease">
+              </Link>
+              <Link href="/terms-of-service" className="text-muted-foreground text-sm hover:text-primary transition-all-ease">
                 Terms of Service
-              </a>
-              <a href="#" className="text-muted-foreground text-sm hover:text-primary transition-all-ease">
+              </Link>
+              <Link href="/cookie-policy" className="text-muted-foreground text-sm hover:text-primary transition-all-ease">
                 Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
         </div>
