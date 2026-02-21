@@ -70,7 +70,7 @@ export default function PetsPage() {
   const filteredPets = useMemo(() => {
     if (!pets) return [];
 
-    return pets.filter((pet) => {
+    const matchingPets = pets.filter((pet) => {
       // Search term filter (name or breed)
       if (
         searchTerm && 
@@ -111,6 +111,13 @@ export default function PetsPage() {
       if (goodWith.cats && !pet.goodWith.cats) return false;
       
       return true;
+    });
+    
+    // Show newest listings first so newly listed pets are immediately visible.
+    return matchingPets.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
     });
   }, [pets, searchTerm, species, ageRange, gender, size, goodWith]);
   

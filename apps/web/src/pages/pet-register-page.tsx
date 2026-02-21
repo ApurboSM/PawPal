@@ -121,6 +121,11 @@ export default function PetRegisterPage() {
 
       const payload = {
         ...data,
+        name: data.name.trim(),
+        breed: data.breed.trim(),
+        description: data.description.trim(),
+        location: data.location.trim(),
+        healthDetails: data.healthDetails.trim(),
         imageUrl,
         medicalRecords: (data.medicalRecords ?? []).map((r) => ({
           ...r,

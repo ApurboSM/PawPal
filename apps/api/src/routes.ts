@@ -277,9 +277,21 @@ export function registerRoutes(app: Express): Server {
 
       const parsed = schema.parse(req.body);
       const { medicalRecords, ...petBody } = parsed as any;
+      const normalizedPetBody = {
+        ...petBody,
+        name: String(petBody.name ?? "").trim(),
+        breed: String(petBody.breed ?? "").trim(),
+        description: String(petBody.description ?? "").trim(),
+        location: String(petBody.location ?? "").trim(),
+        healthDetails: String(petBody.healthDetails ?? "").trim(),
+      };
+
+      if (!normalizedPetBody.name) {
+        return res.status(400).json({ message: "Pet name is required" });
+      }
 
       const pet = await storage.createPet({
-        ...petBody,
+        ...normalizedPetBody,
         ownerId: req.user!.id,
       });
 
