@@ -45,7 +45,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden xl:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -84,7 +84,7 @@ export function Navbar() {
           </div>
 
           {/* Auth Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden xl:flex items-center space-x-4">
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
             ) : user ? (
@@ -139,7 +139,7 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <button 
-            className="lg:hidden text-primary p-2 rounded-full hover:bg-primary/10 transition-all duration-300" 
+            className="xl:hidden text-primary p-2 rounded-full hover:bg-primary/10 transition-all duration-300" 
             onClick={toggleMenu}
           >
             <Menu className="h-6 w-6" />
@@ -148,7 +148,7 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden">
+          <div className="xl:hidden">
             <div className="flex flex-col space-y-4 pt-4 pb-3 border-t mt-3 border-primary/20">
               {navItems.map((item) => (
                 <Link
