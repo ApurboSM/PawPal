@@ -1,10 +1,13 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "wouter";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Cookie, SlidersHorizontal, Shield, Mail } from "lucide-react";
 
 export default function CookiePolicyPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <Helmet>
         <title>Cookie Policy - PawPal</title>
         <meta
@@ -15,47 +18,97 @@ export default function CookiePolicyPage() {
 
       <Navbar />
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="mx-auto max-w-3xl rounded-2xl border bg-white p-6 sm:p-8">
-          <h1 className="mb-4 text-3xl font-bold">Cookie Policy</h1>
-          <p className="mb-6 text-sm text-muted-foreground">Last updated: February 16, 2026</p>
+      <main className="min-h-screen bg-neutral-100">
+        <div className="bg-[#4A6FA5] py-12 text-white">
+          <div className="container mx-auto px-4">
+            <h1 className="mb-3 text-3xl font-bold md:text-4xl">Cookie Policy</h1>
+            <p className="max-w-3xl text-lg text-white/95">
+              Understand how PawPal uses cookies and similar technologies to improve your experience.
+            </p>
+          </div>
+        </div>
 
-          <div className="space-y-6 text-foreground">
-            <section>
-              <h2 className="mb-2 text-xl font-semibold">What Are Cookies?</h2>
-              <p>
-                Cookies are small text files stored on your device that help websites remember user
-                preferences and support core functionality.
-              </p>
-            </section>
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Legal Pages</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <Link href="/privacy-policy" className="block text-neutral-600 hover:text-[#4A6FA5]">Privacy Policy</Link>
+                  <Link href="/terms-of-service" className="block text-neutral-600 hover:text-[#4A6FA5]">Terms of Service</Link>
+                  <Link href="/cookie-policy" className="block font-semibold text-[#4A6FA5]">Cookie Policy</Link>
+                </CardContent>
+              </Card>
 
-            <section>
-              <h2 className="mb-2 text-xl font-semibold">How PawPal Uses Cookies</h2>
-              <p>
-                We use cookies for login/session continuity, basic analytics, and performance
-                improvements that make the platform faster and easier to use.
-              </p>
-            </section>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Cookie Questions</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-neutral-600">
+                  Need more details? Contact <span className="font-medium text-[#4A6FA5]">info@pawpal.com</span>.
+                </CardContent>
+              </Card>
+            </div>
 
-            <section>
-              <h2 className="mb-2 text-xl font-semibold">Managing Cookies</h2>
-              <p>
-                You can control cookies through your browser settings. Disabling some cookies may
-                impact certain PawPal features.
-              </p>
-            </section>
+            <div className="space-y-6 lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Cookie className="h-5 w-5 text-[#4A6FA5]" />
+                    What Are Cookies?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-neutral-700">
+                  Cookies are small text files stored on your device that help the website remember
+                  preferences and support core functionality.
+                </CardContent>
+              </Card>
 
-            <section>
-              <h2 className="mb-2 text-xl font-semibold">Contact</h2>
-              <p>
-                For cookie-policy questions, email <strong>info@pawpal.com</strong>.
-              </p>
-            </section>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Shield className="h-5 w-5 text-[#4A6FA5]" />
+                    How PawPal Uses Cookies
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-neutral-700">
+                  We use cookies to keep sessions active, improve reliability, and understand how users
+                  interact with the platform.
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <SlidersHorizontal className="h-5 w-5 text-[#4A6FA5]" />
+                    Managing Preferences
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-neutral-700">
+                  You can manage cookies through browser settings. Disabling some cookies may reduce
+                  feature availability.
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Mail className="h-5 w-5 text-[#4A6FA5]" />
+                    Contact
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-neutral-700">
+                  For cookie-policy questions, contact <strong>info@pawpal.com</strong>. Last updated: February 16, 2026.
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </main>
 
       <Footer />
-    </div>
+    </>
   );
 }
