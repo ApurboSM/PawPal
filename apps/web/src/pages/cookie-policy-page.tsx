@@ -15,7 +15,7 @@ export default function CookiePolicyPage() {
           content="Learn how PawPal uses cookies and similar technologies to improve functionality and user experience."
         />
       </Helmet>
-
+  
       <Navbar />
 
       <main className="min-h-screen bg-neutral-100">

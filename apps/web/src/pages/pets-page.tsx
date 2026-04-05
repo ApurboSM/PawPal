@@ -155,9 +155,9 @@ export default function PetsPage() {
         
         {/* Content Area */}
         <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col xl:flex-row gap-8">
             {/* Filters Sidebar */}
-            <div className="w-full lg:w-1/4">
+            <div className="w-full xl:w-1/4">
               <Card className="sticky top-24">
                 <CardHeader>
                   <CardTitle className="text-xl flex justify-between items-center">
@@ -331,7 +331,7 @@ export default function PetsPage() {
             </div>
             
             {/* Pets Grid */}
-            <div className="w-full lg:w-3/4">
+            <div className="w-full xl:w-3/4">
               {isLoading ? (
                 <CardGridSkeleton cards={6} />
               ) : isError ? (
@@ -345,7 +345,7 @@ export default function PetsPage() {
                       {filteredPets.length} {filteredPets.length === 1 ? 'Pet' : 'Pets'} Available
                     </h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
                     {filteredPets.map(pet => (
                       <PetCard key={pet.id} pet={pet} />
                     ))}

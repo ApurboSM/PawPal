@@ -91,7 +91,7 @@ export function PetCard({ pet }: PetCardProps) {
         <img 
           src={imageError ? getFallbackImage(pet.species) : pet.imageUrl} 
           alt={`${pet.name} - ${pet.breed}`} 
-          className="w-full h-52 object-cover transition-all duration-500 group-hover:scale-110"
+          className="w-full h-48 sm:h-52 object-cover transition-all duration-500 group-hover:scale-110"
           onError={handleImageError}
           loading="lazy"
           decoding="async"
@@ -120,11 +120,13 @@ export function PetCard({ pet }: PetCardProps) {
         </div>
       </div>
       
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{pet.name}</h3>
+          <h3 className="min-w-0 text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
+            {pet.name}
+          </h3>
           <Badge 
-            className="bg-primary/10 text-primary text-xs rounded-full border border-primary/20"
+            className="ml-2 shrink-0 bg-primary/10 text-primary text-xs rounded-full border border-primary/20"
           >
             {pet.species.charAt(0).toUpperCase() + pet.species.slice(1)}
           </Badge>
@@ -162,7 +164,7 @@ export function PetCard({ pet }: PetCardProps) {
         <p className="text-foreground mb-4 line-clamp-2 text-sm">{pet.description}</p>
       </CardContent>
       
-      <CardFooter className="flex justify-between items-center p-6 pt-0 border-t border-primary/5">
+      <CardFooter className="flex justify-between items-center gap-2 p-4 sm:p-6 pt-0 border-t border-primary/5">
         {/* Desktop View Details */}
         <div className="hidden md:block">
           <Link href={`/pets/${pet.id}`}>
@@ -192,7 +194,7 @@ export function PetCard({ pet }: PetCardProps) {
         <Button 
           variant={isFavorited ? "default" : "outline"}
           className={`
-            rounded-full transition-all duration-300 
+            rounded-full transition-all duration-300 text-xs sm:text-sm px-3 sm:px-4
             ${isFavorited 
               ? 'bg-primary text-white hover:bg-primary/90' 
               : 'border-primary/20 text-primary hover:border-primary hover:bg-primary/5'
