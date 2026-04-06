@@ -14,7 +14,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { PawPrint } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthSkeleton } from "@/components/skeletons/page-skeletons";
-
+ 
 function AuthFormFieldsSkeleton({ fields }: { fields: number }) {
   return (
     <div className="space-y-4">
