@@ -46,7 +46,7 @@ const contactFormSchema = z.object({
 });
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
-
+ 
 export default function ContactPage() {
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
