@@ -6,7 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/use-auth";
 import { HelmetProvider } from "react-helmet-async";
 import { RouteLoadingOverlay, RouteSkeletonFallback } from "@/components/layout/route-loading-overlay";
-
+ 
 // Pages
 const HomePage = lazy(() => import("@/pages/home-page"));
 const AuthPage = lazy(() => import("@/pages/auth-page"));
