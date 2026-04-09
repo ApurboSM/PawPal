@@ -28,7 +28,7 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 const ChatWidget = lazy(() =>
   import("@/components/ui/chat-widget").then((m) => ({ default: m.ChatWidget })),
 );
-
+ 
 // wouter's `Route` typing expects a plain component function, not a lazy exotic component.
 const HomePageRoute = () => <HomePage />;
 const AuthPageRoute = () => <AuthPage />;
