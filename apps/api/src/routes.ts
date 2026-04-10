@@ -967,12 +967,15 @@ export function registerRoutes(app: Express): Server {
         // Handle chat messages
         if (data.type === 'chat_message') {
           const clientInfo = clients.get(ws);
+          const clientMessageId =
+            typeof data.clientMessageId === "string" ? data.clientMessageId : undefined;
           
           // Create message object with sender info
           const messageToSend = {
             type: 'chat_message',
             data: {
               id: Date.now(), // Use timestamp as temporary ID
+              clientMessageId,
               message: data.message,
               sender: {
                 userId: clientInfo?.userId || 'guest',

@@ -41,6 +41,7 @@ export function ChatWidget() {
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pendingMessageIdsRef = useRef<Set<string>>(new Set());
   
   // Hooks
   const { user } = useAuth();
@@ -144,7 +145,21 @@ export function ChatWidget() {
       sender: data.sender
     };
     
-    setMessages(prev => [...prev, newMessage]);
+    const clientMessageId = data?.clientMessageId;
+    const isOwnMessage = messageType === "user";
+
+    if (isOwnMessage && typeof clientMessageId === "string" && pendingMessageIdsRef.current.has(clientMessageId)) {
+      pendingMessageIdsRef.current.delete(clientMessageId);
+      setMessages((prev) => {
+        const index = prev.findIndex((m) => m.id === clientMessageId);
+        if (index === -1) return [...prev, newMessage];
+        const next = [...prev];
+        next[index] = { ...next[index], ...newMessage };
+        return next;
+      });
+    } else {
+      setMessages((prev) => [...prev, newMessage]);
+    }
     setIsLoading(false);
   };
 
@@ -171,14 +186,18 @@ export function ChatWidget() {
 
   const sendMessage = () => {
     if (!messageText.trim()) return;
+    const textToSend = messageText.trim();
+    const clientMessageId = `client-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     
     // Add user message to UI immediately for better responsiveness
     const userMessage = {
+      id: clientMessageId,
       type: 'user' as const,
-      text: messageText,
+      text: textToSend,
       timestamp: new Date().toISOString()
     };
     
+    pendingMessageIdsRef.current.add(clientMessageId);
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     
@@ -187,7 +206,8 @@ export function ChatWidget() {
       // Send message through WebSocket
       wsRef.current.send(JSON.stringify({
         type: 'chat_message',
-        message: messageText
+        message: textToSend,
+        clientMessageId,
       }));
       
       setMessageText('');
@@ -201,6 +221,7 @@ export function ChatWidget() {
       
       // Simulate response for better UX even when WebSocket fails
       setTimeout(() => {
+        pendingMessageIdsRef.current.delete(clientMessageId);
         const fallbackResponse = {
           type: 'system' as const,
           text: "I'm having trouble connecting to the server right now. Please try again in a moment.",

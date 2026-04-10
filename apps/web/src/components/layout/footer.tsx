@@ -206,7 +206,16 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-muted-foreground text-sm flex items-center">
               <Heart className="h-3 w-3 mr-1 text-primary" />
-              &copy; {new Date().getFullYear()} PawPal. All rights reserved.
+              &copy; {new Date().getFullYear()} PawPal. All rights reserved to{" "}
+              <a
+                href="https://smapurbo.me/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-1 font-medium text-primary hover:underline"
+              >
+                S. M. Apurbo
+              </a>
+              .
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacy-policy" className="text-muted-foreground text-sm hover:text-primary transition-all-ease">
