@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Redirect } from "wouter";
+import { Redirect } from "wouter";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth, loginSchema, registerSchema, type RegisterData } from "@/hooks/use-auth";
 import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
 import { PawPrint } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthSkeleton } from "@/components/skeletons/page-skeletons";
@@ -139,18 +140,7 @@ export default function AuthPage() {
           <meta name="description" content="Join PawPal to find your perfect pet companion. Login or sign up to access adoption applications, appointments, and more." />
         </Helmet>
 
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm">
-          <div className="container mx-auto px-4 py-3">
-            <Link href="/" className="inline-flex items-center space-x-2">
-              <div className="flex items-center justify-center bg-primary/10 rounded-full p-2">
-                <PawPrint className="h-5 w-5 text-primary" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                PawPal
-              </span>
-            </Link>
-          </div>
-        </header>
+        <Navbar />
         <main className="min-h-screen bg-neutral-100">
           <AuthSkeleton />
         </main>
@@ -166,18 +156,7 @@ export default function AuthPage() {
         <meta name="description" content="Join PawPal to find your perfect pet companion. Login or sign up to access adoption applications, appointments, and more." />
       </Helmet>
       
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm">
-        <div className="container mx-auto px-4 py-3">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="flex items-center justify-center bg-primary/10 rounded-full p-2">
-              <PawPrint className="h-5 w-5 text-primary" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              PawPal
-            </span>
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-pink-50 py-6 sm:py-10">
         <div className="container mx-auto max-w-7xl px-4">
@@ -384,10 +363,10 @@ export default function AuthPage() {
             {/* Hero Section */}
             <div className="w-full xl:col-span-7">
               <div
-                className="h-full min-h-[320px] rounded-2xl bg-[#F7BFD2] p-5 text-white shadow-md sm:rounded-3xl sm:p-8 lg:min-h-0 lg:p-10"
+                className="h-full min-h-[320px] rounded-2xl bg-[#FF6B98] p-5 text-white shadow-md sm:rounded-3xl sm:p-8 lg:min-h-0 lg:p-10"
                 style={{
                   backgroundImage:
-                    "linear-gradient(150deg, rgba(247,191,210,0.94), rgba(244,174,198,0.9)), url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.16'%3E%3Cpath d='M86 70c7 0 13 6 13 13s-6 13-13 13-13-6-13-13 6-13 13-13zm45 0c7 0 13 6 13 13s-6 13-13 13-13-6-13-13 6-13 13-13zm-22 17c18 0 33 15 33 33 0 10-8 18-18 18h-30c-10 0-18-8-18-18 0-18 15-33 33-33zm-45-35c6 0 10 5 10 11s-4 11-10 11-10-5-10-11 4-11 10-11zm90 0c6 0 10 5 10 11s-4 11-10 11-10-5-10-11 4-11 10-11z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+                    "linear-gradient(150deg, rgba(255,107,152,0.96), rgba(255,75,120,0.92)), url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.16'%3E%3Cpath d='M86 70c7 0 13 6 13 13s-6 13-13 13-13-6-13-13 6-13 13-13zm45 0c7 0 13 6 13 13s-6 13-13 13-13-6-13-13 6-13 13-13zm-22 17c18 0 33 15 33 33 0 10-8 18-18 18h-30c-10 0-18-8-18-18 0-18 15-33 33-33zm-45-35c6 0 10 5 10 11s-4 11-10 11-10-5-10-11 4-11 10-11zm90 0c6 0 10 5 10 11s-4 11-10 11-10-5-10-11 4-11 10-11z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
                   backgroundSize: "cover, 240px",
                   backgroundPosition: "center, center",
                 }}
