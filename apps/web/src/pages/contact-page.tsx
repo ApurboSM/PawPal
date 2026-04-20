@@ -88,7 +88,7 @@ export default function ContactPage() {
         <title>Contact Us - PawPal</title>
         <meta name="description" content="Get in touch with PawPal for questions about pet adoption, pet care, appointments, or general inquiries. We're here to help with your pet needs." />
       </Helmet>
-      
+       
       <Navbar />
       
       <main className="min-h-screen bg-neutral-100">
