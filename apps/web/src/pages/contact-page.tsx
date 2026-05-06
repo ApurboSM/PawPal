@@ -76,7 +76,7 @@ export default function ContactPage() {
     
     toast({
       title: "Message Sent",
-      description: "Thank you for contacting us. We'll get back to you soon!",
+      description: "Thank you for contacting with us. We'll get back to you soon!",
     });
     
     form.reset();
