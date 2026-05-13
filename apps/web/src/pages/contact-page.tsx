@@ -79,7 +79,7 @@ export default function ContactPage() {
       description: "Thank you for contacting with us. We'll get back to you soon!",
     });
     
-    form.reset();
+    form.reset(); 
   };
 
   return (
