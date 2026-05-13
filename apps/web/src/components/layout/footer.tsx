@@ -204,17 +204,26 @@ export function Footer() {
 
         <div className="border-t border-primary/10 pt-6 mt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-muted-foreground text-sm flex items-center">
-              <Heart className="h-3 w-3 mr-1 text-primary" />
-              &copy; {new Date().getFullYear()} PawPal. All rights reserved to{" "}
-              <a
-                href="https://smapurbo.me/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-1 font-medium text-primary hover:underline"
-              >
-                S. M. Apurbo
-              </a>
+            <p className="text-muted-foreground text-sm flex flex-wrap items-center gap-x-1 gap-y-1">
+              <Heart className="h-3 w-3 shrink-0 text-primary" />
+              <span className="flex flex-wrap items-center gap-x-1">
+                &copy; {new Date().getFullYear()} PawPal. All rights reserved to
+                <a
+                  href="https://smapurbo.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center rounded-sm ring-offset-background transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label="S. M. Apurbo — smapurbo.com"
+                >
+                  <img
+                    src="/sign.png"
+                    alt=""
+                    width={180}
+                    height={60}
+                    className="h-11 w-auto sm:h-12 md:h-14"
+                  />
+                </a>
+              </span>
               .
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
