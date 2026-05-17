@@ -212,15 +212,13 @@ export function Footer() {
                   href="https://smapurbo.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center rounded-sm ring-offset-background transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="footer-sign-link"
                   aria-label="S. M. Apurbo — smapurbo.com"
                 >
-                  <img
-                    src="/sign.png"
-                    alt=""
-                    width={180}
-                    height={60}
-                    className="h-11 w-auto sm:h-12 md:h-14"
+                  <span
+                    className="footer-sign"
+                    role="img"
+                    aria-label="S. M. Apurbo signature"
                   />
                 </a>
               </span>

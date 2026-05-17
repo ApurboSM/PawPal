@@ -168,4 +168,56 @@
     content: '🐾';
     @apply mr-2;
   }
+
+  /* Footer signature — same mask + indigo treatment as smapurbo.com */
+  .footer-sign-link {
+    @apply inline-block cursor-pointer leading-none;
+  }
+
+  .footer-sign {
+    display: inline-block;
+    width: 106px;
+    height: 40px;
+    background-color: #818cf8;
+    -webkit-mask: url(/sign.png) center / contain no-repeat;
+    mask: url(/sign.png) center / contain no-repeat;
+    transition: transform 0.4s ease, background-color 0.4s ease;
+    will-change: filter;
+    animation: sign-glow 2.2s ease-in-out infinite alternate;
+  }
+
+  .footer-sign-link:hover .footer-sign {
+    background-color: #a5b4fc;
+    animation-duration: 0.9s;
+    transform: scale(1.06);
+  }
+
+  .footer-sign-link:focus-visible {
+    outline: 1px solid #6366f1;
+    outline-offset: 6px;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 640px) {
+    .footer-sign {
+      width: 80px;
+      height: 30px;
+    }
+  }
+}
+
+@keyframes sign-glow {
+  0% {
+    filter: drop-shadow(0 0 28px #6366f1f2) drop-shadow(0 0 10px #a5b4fcbf)
+      drop-shadow(0 0 4px #6366f1);
+  }
+  to {
+    filter: drop-shadow(0 0 8px #6366f18c) drop-shadow(0 0 2px #a5b4fc59);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-sign {
+    animation: none;
+  }
 }

@@ -1,100 +1,89 @@
-# PawPal 🐾
+# PawPal
 
-PawPal is a pet adoption & care platform where users can:
-- Browse and adopt pets
-- Explore pet care resources
-- Book appointments
-- Manage emergency contacts & pet medical records
-- Chat with other pet owners (WebSocket)
+**PawPal** is a pet adoption and care platform that helps people find companions, learn how to care for them, and stay organized—from browsing adoptable pets to booking visits and keeping health records in one place.
 
-## Tech Stack
-- **Frontend**: React + Vite + Tailwind + TanStack Query
-- **Backend**: Node.js + Express + Passport sessions + WebSocket (`/ws`)
-- **Database**: Neon Postgres (via Drizzle ORM) + Prisma (used by `/api/auth/*`)
+Built by [S. M. Apurbo](https://smapurbo.com).
 
-## Repo Structure
-- `apps/web`: Frontend app (Vite)
-- `apps/api`: Backend API (Express)
-- `packages/shared`: Shared schema/types (`@pawpal/shared/schema`)
+---
 
-## Prerequisites
-- Node.js (recommended: 20+)
+## What you can do
+
+- **Adopt** — Browse pets, view profiles, and submit adoption applications
+- **Learn** — Explore articles and resources on pet care and wellness
+- **Plan** — Schedule meet-and-greet and vet appointments
+- **Stay prepared** — Store emergency contacts and pet medical records
+- **Connect** — Real-time chat with other pet owners
+
+---
+
+## Tech stack
+
+| Layer | Technologies |
+|--------|----------------|
+| **Web** | React, Vite, Tailwind CSS, TanStack Query |
+| **API** | Node.js, Express, Passport sessions, WebSocket |
+| **Data** | Neon Postgres, Drizzle ORM, Prisma (auth routes) |
+
+**Monorepo layout:** `apps/web` (frontend), `apps/api` (backend), `packages/shared` (shared types and schema).
+
+---
+
+## Development
+
+### Prerequisites
+
+- Node.js 20+
 - npm
-- A Neon Postgres database (or run without DB for local dev – API will fall back to in‑memory storage)
+- Neon Postgres (optional for local dev—the API can use in-memory storage without `DATABASE_URL`)
 
-## Environment Variables (separated)
+### Environment
 
-### Backend (`apps/api/.env`)
-Create `apps/api/.env` (copy keys from `apps/api/env.example`):
-- **`PORT`**: API port (default 5000)
-- **`DATABASE_URL`**: Neon Postgres connection string (keep secret, never commit)
-- **`SESSION_SECRET`**: Session cookie secret
-- **`JWT_SECRET`**: JWT secret (used by some auth routes)
+Copy the example env files and fill in secrets locally—never commit `.env` files.
 
-### Frontend (`apps/web/.env`)
-Create `apps/web/.env` (copy from `apps/web/env.example`):
-- **Only `VITE_*` variables go here.**
+| App | File | Notes |
+|-----|------|--------|
+| API | `apps/api/.env` | `PORT`, `DATABASE_URL`, `SESSION_SECRET`, `JWT_SECRET` — see `apps/api/env.example` |
+| Web | `apps/web/.env` | Only `VITE_*` variables — see `apps/web/env.example` |
 
-In development, the web app uses a Vite proxy so the UI can call:
-- `GET/POST /api/...` (proxied to `http://localhost:5000`)
-- `ws://.../ws` (proxied to the API WebSocket)
+In development, Vite proxies `/api` and `/ws` to the API on port 5000.
 
-## Install (separate node_modules)
-This repo is set up for separate installs per app:
+### Commands
 
 ```bash
+# Install dependencies (web + api)
 npm run install:all
-```
 
-## Run (Dev)
-
-```bash
+# Run web + API in dev mode
 npm run dev
 ```
 
-Then open:
-- Web: `http://localhost:5173`
-- API: `http://localhost:5000`
-
-## Build + Start (Production)
+- Web: [http://localhost:5173](http://localhost:5173)
+- API: [http://localhost:5000](http://localhost:5000)
 
 ```bash
+# Production build and start
 npm run build
 npm run start
-```
 
-## Database Notes
-- The backend reads **`DATABASE_URL`** from `apps/api/.env`.
-- If `DATABASE_URL` is not set, the API falls back to in‑memory storage for local development.
-- To push schema changes using Drizzle:
-
-```bash
+# Push Drizzle schema (requires DATABASE_URL in apps/api/.env)
 npm run db:push
-```
 
-## Seed Neon with Sample Data
-This will insert sample data (idempotent) for:
-- 20+ pets (with owners)
-- pet medical records
-- adoption applications
-- meet & greet appointments (2-user appointments)
-- emergency contacts
-- resources + testimonials
-
-1. Ensure `apps/api/.env` contains `DATABASE_URL`
-2. Push schema updates:
-
-```bash
-npm run db:push
-```
-
-3. Seed:
-
-```bash
+# Seed sample data (pets, records, appointments, resources, etc.)
 npm run seed
 ```
 
-## Security
-- Do **not** commit `.env` files or database URLs.
-- Use `env.example` files as templates.
+---
 
+## Security
+
+Do not commit `.env` files, database URLs, or other secrets. Use the `env.example` files as templates only.
+
+---
+
+## License
+
+**All rights reserved.**
+
+Copyright © 2026 [S. M. Apurbo](https://smapurbo.com).
+
+This repository and its contents are proprietary. You may not copy, modify, distribute, sublicense, or use any part of this project without prior written permission from the copyright holder.
