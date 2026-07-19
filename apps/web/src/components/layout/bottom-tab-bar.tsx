@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { ROUTE_IMPORTS } from "@/App";
+import { prefetchRoute } from "@/lib/route-imports";
 import { Home, PawPrint, Siren, BookOpen, CalendarDays, type LucideIcon } from "lucide-react";
 
 type Tab = {
@@ -49,8 +49,8 @@ export function BottomTabBar() {
                 aria-current={isActive ? "page" : undefined}
                 aria-label={tab.name}
                 // Warm the chunk as the finger lands, before the tap completes.
-                onPointerEnter={() => ROUTE_IMPORTS[tab.path]?.().catch(() => {})}
-                onTouchStart={() => ROUTE_IMPORTS[tab.path]?.().catch(() => {})}
+                onPointerEnter={() => prefetchRoute(tab.path)}
+                onTouchStart={() => prefetchRoute(tab.path)}
                 className={cn(
                   "relative flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[20px] px-0.5 py-1.5",
                   "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",

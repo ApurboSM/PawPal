@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
+import { prefetchRoute } from "@/lib/route-imports";
 import { cn } from "@/lib/utils";
 import {
   Loader2,
@@ -73,7 +74,7 @@ export function Navbar() {
             {/* Logo */}
             <Link
               href="/"
-              className="group flex min-w-0 items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="group flex min-h-[44px] min-w-0 items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <span className="flex flex-shrink-0 items-center justify-center rounded-full bg-primary/10 p-2 transition-colors duration-200 group-hover:bg-primary/20">
                 <PawPrint className="h-5 w-5 text-primary sm:h-6 sm:w-6" aria-hidden="true" />
@@ -98,6 +99,7 @@ export function Navbar() {
                     <Link
                       href={item.path}
                       aria-current={isActive ? "page" : undefined}
+                      onPointerEnter={() => prefetchRoute(item.path)}
                       className={cn(
                         "relative flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium",
                         "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
@@ -283,6 +285,7 @@ function AccountDrawer({ open, onOpenChange, location, onLogout }: AccountDrawer
                         <Link
                           href={path}
                           onClick={close}
+                          onPointerEnter={() => prefetchRoute(path)}
                           aria-current={isActive ? "page" : undefined}
                           className={cn(
                             "flex min-h-[44px] items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium",

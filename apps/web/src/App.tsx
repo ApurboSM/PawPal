@@ -9,58 +9,28 @@ import { HelmetProvider } from "react-helmet-async";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { RouteSkeletonFallback } from "@/components/layout/route-loading-overlay";
+import { ROUTE_IMPORTS, PRIMARY_ROUTES, prefetchRoute } from "@/lib/route-imports";
 
-// Pages. Each importer is kept as a named function so it can be reused for
-// prefetching — calling it twice is free, the module registry dedupes.
-const importHome = () => import("@/pages/home-page");
-const importAuth = () => import("@/pages/auth-page");
-const importPets = () => import("@/pages/pets-page");
-const importPetDetail = () => import("@/pages/pet-detail-page");
-const importResources = () => import("@/pages/resources-page");
-const importResourceDetail = () => import("@/pages/resource-detail-page");
-const importAppointments = () => import("@/pages/appointment-page");
-const importAppointmentDetail = () => import("@/pages/appointment-detail-page");
-const importAdmin = () => import("@/pages/admin-page");
-const importContact = () => import("@/pages/contact-page");
-const importPrivacy = () => import("@/pages/privacy-policy-page");
-const importTerms = () => import("@/pages/terms-of-service-page");
-const importCookies = () => import("@/pages/cookie-policy-page");
-const importEmergency = () => import("@/pages/emergency-page");
-const importProfile = () => import("@/pages/profile-page");
-const importPetRegister = () => import("@/pages/pet-register-page");
-const importNotFound = () => import("@/pages/not-found");
+// Pages. The five bottom-tab routes reuse the shared loaders from
+// lib/route-imports so a prefetch and the lazy render share one download.
+const HomePage = lazy(ROUTE_IMPORTS["/"] as () => Promise<{ default: React.ComponentType }>);
+const AuthPage = lazy(ROUTE_IMPORTS["/auth"] as () => Promise<{ default: React.ComponentType }>);
+const PetsPage = lazy(ROUTE_IMPORTS["/pets"] as () => Promise<{ default: React.ComponentType }>);
+const ResourcesPage = lazy(ROUTE_IMPORTS["/resources"] as () => Promise<{ default: React.ComponentType }>);
+const EmergencyPage = lazy(ROUTE_IMPORTS["/emergency"] as () => Promise<{ default: React.ComponentType }>);
+const AppointmentPage = lazy(ROUTE_IMPORTS["/appointments"] as () => Promise<{ default: React.ComponentType }>);
+const ContactPage = lazy(ROUTE_IMPORTS["/contact"] as () => Promise<{ default: React.ComponentType }>);
+const ProfilePage = lazy(ROUTE_IMPORTS["/profile"] as () => Promise<{ default: React.ComponentType }>);
+const AdminPage = lazy(ROUTE_IMPORTS["/admin"] as () => Promise<{ default: React.ComponentType }>);
+const PetRegisterPage = lazy(ROUTE_IMPORTS["/pets/register"] as () => Promise<{ default: React.ComponentType }>);
 
-/** Route path -> chunk loader, used by the nav to warm a chunk before the tap lands. */
-export const ROUTE_IMPORTS: Record<string, () => Promise<unknown>> = {
-  "/": importHome,
-  "/auth": importAuth,
-  "/pets": importPets,
-  "/resources": importResources,
-  "/emergency": importEmergency,
-  "/appointments": importAppointments,
-  "/contact": importContact,
-  "/profile": importProfile,
-  "/admin": importAdmin,
-  "/pets/register": importPetRegister,
-};
-
-const HomePage = lazy(importHome);
-const AuthPage = lazy(importAuth);
-const PetsPage = lazy(importPets);
-const PetDetailPage = lazy(importPetDetail);
-const ResourcesPage = lazy(importResources);
-const ResourceDetailPage = lazy(importResourceDetail);
-const AppointmentPage = lazy(importAppointments);
-const AppointmentDetailPage = lazy(importAppointmentDetail);
-const AdminPage = lazy(importAdmin);
-const ContactPage = lazy(importContact);
-const PrivacyPolicyPage = lazy(importPrivacy);
-const TermsOfServicePage = lazy(importTerms);
-const CookiePolicyPage = lazy(importCookies);
-const EmergencyPage = lazy(importEmergency);
-const ProfilePage = lazy(importProfile);
-const PetRegisterPage = lazy(importPetRegister);
-const NotFound = lazy(importNotFound);
+const PetDetailPage = lazy(() => import("@/pages/pet-detail-page"));
+const ResourceDetailPage = lazy(() => import("@/pages/resource-detail-page"));
+const AppointmentDetailPage = lazy(() => import("@/pages/appointment-detail-page"));
+const PrivacyPolicyPage = lazy(() => import("@/pages/privacy-policy-page"));
+const TermsOfServicePage = lazy(() => import("@/pages/terms-of-service-page"));
+const CookiePolicyPage = lazy(() => import("@/pages/cookie-policy-page"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 const ChatWidget = lazy(() =>
   import("@/components/ui/chat-widget").then((m) => ({ default: m.ChatWidget })),
@@ -132,9 +102,7 @@ function AppShell() {
     const onIdle = () => {
       if (cancelled) return;
       setMountChat(true);
-      for (const path of ["/", "/pets", "/emergency", "/resources", "/appointments"]) {
-        ROUTE_IMPORTS[path]?.().catch(() => {});
-      }
+      PRIMARY_ROUTES.forEach(prefetchRoute);
     };
 
     const idleCb =
