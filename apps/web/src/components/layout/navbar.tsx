@@ -120,10 +120,20 @@ export function Navbar() {
                       {isActive && (
                         <motion.span
                           layoutId="nav-active-pill"
-                          transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                          // Tween, not spring: a spring overshoots the target and
+                          // then drifts back for ~400ms, which reads as wobble.
+                          // This curve starts fast and settles without bouncing.
+                          transition={
+                            prefersReducedMotion
+                              ? { duration: 0 }
+                              : { type: "tween", duration: 0.34, ease: [0.32, 0.72, 0, 1] }
+                          }
+                          // Explicit radius lets framer counter-scale the corners,
+                          // otherwise they distort while the pill changes width.
+                          style={{ borderRadius: 9999 }}
                           className={cn(
-                            "glass-capsule-inset absolute inset-0 -z-10 rounded-full",
-                            isEmergency && "glass-capsule-inset-danger",
+                            "glass-capsule-nav absolute inset-0 -z-10",
+                            isEmergency && "glass-capsule-nav-danger",
                           )}
                         />
                       )}

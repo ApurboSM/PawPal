@@ -1,6 +1,7 @@
-import { lazy, type ComponentType } from "react";
+import { lazy, type ComponentType, type ReactElement } from "react";
 
-export type LazyRoute = ComponentType & {
+/** Shaped as `() => ReactElement` because that is what wouter's `component` prop takes. */
+export type LazyRoute = (() => ReactElement) & {
   /** Loads the chunk and caches the component for synchronous rendering. */
   preload: () => Promise<void>;
   /** True once preload has resolved — rendering will not suspend. */
@@ -27,9 +28,10 @@ export function createLazyRoute(loader: () => Promise<unknown>): LazyRoute {
 
   const Fallback = lazy(loader as () => Promise<ModuleShape>);
 
-  const Route = ((props: Record<string, unknown>) => {
+  // Route params come from wouter's hooks inside the pages, so no props to forward.
+  const Route = (() => {
     const Component = Loaded ?? Fallback;
-    return <Component {...props} />;
+    return <Component />;
   }) as LazyRoute;
 
   Route.preload = () => {

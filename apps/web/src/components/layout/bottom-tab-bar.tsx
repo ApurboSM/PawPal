@@ -96,13 +96,15 @@ export function BottomTabBar() {
                 {isActive && (
                   <motion.span
                     layoutId="bottom-tab-capsule"
+                    // Same curve as the desktop nav pill: fast start, no bounce-back.
                     transition={
                       prefersReducedMotion
                         ? { duration: 0 }
-                        : { type: "spring", stiffness: 420, damping: 34 }
+                        : { type: "tween", duration: 0.34, ease: [0.32, 0.72, 0, 1] }
                     }
+                    style={{ borderRadius: 20 }}
                     className={cn(
-                      "glass-capsule absolute inset-0 -z-10 rounded-[20px]",
+                      "glass-capsule absolute inset-0 -z-10",
                       tab.emphasis && "!border-red-200/80",
                     )}
                   />
