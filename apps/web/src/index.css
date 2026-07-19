@@ -72,6 +72,11 @@
 }
 
 :root {
+  /* Height of the floating navbar, including the gap above it. The navbar
+     measures itself and overwrites this at runtime; these values are the
+     first-paint defaults so content is not briefly tucked underneath. */
+  --nav-h: 78px;
+
   --background: 350 100% 98%;  /* Very light pink background */
   --foreground: 340 50% 30%;   /* Dark pink/mauve text */
   --muted: 350 30% 95%;        /* Muted pink */
@@ -299,6 +304,14 @@
     border-color: hsl(0 0% 100% / 0.2);
   }
 
+  /* Full-bleed section that starts at the very top of the viewport, running
+     behind the floating navbar. Cancels the shell's reserved nav space, then
+     pads itself back so its own content still clears the bar. */
+  .bleed-under-nav {
+    margin-top: calc(var(--nav-h) * -1);
+    padding-top: var(--nav-h);
+  }
+
   /* The sliding nav indicator.
      Transform-only transition so the compositor owns it: the pill keeps gliding
      even while the main thread renders the incoming page. The overshoot curve
@@ -378,6 +391,12 @@
 
 /* The fixed bottom tab bar overlays the page on small screens, so reserve its
    height (plus the iOS home indicator) at the end of the document. */
+@media (min-width: 640px) {
+  :root {
+    --nav-h: 90px;
+  }
+}
+
 @media (max-width: 1023px) {
   body {
     /* Bar (58px row + 12px padding) + its 12px bottom margin + breathing room. */

@@ -12,7 +12,7 @@ interface HeroBannerProps {
 export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps) {
   return (
     <section 
-      className="relative overflow-hidden bg-primary/10 text-white hero-hover-effect transition-all-ease"
+      className="bleed-under-nav relative overflow-hidden bg-primary/10 text-white hero-hover-effect transition-all-ease"
       style={{ 
         ...(backgroundImage
           ? {

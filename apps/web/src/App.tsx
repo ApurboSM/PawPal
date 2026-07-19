@@ -129,13 +129,18 @@ function AppShell() {
           fallback — that skeleton flash is what reads as a page reload. With one
           stable boundary, a navigation started in a transition keeps the current
           page on screen until the next chunk is ready. */}
-      <Suspense fallback={<RouteSkeletonFallback />}>
-        <AnimatePresence mode="sync" initial={false}>
-          <motion.div key={location} {...pageMotion}>
-            <Router />
-          </motion.div>
-        </AnimatePresence>
-      </Suspense>
+      {/* The navbar is fixed, so it contributes no layout space. Reserve its
+          height here; sections that want to run under it (the home hero) cancel
+          this with a negative margin via the .bleed-under-nav utility. */}
+      <div style={{ paddingTop: "var(--nav-h)" }}>
+        <Suspense fallback={<RouteSkeletonFallback />}>
+          <AnimatePresence mode="sync" initial={false}>
+            <motion.div key={location} {...pageMotion}>
+              <Router />
+            </motion.div>
+          </AnimatePresence>
+        </Suspense>
+      </div>
 
       <Footer />
 

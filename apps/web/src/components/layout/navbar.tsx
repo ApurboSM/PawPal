@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -49,6 +49,7 @@ export function Navbar() {
 
   const search = typeof window === "undefined" ? "" : window.location.search;
 
+  const headerRef = useRef<HTMLElement>(null);
   const navListRef = useRef<HTMLUListElement>(null);
   const navItemRefs = useRef<Array<HTMLElement | null>>([]);
   const navPaths = useMemo(() => navItems.map((item) => item.path), [navItems]);
@@ -57,12 +58,37 @@ export function Navbar() {
   const activeItem = activeIndex >= 0 ? navItems[activeIndex] : null;
   const capsuleRect = useCapsuleRect(navListRef, navItemRefs, activeIndex, navItems.length);
 
-  // Tighten the bar once the page scrolls so it reads as a floating pill.
+  // Deepen the bar's shadow once the page scrolls so it reads as a floating pill.
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Publish the real header height so pages can reserve exactly that much space
+  // and full-bleed sections can cancel it out.
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const publish = () => {
+      const height = Math.round(el.getBoundingClientRect().height);
+      if (height > 0) {
+        document.documentElement.style.setProperty("--nav-h", `${height}px`);
+      }
+    };
+
+    publish();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", publish);
+      return () => window.removeEventListener("resize", publish);
+    }
+
+    const observer = new ResizeObserver(publish);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const handleLogout = () => {
@@ -72,7 +98,10 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4">
+      {/* Fixed, not sticky: a sticky header occupies layout space, which pushed the
+          hero down and exposed a strip of page background above it. The shell
+          reserves --nav-h for normal pages; full-bleed sections opt out. */}
+      <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4">
         <motion.nav
           initial={prefersReducedMotion ? false : { y: -24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -80,8 +109,10 @@ export function Navbar() {
           aria-label="Main navigation"
           className={cn(
             "glass-panel container mx-auto rounded-[28px]",
-            "transition-[padding,box-shadow] duration-300 ease-out",
-            isScrolled ? "px-3 py-2 sm:px-6" : "px-3 py-2.5 sm:px-6 sm:py-3",
+            // Padding stays constant so the bar's height never changes: --nav-h is
+            // a layout offset, and animating it would shift the page on scroll.
+            "px-3 py-2.5 transition-shadow duration-300 ease-out sm:px-6 sm:py-3",
+            isScrolled && "shadow-[0_16px_40px_-24px_hsl(340_80%_45%/0.5)]",
           )}
         >
           <div className="flex items-center justify-between gap-2">
