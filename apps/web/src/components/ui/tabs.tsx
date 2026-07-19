@@ -12,8 +12,10 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      // Horizontal scroll keeps wide tab sets from pushing the page sideways on phones.
-      "inline-flex h-auto max-w-full items-center justify-center overflow-x-auto rounded-md bg-muted p-1 text-muted-foreground sm:h-10",
+      // Height must follow the triggers: pinning it (h-10) while the triggers are
+      // 44px tall for touch overflows the list and clips them.
+      // Wide tab sets scroll sideways instead of pushing the page sideways.
+      "inline-flex h-auto max-w-full items-center justify-center overflow-x-auto overflow-y-hidden rounded-md bg-muted p-1 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
       className
     )}
     {...props}
@@ -28,7 +30,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background lg:min-h-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+      "inline-flex min-h-[44px] items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background lg:min-h-[32px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
       className
     )}
     {...props}

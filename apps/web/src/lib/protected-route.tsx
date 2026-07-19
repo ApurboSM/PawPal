@@ -18,7 +18,8 @@ export function ProtectedRoute({
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : !user ? (
-        <Redirect to="/auth" />
+        // Preserve the destination so login can hand the user back to it.
+        <Redirect to={`/auth?next=${encodeURIComponent(path)}`} />
       ) : path === "/admin" && user.role !== "admin" ? (
         <Redirect to="/" />
       ) : (

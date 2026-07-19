@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { prefetchRoute } from "@/lib/route-imports";
+import { useRouteTransition, shouldHandleClick } from "@/lib/route-transition";
 import { cn } from "@/lib/utils";
 import {
   Loader2,
@@ -38,6 +39,7 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [location] = useLocation();
   const { user, isLoading, logoutMutation } = useAuth();
+  const { navigateTo } = useRouteTransition();
   const prefersReducedMotion = useReducedMotion();
 
   const navItems =
@@ -96,10 +98,15 @@ export function Navbar() {
                 const isEmergency = item.path === "/emergency";
                 return (
                   <li key={item.path} className="relative">
-                    <Link
+                    <a
                       href={item.path}
                       aria-current={isActive ? "page" : undefined}
                       onPointerEnter={() => prefetchRoute(item.path)}
+                      onClick={(event) => {
+                        if (!shouldHandleClick(event)) return;
+                        event.preventDefault();
+                        navigateTo(item.path);
+                      }}
                       className={cn(
                         "relative flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium",
                         "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
@@ -115,14 +122,14 @@ export function Navbar() {
                           layoutId="nav-active-pill"
                           transition={{ type: "spring", stiffness: 420, damping: 34 }}
                           className={cn(
-                            "glass-capsule absolute inset-0 -z-10 rounded-full",
-                            isEmergency && "!border-red-200/80",
+                            "glass-capsule-inset absolute inset-0 -z-10 rounded-full",
+                            isEmergency && "glass-capsule-inset-danger",
                           )}
                         />
                       )}
                       {isEmergency && <Stethoscope className="h-4 w-4" aria-hidden="true" />}
                       {item.name}
-                    </Link>
+                    </a>
                   </li>
                 );
               })}

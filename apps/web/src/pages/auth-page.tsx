@@ -162,9 +162,10 @@ export default function AuthPage() {
     updateAuthTabInUrl(normalizedTab);
   };
 
-  // Redirect to home if user is already logged in
+  // Once signed in, continue to wherever the user was originally headed.
   if (user) {
-    return <Redirect to="/" />;
+    const next = new URLSearchParams(window.location.search).get("next");
+    return <Redirect to={next && next.startsWith("/") ? next : "/"} />;
   }
 
   const panelMotion = prefersReducedMotion
@@ -197,11 +198,21 @@ export default function AuthPage() {
               {/* Auth card */}
               <div className="w-full xl:col-span-5">
                 <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-                  <TabsList className="mb-4 grid h-auto w-full grid-cols-2 rounded-2xl border border-primary/15 bg-white p-1 shadow-sm">
-                    <TabsTrigger value="login" className="rounded-xl py-2.5 text-sm font-semibold" disabled={isSubmitting}>
+                  {/* The list is tinted and the active trigger is white, so the
+                      selected tab is the one that stands out. */}
+                  <TabsList className="mb-4 grid h-auto w-full grid-cols-2 rounded-2xl border border-primary/15 bg-primary/10 p-1 shadow-sm">
+                    <TabsTrigger
+                      value="login"
+                      className="rounded-xl py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                      disabled={isSubmitting}
+                    >
                       Login
                     </TabsTrigger>
-                    <TabsTrigger value="register" className="rounded-xl py-2.5 text-sm font-semibold" disabled={isSubmitting}>
+                    <TabsTrigger
+                      value="register"
+                      className="rounded-xl py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                      disabled={isSubmitting}
+                    >
                       Sign Up
                     </TabsTrigger>
                   </TabsList>

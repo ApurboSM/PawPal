@@ -9,6 +9,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { RouteSkeletonFallback } from "@/components/layout/route-loading-overlay";
+import { RouteProgress } from "@/components/layout/route-progress";
+import { RouteTransitionProvider } from "@/lib/route-transition";
 import { ROUTE_IMPORTS, PRIMARY_ROUTES, prefetchRoute } from "@/lib/route-imports";
 
 // Pages. The five bottom-tab routes reuse the shared loaders from
@@ -117,29 +119,36 @@ function AppShell() {
     };
   }, []);
 
+  // Enter-only. An exit animation would make every switch wait for the old page
+  // to fade out before the new one starts — that delay is what reads as lag.
   const pageMotion = prefersReducedMotion
     ? {}
     : {
-        initial: { opacity: 0, y: 8 },
+        initial: { opacity: 0, y: 6 },
         animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: -6 },
-        transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const },
+        transition: { duration: 0.16, ease: [0.22, 1, 0.36, 1] as const },
       };
 
   return (
     <>
       {/* Chrome renders once and stays mounted, so navigating never tears it down. */}
       <Navbar />
+      <RouteProgress />
 
       <ScrollToTop location={location} />
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div key={location} {...pageMotion}>
-          <Suspense fallback={<RouteSkeletonFallback />}>
+      {/* Suspense stays OUTSIDE the keyed wrapper. Inside, every navigation would
+          mount a brand-new boundary, and a fresh boundary always shows its
+          fallback — that skeleton flash is what reads as a page reload. With one
+          stable boundary, a navigation started in a transition keeps the current
+          page on screen until the next chunk is ready. */}
+      <Suspense fallback={<RouteSkeletonFallback />}>
+        <AnimatePresence mode="sync" initial={false}>
+          <motion.div key={location} {...pageMotion}>
             <Router />
-          </Suspense>
-        </motion.div>
-      </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
+      </Suspense>
 
       <Footer />
 
@@ -158,7 +167,9 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="light">
         <AuthProvider>
           <TooltipProvider>
-            <AppShell />
+            <RouteTransitionProvider>
+              <AppShell />
+            </RouteTransitionProvider>
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>

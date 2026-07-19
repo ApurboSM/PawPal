@@ -268,6 +268,19 @@
       0 -8px 30px -12px hsl(340 80% 55% / 0.35);
   }
 
+  /* Capsule for use *on top of* another glass surface (the top nav bar).
+     The full glass treatment there stacks a white rim and a pink glow over an
+     already-translucent panel, which reads as a stray outline ring. */
+  .glass-capsule-inset {
+    background-color: hsl(var(--primary) / 0.14);
+    border: 1px solid transparent;
+    box-shadow: inset 0 1px 0 0 hsl(0 0% 100% / 0.5);
+  }
+
+  .glass-capsule-inset-danger {
+    background-color: hsl(0 84% 60% / 0.14);
+  }
+
   /* The travelling pill behind the active bottom-tab item. */
   .glass-capsule {
     background-image: linear-gradient(

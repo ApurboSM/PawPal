@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export function RouteSkeletonFallback() {
   return (
-    <div className="min-h-[60vh] bg-background">
+    <div className="min-h-[60vh] bg-background" data-route-fallback="">
       <div className="container mx-auto px-4 py-8">
         <Skeleton className="mb-6 h-12 w-full rounded-2xl" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
