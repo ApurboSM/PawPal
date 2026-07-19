@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Resource } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { ResourceCard } from "@/components/ui/resource-card";
 import { Helmet } from "react-helmet";
 import { 
@@ -58,7 +56,6 @@ export default function ResourcesPage() {
         <meta name="description" content="Access our comprehensive pet care resources. Learn about nutrition, training, health, and more to ensure your pet's well-being." />
       </Helmet>
       
-      <Navbar />
       
       <main className="min-h-screen bg-neutral-100">
         {/* Header */}
@@ -145,7 +142,6 @@ export default function ResourcesPage() {
         </div>
       </main>
       
-      <Footer />
     </>
   );
 }

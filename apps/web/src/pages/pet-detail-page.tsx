@@ -1,8 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import type { Pet, PetMedicalRecord } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -172,11 +170,9 @@ export default function PetDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-neutral-100">
           <DetailSkeleton />
         </main>
-        <Footer />
       </>
     );
   }
@@ -184,7 +180,6 @@ export default function PetDetailPage() {
   if (isError || !pet) {
     return (
       <>
-        <Navbar />
         <div className="min-h-screen bg-neutral-100 py-12">
           <div className="container mx-auto px-4 text-center">
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
@@ -200,7 +195,6 @@ export default function PetDetailPage() {
             </Button>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -212,7 +206,6 @@ export default function PetDetailPage() {
         <meta name="description" content={`Meet ${pet.name}, a ${formatAge(pet.age)} old ${pet.breed} looking for a loving home. ${pet.description.substring(0, 120)}...`} />
       </Helmet>
       
-      <Navbar />
       
       <main className="bg-neutral-100 min-h-screen py-12">
         <div className="container mx-auto px-4">
@@ -473,7 +466,6 @@ export default function PetDetailPage() {
         </div>
       </main>
       
-      <Footer />
     </>
   );
 }

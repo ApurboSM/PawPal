@@ -7,8 +7,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import {
   AlertTriangle,
   HeartPulse,
@@ -309,7 +307,6 @@ export default function EmergencyPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPetType, setSelectedPetType] = useState("all");
   const [filterEmergencyOnly, setFilterEmergencyOnly] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddContactDialogOpen, setIsAddContactDialogOpen] = useState(false);
   const [isAddMedicalRecordDialogOpen, setIsAddMedicalRecordDialogOpen] = useState(false);
 
@@ -507,7 +504,6 @@ export default function EmergencyPage() {
         />
       </Helmet>
 
-      <Navbar />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-red-50 to-orange-50 relative overflow-hidden">
@@ -1536,32 +1532,6 @@ export default function EmergencyPage() {
         </div>
       </section>
 
-      {/* Mobile menu - for small screens */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-muted z-50">
-        <div className="flex justify-around">
-          <a href="#" className="flex flex-col items-center py-3 flex-1">
-            <HeartPulse className="h-6 w-6 text-red-600" />
-            <span className="text-xs mt-1">First Aid</span>
-          </a>
-          <a href="#emergency-contacts" className="flex flex-col items-center py-3 flex-1">
-            <Phone className="h-6 w-6 text-red-600" />
-            <span className="text-xs mt-1">Contacts</span>
-          </a>
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex flex-col items-center py-3 flex-1"
-          >
-            {isMenuOpen ? (
-              <X className="h-6 w-6 text-red-600" />
-            ) : (
-              <Menu className="h-6 w-6 text-red-600" />
-            )}
-            <span className="text-xs mt-1">Menu</span>
-          </button>
-        </div>
-      </div>
-
-      <Footer />
     </div>
   );
 }

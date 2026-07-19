@@ -1,7 +1,5 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Shield, Gavel, Mail } from "lucide-react";
 
@@ -16,7 +14,6 @@ export default function TermsOfServicePage() {
         />
       </Helmet>
 
-      <Navbar />
 
       <main className="min-h-screen bg-neutral-100">
         <div className="bg-[#4A6FA5] py-12 text-white">
@@ -108,7 +105,6 @@ export default function TermsOfServicePage() {
         </div>
       </main>
 
-      <Footer />
     </>
   );
 }

@@ -1,14 +1,21 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Suspense fallback for a route chunk that has not downloaded yet.
+ *
+ * It fills the content area only — the navbar, bottom tab bar and footer are
+ * mounted once in the app shell and must never be torn down by a navigation.
+ *
+ * There is deliberately no timed full-screen overlay here: an artificial minimum
+ * display time makes every navigation feel like a page reload.
+ */
 export function RouteSkeletonFallback() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[60vh] bg-background">
       <div className="container mx-auto px-4 py-8">
         <Skeleton className="mb-6 h-12 w-full rounded-2xl" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-4 rounded-2xl border bg-white p-6">
+          <div className="space-y-4 rounded-2xl border bg-white p-6 lg:col-span-2">
             <Skeleton className="h-7 w-2/3" />
             <Skeleton className="h-4 w-11/12" />
             <Skeleton className="h-4 w-4/5" />
@@ -29,29 +36,3 @@ export function RouteSkeletonFallback() {
     </div>
   );
 }
-
-/**
- * Shows the PawPal loading overlay during route transitions.
- * - Triggers on location change (and on first mount)
- * - Stays visible for at least MIN_MS
- * - Hides once queries/mutations settle, with a MAX_MS safety cutoff
- */
-export function RouteLoadingOverlay() {
-  const [location] = useLocation();
-  const [active, setActive] = useState(false);
-  const MIN_MS = 320;
-
-  useEffect(() => {
-    setActive(true);
-    const timer = window.setTimeout(() => setActive(false), MIN_MS);
-    return () => window.clearTimeout(timer);
-  }, [location]);
-
-  if (!active) return null;
-  return (
-    <div className="pointer-events-none fixed inset-0 z-[80] bg-background/90 backdrop-blur-[1px]">
-      <RouteSkeletonFallback />
-    </div>
-  );
-}
-

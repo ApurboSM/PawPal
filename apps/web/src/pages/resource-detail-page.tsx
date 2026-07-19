@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Resource } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -23,11 +21,9 @@ export default function ResourceDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-neutral-100">
           <DetailSkeleton />
         </main>
-        <Footer />
       </>
     );
   }
@@ -35,7 +31,6 @@ export default function ResourceDetailPage() {
   if (isError || !resource) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-neutral-100">
           <div className="container mx-auto px-4 py-12">
             <div className="bg-white rounded-xl shadow-md p-8 text-center">
@@ -53,7 +48,6 @@ export default function ResourceDetailPage() {
             </div>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
@@ -65,7 +59,6 @@ export default function ResourceDetailPage() {
         <meta name="description" content={resource.summary} />
       </Helmet>
       
-      <Navbar />
       
       <main className="min-h-screen bg-neutral-100">
         <div className="container mx-auto px-4 py-12">
@@ -102,7 +95,6 @@ export default function ResourceDetailPage() {
         </div>
       </main>
       
-      <Footer />
     </>
   );
 }

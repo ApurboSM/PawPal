@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
 import type { Pet } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { PetCard } from "@/components/ui/pet-card";
 import { Helmet } from "react-helmet";
 import { 
@@ -140,7 +138,6 @@ export default function PetsPage() {
         <meta name="description" content="Browse our available pets for adoption. Find dogs, cats, rabbits, birds and more looking for their forever homes." />
       </Helmet>
       
-      <Navbar />
       
       <main className="bg-neutral-100 min-h-screen">
         {/* Page Header */}
@@ -365,7 +362,6 @@ export default function PetsPage() {
         </div>
       </main>
       
-      <Footer />
     </>
   );
 }

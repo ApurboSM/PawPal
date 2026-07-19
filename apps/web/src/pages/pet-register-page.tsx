@@ -4,8 +4,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,7 +163,6 @@ export default function PetRegisterPage() {
         <meta name="description" content="List your pet for adoption or sale, including medical records and care details." />
       </Helmet>
 
-      <Navbar />
 
       <main className="min-h-screen bg-neutral-100 py-12">
         <div className="container mx-auto px-4 max-w-3xl">
@@ -634,7 +631,6 @@ export default function PetRegisterPage() {
         </div>
       </main>
 
-      <Footer />
     </>
   );
 }

@@ -1,6 +1,4 @@
 import { Suspense, lazy } from "react";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { HeroBanner } from "@/components/sections/hero-banner";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { PetCategories } from "@/components/sections/pet-categories";
@@ -42,7 +40,6 @@ export default function HomePage() {
         <meta name="description" content="Find your perfect companion at PawPal. Adopt, care, and connect with pets looking for their forever homes." />
       </Helmet>
       
-      <Navbar />
       
       <main>
         <HeroBanner 
@@ -169,7 +166,6 @@ export default function HomePage() {
         </LazyMount>
       </main>
       
-      <Footer />
     </>
   );
 }

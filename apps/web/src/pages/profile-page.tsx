@@ -3,8 +3,6 @@ import { Helmet } from "react-helmet";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useSearch } from "wouter";
 import type { Appointment, AdoptionApplication, Pet } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { ProfileSkeleton } from "@/components/skeletons/page-skeletons";
 import { useAuth } from "@/hooks/use-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -216,11 +214,9 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-neutral-100 py-10">
           <ProfileSkeleton />
         </main>
-        <Footer />
       </>
     );
   }
@@ -232,7 +228,6 @@ export default function ProfilePage() {
         <meta name="description" content="Manage your PawPal profile, pets, and history." />
       </Helmet>
 
-      <Navbar />
 
       <main className="min-h-screen bg-neutral-100 py-10">
         <div className="container mx-auto px-4">
@@ -770,7 +765,6 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <Footer />
     </>
   );
 }

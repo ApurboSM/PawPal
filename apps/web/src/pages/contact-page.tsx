@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
 import { 
   Card, 
@@ -101,7 +99,6 @@ export default function ContactPage() {
         <meta name="description" content="Get in touch with PawPal for questions about pet adoption, pet care, appointments, or general inquiries. We're here to help with your pet needs." />
       </Helmet>
        
-      <Navbar />
       
       <main className="min-h-screen bg-neutral-100">
         {/* Header */}
@@ -411,7 +408,6 @@ export default function ContactPage() {
         </div>
       </main>
       
-      <Footer />
     </>
   );
 }
