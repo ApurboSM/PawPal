@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,6 +7,8 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 import { prefetchRoute } from "@/lib/route-imports";
 import { useRouteTransition, shouldHandleClick } from "@/lib/route-transition";
+import { isNavItemActive, navHref, useNavIntent, deferNavigation } from "@/lib/nav-state";
+import { NavCapsule, useCapsuleRect } from "@/components/layout/nav-capsule";
 import { cn } from "@/lib/utils";
 import {
   Loader2,
@@ -44,6 +46,16 @@ export function Navbar() {
 
   const navItems =
     user?.role === "admin" ? [...NAV_ITEMS, { name: "Admin", path: "/admin" }] : NAV_ITEMS;
+
+  const search = typeof window === "undefined" ? "" : window.location.search;
+
+  const navListRef = useRef<HTMLUListElement>(null);
+  const navItemRefs = useRef<Array<HTMLElement | null>>([]);
+  const navPaths = useMemo(() => navItems.map((item) => item.path), [navItems]);
+  const { activePath, setIntent } = useNavIntent(location, search, navPaths);
+  const activeIndex = navItems.findIndex((item) => item.path === activePath);
+  const activeItem = activeIndex >= 0 ? navItems[activeIndex] : null;
+  const capsuleRect = useCapsuleRect(navListRef, navItemRefs, activeIndex, navItems.length);
 
   // Tighten the bar once the page scrolls so it reads as a floating pill.
   useEffect(() => {
@@ -92,23 +104,44 @@ export function Navbar() {
             </Link>
 
             {/* Desktop navigation */}
-            <ul className="hidden items-center gap-0.5 lg:flex xl:gap-1">
-              {navItems.map((item) => {
-                const isActive = location === item.path;
+            <ul ref={navListRef} className="relative hidden items-center gap-0.5 lg:flex xl:gap-1">
+              <NavCapsule
+                rect={capsuleRect}
+                radius={9999}
+                className={cn(
+                  "glass-capsule-nav",
+                  activeItem?.path === "/emergency" && "glass-capsule-nav-danger",
+                )}
+              />
+
+              {navItems.map((item, index) => {
+                const isActive = item.path === activePath;
                 const isEmergency = item.path === "/emergency";
+                const href = navHref(item.path, Boolean(user));
                 return (
-                  <li key={item.path} className="relative">
+                  <li
+                    key={item.path}
+                    ref={(el) => {
+                      navItemRefs.current[index] = el;
+                    }}
+                    className="relative"
+                  >
                     <a
-                      href={item.path}
-                      aria-current={isActive ? "page" : undefined}
+                      href={href}
+                      aria-current={
+                        isNavItemActive(location, search, item.path) ? "page" : undefined
+                      }
                       onPointerEnter={() => prefetchRoute(item.path)}
                       onClick={(event) => {
                         if (!shouldHandleClick(event)) return;
                         event.preventDefault();
-                        navigateTo(item.path);
+                        // Move the capsule now, navigate on the next frame so the
+                        // indicator paints before the new page's render blocks it.
+                        setIntent(item.path);
+                        deferNavigation(() => navigateTo(href));
                       }}
                       className={cn(
-                        "relative flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium",
+                        "relative z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium",
                         "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                         isEmergency
                           ? "text-red-600 hover:text-red-700"
@@ -117,26 +150,6 @@ export function Navbar() {
                             : "text-foreground hover:text-primary",
                       )}
                     >
-                      {isActive && (
-                        <motion.span
-                          layoutId="nav-active-pill"
-                          // Tween, not spring: a spring overshoots the target and
-                          // then drifts back for ~400ms, which reads as wobble.
-                          // This curve starts fast and settles without bouncing.
-                          transition={
-                            prefersReducedMotion
-                              ? { duration: 0 }
-                              : { type: "tween", duration: 0.34, ease: [0.32, 0.72, 0, 1] }
-                          }
-                          // Explicit radius lets framer counter-scale the corners,
-                          // otherwise they distort while the pill changes width.
-                          style={{ borderRadius: 9999 }}
-                          className={cn(
-                            "glass-capsule-nav absolute inset-0 -z-10",
-                            isEmergency && "glass-capsule-nav-danger",
-                          )}
-                        />
-                      )}
                       {isEmergency && <Stethoscope className="h-4 w-4" aria-hidden="true" />}
                       {item.name}
                     </a>
