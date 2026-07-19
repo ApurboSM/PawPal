@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Appointment, Pet } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -249,7 +247,6 @@ export default function AppointmentPage() {
         <meta name="description" content="Schedule a visit or veterinary appointment for your pet. Book meet & greets, vet check-ups, or grooming services at PawPal." />
       </Helmet>
       
-      <Navbar />
       
       <main className="min-h-screen bg-neutral-100 py-12">
         <div className="container mx-auto px-4">
@@ -797,7 +794,6 @@ export default function AppointmentPage() {
         </div>
       </main>
       
-      <Footer />
     </>
   );
 }

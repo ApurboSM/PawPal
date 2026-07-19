@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useParams, Link } from "wouter";
 import type { Appointment, Pet } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,11 +44,9 @@ export default function AppointmentDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-neutral-100">
           <DetailSkeleton />
         </main>
-        <Footer />
       </>
     );
   }
@@ -58,7 +54,6 @@ export default function AppointmentDetailPage() {
   if (isError || !appointment) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-neutral-100 py-12">
           <div className="container mx-auto px-4">
             <Card>
@@ -72,7 +67,6 @@ export default function AppointmentDetailPage() {
             </Card>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
@@ -86,7 +80,6 @@ export default function AppointmentDetailPage() {
         <meta name="description" content="View complete appointment details and related pet information." />
       </Helmet>
 
-      <Navbar />
 
       <main className="min-h-screen bg-neutral-100 py-12">
         <div className="container mx-auto px-4 space-y-6">
@@ -187,7 +180,6 @@ export default function AppointmentDetailPage() {
         </div>
       </main>
 
-      <Footer />
     </>
   );
 }

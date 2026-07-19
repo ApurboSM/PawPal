@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { ROUTE_IMPORTS } from "@/App";
 import { Home, PawPrint, Siren, BookOpen, CalendarDays, type LucideIcon } from "lucide-react";
 
 type Tab = {
@@ -47,8 +48,11 @@ export function BottomTabBar() {
                 href={tab.path}
                 aria-current={isActive ? "page" : undefined}
                 aria-label={tab.name}
+                // Warm the chunk as the finger lands, before the tap completes.
+                onPointerEnter={() => ROUTE_IMPORTS[tab.path]?.().catch(() => {})}
+                onTouchStart={() => ROUTE_IMPORTS[tab.path]?.().catch(() => {})}
                 className={cn(
-                  "relative flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-[20px] px-0.5 py-1.5",
+                  "relative flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[20px] px-0.5 py-1.5",
                   "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
                   tab.emphasis
                     ? isActive
@@ -74,23 +78,28 @@ export function BottomTabBar() {
                   />
                 )}
 
-                <span
+                <motion.span
+                  animate={
+                    prefersReducedMotion ? {} : { scale: isActive ? 1.12 : 1, y: isActive ? -1 : 0 }
+                  }
+                  transition={{ type: "spring", stiffness: 500, damping: 28 }}
                   className={cn(
-                    "flex items-center justify-center rounded-full transition-transform duration-200",
+                    "flex items-center justify-center rounded-full",
                     tab.emphasis && "bg-red-500/10 p-1",
-                    tab.emphasis && isActive && "bg-red-500/15",
+                    tab.emphasis && isActive && "bg-red-500/20",
                   )}
                 >
                   <Icon
-                    className={cn("h-5 w-5", tab.emphasis && "h-[1.35rem] w-[1.35rem]")}
+                    className={cn("h-7 w-7", tab.emphasis && "h-[1.9rem] w-[1.9rem]")}
+                    strokeWidth={isActive ? 2.6 : 2.2}
                     aria-hidden="true"
                   />
-                </span>
+                </motion.span>
 
                 <span
                   className={cn(
-                    "w-full truncate text-center text-[0.65rem] font-medium leading-tight",
-                    isActive && "font-semibold",
+                    "w-full truncate text-center text-[0.7rem] leading-tight",
+                    isActive ? "font-bold" : "font-semibold",
                   )}
                 >
                   {tab.shortName}

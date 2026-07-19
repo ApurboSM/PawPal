@@ -329,7 +329,7 @@
    height (plus the iOS home indicator) at the end of the document. */
 @media (max-width: 1023px) {
   body {
-    /* Bar (52px row + 12px padding) + its 12px bottom margin + breathing room. */
-    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+    /* Bar (58px row + 12px padding) + its 12px bottom margin + breathing room. */
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

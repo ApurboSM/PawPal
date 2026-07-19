@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Pet, Resource, AdoptionApplication, User } from "@pawpal/shared/schema";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -517,7 +515,6 @@ export default function AdminPage() {
         <meta name="description" content="Admin dashboard for managing pets, applications, resources, and more on the PawPal pet adoption platform." />
       </Helmet>
       
-      <Navbar />
       
       <main className="min-h-screen bg-neutral-100 py-12">
         <div className="container mx-auto px-4">
@@ -1975,7 +1972,6 @@ export default function AdminPage() {
         </div>
       </main>
       
-      <Footer />
     </>
   );
 }

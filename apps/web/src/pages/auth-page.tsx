@@ -10,8 +10,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth, loginSchema, registerSchema, type RegisterData } from "@/hooks/use-auth";
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
 import { AuthSkeleton } from "@/components/skeletons/page-skeletons";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Loader2, PawPrint, ShieldCheck, CalendarHeart, HeartHandshake, BookOpen } from "lucide-react";
@@ -187,7 +185,6 @@ export default function AuthPage() {
         />
       </Helmet>
 
-      <Navbar />
 
       {isAuthLoading ? (
         <main className="min-h-screen bg-background">
@@ -515,7 +512,6 @@ export default function AuthPage() {
         </main>
       )}
 
-      <Footer />
     </>
   );
 }
