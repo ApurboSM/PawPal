@@ -371,7 +371,9 @@ export default function AppointmentPage() {
                                       isBefore(date, startOfDay(new Date())) ||
                                       date.getDay() === 0 // Disable Sundays
                                     }
-                                    initialFocus
+                                    // No initialFocus: that is for calendars inside a
+                                    // popover. On this inline form it grabs focus on
+                                    // load and scrolls the page past its own heading.
                                   />
                                 </div>
                                 <FormMessage />
