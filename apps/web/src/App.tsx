@@ -11,51 +11,38 @@ import { Footer } from "@/components/layout/footer";
 import { RouteSkeletonFallback } from "@/components/layout/route-loading-overlay";
 import { RouteProgress } from "@/components/layout/route-progress";
 import { RouteTransitionProvider } from "@/lib/route-transition";
-import { ROUTE_IMPORTS, PRIMARY_ROUTES, prefetchRoute } from "@/lib/route-imports";
-
-// Pages. The five bottom-tab routes reuse the shared loaders from
-// lib/route-imports so a prefetch and the lazy render share one download.
-const HomePage = lazy(ROUTE_IMPORTS["/"] as () => Promise<{ default: React.ComponentType }>);
-const AuthPage = lazy(ROUTE_IMPORTS["/auth"] as () => Promise<{ default: React.ComponentType }>);
-const PetsPage = lazy(ROUTE_IMPORTS["/pets"] as () => Promise<{ default: React.ComponentType }>);
-const ResourcesPage = lazy(ROUTE_IMPORTS["/resources"] as () => Promise<{ default: React.ComponentType }>);
-const EmergencyPage = lazy(ROUTE_IMPORTS["/emergency"] as () => Promise<{ default: React.ComponentType }>);
-const AppointmentPage = lazy(ROUTE_IMPORTS["/appointments"] as () => Promise<{ default: React.ComponentType }>);
-const ContactPage = lazy(ROUTE_IMPORTS["/contact"] as () => Promise<{ default: React.ComponentType }>);
-const ProfilePage = lazy(ROUTE_IMPORTS["/profile"] as () => Promise<{ default: React.ComponentType }>);
-const AdminPage = lazy(ROUTE_IMPORTS["/admin"] as () => Promise<{ default: React.ComponentType }>);
-const PetRegisterPage = lazy(ROUTE_IMPORTS["/pets/register"] as () => Promise<{ default: React.ComponentType }>);
-
-const PetDetailPage = lazy(() => import("@/pages/pet-detail-page"));
-const ResourceDetailPage = lazy(() => import("@/pages/resource-detail-page"));
-const AppointmentDetailPage = lazy(() => import("@/pages/appointment-detail-page"));
-const PrivacyPolicyPage = lazy(() => import("@/pages/privacy-policy-page"));
-const TermsOfServicePage = lazy(() => import("@/pages/terms-of-service-page"));
-const CookiePolicyPage = lazy(() => import("@/pages/cookie-policy-page"));
-const NotFound = lazy(() => import("@/pages/not-found"));
+import {
+  ROUTES,
+  PRIMARY_ROUTES,
+  prefetchRoute,
+  PET_DETAIL_ROUTE,
+  RESOURCE_DETAIL_ROUTE,
+  APPOINTMENT_DETAIL_ROUTE,
+  NOT_FOUND_ROUTE,
+} from "@/lib/route-imports";
 
 const ChatWidget = lazy(() =>
   import("@/components/ui/chat-widget").then((m) => ({ default: m.ChatWidget })),
 );
 
-// wouter's `Route` typing expects a plain component function, not a lazy exotic component.
-const HomePageRoute = () => <HomePage />;
-const AuthPageRoute = () => <AuthPage />;
-const PetsPageRoute = () => <PetsPage />;
-const PetDetailPageRoute = () => <PetDetailPage />;
-const ResourcesPageRoute = () => <ResourcesPage />;
-const ResourceDetailPageRoute = () => <ResourceDetailPage />;
-const AppointmentPageRoute = () => <AppointmentPage />;
-const AppointmentDetailPageRoute = () => <AppointmentDetailPage />;
-const AdminPageRoute = () => <AdminPage />;
-const ContactPageRoute = () => <ContactPage />;
-const PrivacyPolicyPageRoute = () => <PrivacyPolicyPage />;
-const TermsOfServicePageRoute = () => <TermsOfServicePage />;
-const CookiePolicyPageRoute = () => <CookiePolicyPage />;
-const EmergencyPageRoute = () => <EmergencyPage />;
-const ProfilePageRoute = () => <ProfilePage />;
-const PetRegisterPageRoute = () => <PetRegisterPage />;
-const NotFoundRoute = () => <NotFound />;
+// wouter's `Route` typing expects a plain component function.
+const HomePageRoute = ROUTES["/"];
+const AuthPageRoute = ROUTES["/auth"];
+const PetsPageRoute = ROUTES["/pets"];
+const PetDetailPageRoute = PET_DETAIL_ROUTE;
+const ResourcesPageRoute = ROUTES["/resources"];
+const ResourceDetailPageRoute = RESOURCE_DETAIL_ROUTE;
+const AppointmentPageRoute = ROUTES["/appointments"];
+const AppointmentDetailPageRoute = APPOINTMENT_DETAIL_ROUTE;
+const AdminPageRoute = ROUTES["/admin"];
+const ContactPageRoute = ROUTES["/contact"];
+const PrivacyPolicyPageRoute = ROUTES["/privacy-policy"];
+const TermsOfServicePageRoute = ROUTES["/terms-of-service"];
+const CookiePolicyPageRoute = ROUTES["/cookie-policy"];
+const EmergencyPageRoute = ROUTES["/emergency"];
+const ProfilePageRoute = ROUTES["/profile"];
+const PetRegisterPageRoute = ROUTES["/pets/register"];
+const NotFoundRoute = NOT_FOUND_ROUTE;
 
 function Router() {
   return (
