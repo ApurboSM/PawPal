@@ -230,3 +230,106 @@
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Liquid glass
+   Translucent panels that refract the page behind them. Backdrop blur is the
+   whole effect, so every rule has an opaque fallback for browsers without it
+   (and for users who ask for reduced transparency).
+   --------------------------------------------------------------------------- */
+@layer components {
+  .glass-panel {
+    background-image: linear-gradient(
+      160deg,
+      hsl(0 0% 100% / 0.72) 0%,
+      hsl(350 100% 99% / 0.52) 45%,
+      hsl(340 80% 95% / 0.42) 100%
+    );
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.55);
+    box-shadow:
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.75),
+      inset 0 -1px 0 0 hsl(340 60% 90% / 0.35),
+      0 22px 48px -24px hsl(340 80% 55% / 0.45);
+  }
+
+  .glass-bar {
+    background-image: linear-gradient(
+      to top,
+      hsl(0 0% 100% / 0.82) 0%,
+      hsl(350 100% 99% / 0.6) 100%
+    );
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.6);
+    box-shadow:
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.8),
+      0 -8px 30px -12px hsl(340 80% 55% / 0.35);
+  }
+
+  /* The travelling pill behind the active bottom-tab item. */
+  .glass-capsule {
+    background-image: linear-gradient(
+      165deg,
+      hsl(0 0% 100% / 0.9) 0%,
+      hsl(340 80% 96% / 0.75) 100%
+    );
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid hsl(0 0% 100% / 0.85);
+    box-shadow:
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.95),
+      0 6px 16px -8px hsl(340 80% 55% / 0.55);
+  }
+
+  .dark .glass-panel,
+  .dark .glass-bar {
+    background-image: linear-gradient(
+      160deg,
+      hsl(342 30% 20% / 0.78) 0%,
+      hsl(342 30% 16% / 0.6) 100%
+    );
+    border-color: hsl(0 0% 100% / 0.14);
+    box-shadow:
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.16),
+      0 22px 48px -24px hsl(342 60% 5% / 0.7);
+  }
+
+  .dark .glass-capsule {
+    background-image: linear-gradient(165deg, hsl(342 30% 30% / 0.9), hsl(342 30% 22% / 0.75));
+    border-color: hsl(0 0% 100% / 0.22);
+  }
+
+  /* Without backdrop-filter the panels would be unreadable washes of colour.
+     Selectors are doubled so the opaque fallback outranks any Tailwind bg-*
+     utility sitting on the same element. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-panel.glass-panel,
+    .glass-bar.glass-bar,
+    .glass-capsule.glass-capsule {
+      background-image: none;
+      background-color: hsl(var(--card));
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .glass-panel.glass-panel,
+    .glass-bar.glass-bar,
+    .glass-capsule.glass-capsule {
+      background-image: none;
+      background-color: hsl(var(--card));
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+}
+
+/* The fixed bottom tab bar overlays the page on small screens, so reserve its
+   height (plus the iOS home indicator) at the end of the document. */
+@media (max-width: 1023px) {
+  body {
+    /* Bar (52px row + 12px padding) + its 12px bottom margin + breathing room. */
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+}

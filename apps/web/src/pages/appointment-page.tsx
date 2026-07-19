@@ -365,7 +365,7 @@ export default function AppointmentPage() {
                             render={({ field }) => (
                               <FormItem className="flex flex-col">
                                 <FormLabel>Appointment Date</FormLabel>
-                                <div className="border rounded-md p-4">
+                                <div className="rounded-md border p-1.5 sm:p-4">
                                   <Calendar
                                     mode="single"
                                     selected={field.value}
@@ -410,7 +410,7 @@ export default function AppointmentPage() {
                                       <div className="flex items-center gap-2">
                                         <button
                                           type="button"
-                                          className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
+                                          className={`min-h-[36px] px-3 py-1.5 rounded-full text-xs font-semibold transition ${
                                             parts.period === "AM"
                                               ? "bg-[#4A6FA5] text-white"
                                               : "bg-neutral-100 text-neutral-600"
@@ -421,7 +421,7 @@ export default function AppointmentPage() {
                                         </button>
                                         <button
                                           type="button"
-                                          className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
+                                          className={`min-h-[36px] px-3 py-1.5 rounded-full text-xs font-semibold transition ${
                                             parts.period === "PM"
                                               ? "bg-[#4A6FA5] text-white"
                                               : "bg-neutral-100 text-neutral-600"

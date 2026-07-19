@@ -184,7 +184,7 @@ export function PetCard({ pet }: PetCardProps) {
             <Button 
               variant="ghost" 
               size="icon"
-              className="h-9 w-9 rounded-full text-primary hover:text-primary/80 hover:bg-primary/5"
+              className="h-11 w-11 rounded-full text-primary hover:bg-primary/5 hover:text-primary/80 lg:h-9 lg:w-9"
             >
               <PawPrint className="h-5 w-5" />
             </Button>

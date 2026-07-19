@@ -1526,10 +1526,10 @@ export default function EmergencyPage() {
           </div>
           
           <div className="mt-12 text-center">
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <Button className="bg-red-600 hover:bg-red-700">
+            <a href="#" target="_blank" rel="noopener noreferrer" className="inline-block max-w-full">
+              <Button className="h-auto max-w-full whitespace-normal bg-red-600 py-3 text-center hover:bg-red-700">
                 Download Complete Pet Emergency Checklist
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5 flex-shrink-0" />
               </Button>
             </a>
           </div>

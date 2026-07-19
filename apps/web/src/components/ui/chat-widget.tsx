@@ -250,7 +250,8 @@ export function ChatWidget() {
   );
 
   return (
-    <div className="fixed right-6 bottom-6 z-50">
+    // Sits above the mobile bottom tab bar; drops back to the corner from lg up.
+    <div className="fixed bottom-[7.5rem] right-4 z-50 lg:bottom-6 lg:right-6">
       {/* Chat Toggle Button */}
       <Button
         onClick={toggleChat}
@@ -263,7 +264,7 @@ export function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="absolute bottom-20 right-0 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-primary/20 overflow-hidden transition-all-ease">
+        <div className="absolute bottom-20 right-0 w-[calc(100vw-2rem)] max-w-sm overflow-hidden rounded-xl border border-primary/20 bg-white shadow-xl transition-all-ease sm:w-96">
           {/* Header */}
           <div className="bg-gradient-to-r from-primary to-secondary p-4 text-white">
             <div className="flex items-center">

@@ -32,6 +32,9 @@ import createMemoryStore from "memorystore";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { db as rawDb, pool as rawPool, hasDatabaseUrl } from "./db";
+import { hashPassword } from "./password";
+
+const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
 
 // DatabaseStorage is only instantiated when DATABASE_URL is present, so we can safely
 // treat these as non-null within this module's DB-only code paths.
@@ -971,7 +974,7 @@ export class DatabaseStorage implements IStorage {
       if (existingUsers[0].count === 0) {
         await this.createUser({
           username: "admin",
-          password: "admin", // This will be hashed in auth.ts
+          password: await hashPassword(DEFAULT_ADMIN_PASSWORD),
           email: "admin@pawpal.com",
           name: "Admin User",
           role: "admin"
