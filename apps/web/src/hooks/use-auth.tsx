@@ -26,12 +26,16 @@ type LoginData = {
 };
 
 // Frontend-only validation schema (avoid importing DB/drizzle schema into the browser bundle)
+// Keep in sync with registerBodySchema in apps/api/src/auth.ts
 export const registerSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-  email: z.string().email("Valid email is required"),
-  name: z.string().min(1, "Name is required"),
-  role: z.string().default("user"),
+  username: z.string().trim().min(3, "Username must be at least 3 characters").max(40),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[a-zA-Z]/, "Password must contain a letter")
+    .regex(/[0-9]/, "Password must contain a number"),
+  email: z.string().trim().email("Valid email is required"),
+  name: z.string().trim().min(2, "Name is required").max(100),
   confirmPassword: z.string().min(1, "Confirm password is required"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",

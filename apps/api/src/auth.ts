@@ -2,30 +2,29 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
 import { storage } from "./storage";
+import { hashPassword, comparePasswords } from "./password";
 import { User as SelectUser } from "@pawpal/shared/schema";
+import { z } from "zod";
+
+// Mirrors the client-side registration form. `role` is intentionally absent so it
+// can never be supplied by the caller.
+const registerBodySchema = z.object({
+  username: z.string().trim().min(3, "Username must be at least 3 characters").max(40),
+  email: z.string().trim().email("Valid email is required"),
+  name: z.string().trim().min(2, "Name is required").max(100),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(200)
+    .regex(/[a-zA-Z]/, "Password must contain a letter")
+    .regex(/[0-9]/, "Password must contain a number"),
+});
 
 declare global {
   namespace Express {
     interface User extends SelectUser {}
   }
-}
-
-const scryptAsync = promisify(scrypt);
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
-}
-
-async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
 export function setupAuth(app: Express) {
@@ -48,11 +47,14 @@ export function setupAuth(app: Express) {
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
-      const user = await storage.getUserByUsername(username);
-      if (!user || !(await comparePasswords(password, user.password))) {
-        return done(null, false);
-      } else {
+      try {
+        const user = await storage.getUserByUsername(username);
+        if (!user || !(await comparePasswords(password, user.password))) {
+          return done(null, false);
+        }
         return done(null, user);
+      } catch (error) {
+        return done(error as Error);
       }
     }),
   );
@@ -65,20 +67,35 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      const parsed = registerBodySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid registration details",
+          errors: parsed.error.errors,
+        });
+      }
+
+      const { username, email, name, password: plainPassword } = parsed.data;
+
       // Check if username or email already exists
-      const existingUsername = await storage.getUserByUsername(req.body.username);
+      const existingUsername = await storage.getUserByUsername(username);
       if (existingUsername) {
         return res.status(400).json({ message: "Username already exists" });
       }
-      
-      const existingEmail = await storage.getUserByEmail(req.body.email);
+
+      const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
         return res.status(400).json({ message: "Email already exists" });
       }
 
+      // `role` is deliberately never taken from the request body — otherwise any
+      // visitor could self-register as an admin.
       const user = await storage.createUser({
-        ...req.body,
-        password: await hashPassword(req.body.password),
+        username,
+        email,
+        name,
+        role: "user",
+        password: await hashPassword(plainPassword),
       });
 
       // Remove password from response

@@ -3,14 +3,12 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema, insertEmergencyContactSchema, insertPetMedicalRecordSchema } from "@pawpal/shared/schema";
+import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema, insertEmergencyContactSchema, insertPetMedicalRecordSchema, insertContactMessageSchema } from "@pawpal/shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import type { FileFilterCallback } from "multer";
 import path from "path";
 import fs from "fs";
-import authRoutes from "./routes/auth";
-import userRoutes from "./routes/user";
 import { z as zod } from "zod";
 import { hasDatabaseUrl, pool } from "./db";
 
@@ -33,10 +31,6 @@ const isAdmin = (req: Request, res: Response, next: Function) => {
 export function registerRoutes(app: Express): Server {
   // Set up authentication routes
   setupAuth(app);
-
-  // Register new auth and user routes
-  app.use("/api/auth", authRoutes);
-  app.use("/api/users", userRoutes);
 
   // ---------- Health ----------
   const healthHandler = async (_req: Request, res: Response) => {
@@ -190,6 +184,25 @@ export function registerRoutes(app: Express): Server {
       res.json((pets ?? []).filter((p: any) => Number(p.ownerId) === userId));
     } catch {
       res.status(500).json({ message: "Failed to fetch your pets" });
+    }
+  });
+
+  // Featured pets (for homepage) — newest available adoptable pets.
+  // Must stay above "/api/pets/:id" so "featured" is not parsed as an id.
+  app.get("/api/pets/featured", async (_req, res) => {
+    try {
+      const pets = await storage.getPets();
+      const featured = pets
+        .filter((pet) => pet.status === "available")
+        .sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime || b.id - a.id;
+        })
+        .slice(0, 4);
+      res.json(featured);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch featured pets" });
     }
   });
 
@@ -794,6 +807,51 @@ export function registerRoutes(app: Express): Server {
   });
   
   // ---------- Pet Medical Record Routes ----------
+  // ---------- Admin ----------
+  // User directory for the admin dashboard. Passwords are never returned.
+  app.get("/api/admin/users", isAdmin, async (_req, res) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users.map(({ password, ...safeUser }) => safeUser));
+    } catch {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // ---------- Contact ----------
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const parsed = insertContactMessageSchema
+        .omit({ userId: true })
+        .safeParse(req.body);
+
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid contact message",
+          errors: parsed.error.errors,
+        });
+      }
+
+      const message = await storage.createContactMessage({
+        ...parsed.data,
+        // Attach the sender when they happen to be logged in.
+        userId: req.isAuthenticated() ? req.user!.id : null,
+      });
+
+      res.status(201).json({ id: message.id, ok: true });
+    } catch {
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.get("/api/admin/contact-messages", isAdmin, async (_req, res) => {
+    try {
+      res.json(await storage.getContactMessages());
+    } catch {
+      res.status(500).json({ message: "Failed to fetch contact messages" });
+    }
+  });
+
   // ---------- Newsletter ----------
   app.post("/api/newsletter", async (req, res) => {
     const schema = z.object({

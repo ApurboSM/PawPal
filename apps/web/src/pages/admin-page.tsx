@@ -392,19 +392,11 @@ export default function AdminPage() {
   // Fetch users for application display
   const { data: allUsers } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
-    enabled: false, // We don't have this endpoint, so disable
   });
-  
-  // Dummy user data for displaying in applications since we don't have the endpoint
-  const dummyUsers = [
-    { id: 1, name: "Admin User", email: "admin@pawpal.com" },
-    { id: 2, name: "John Doe", email: "john@example.com" },
-    { id: 3, name: "Jane Smith", email: "jane@example.com" },
-  ];
 
-  // Get username by ID (would normally use allUsers)
+  // Get username by ID
   const getUserName = (userId: number) => {
-    const user = dummyUsers.find(u => u.id === userId);
+    const user = allUsers?.find(u => u.id === userId);
     return user ? user.name : `User ${userId}`;
   };
 

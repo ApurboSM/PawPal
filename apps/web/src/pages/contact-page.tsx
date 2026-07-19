@@ -33,6 +33,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { MapPin, Phone, Mail, Clock, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -67,19 +68,30 @@ export default function ContactPage() {
   // Handle form submission
   const onSubmit = async (data: ContactFormValues) => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsLoading(false);
-    setIsSubmitted(true);
-    
-    toast({
-      title: "Message Sent",
-      description: "Thank you for contacting with us. We'll get back to you soon!",
-    });
-    
-    form.reset(); 
+
+    try {
+      await apiRequest("POST", "/api/contact", {
+        ...data,
+        phone: data.phone?.trim() ? data.phone.trim() : null,
+      });
+
+      setIsSubmitted(true);
+      form.reset();
+
+      toast({
+        title: "Message Sent",
+        description: "Thank you for contacting with us. We'll get back to you soon!",
+      });
+    } catch (error) {
+      toast({
+        title: "Message not sent",
+        description:
+          error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

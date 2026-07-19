@@ -23,8 +23,11 @@ import {
   petMedicalRecords,
   type PetMedicalRecord,
   type InsertPetMedicalRecord,
+  contactMessages,
+  type ContactMessage,
+  type InsertContactMessage,
 } from "@pawpal/shared/schema";
-import { eq, count, and, or } from "drizzle-orm";
+import { eq, count, and, or, desc } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -44,6 +47,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<User>): Promise<User | undefined>;
   
@@ -98,7 +102,11 @@ export interface IStorage {
   createPetMedicalRecord(record: InsertPetMedicalRecord): Promise<PetMedicalRecord>;
   updatePetMedicalRecord(id: number, record: Partial<PetMedicalRecord>): Promise<PetMedicalRecord | undefined>;
   deletePetMedicalRecord(id: number): Promise<boolean>;
-  
+
+  // Contact message operations
+  getContactMessages(): Promise<ContactMessage[]>;
+  createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+
   // Session store
   sessionStore: session.Store;
 }
@@ -112,7 +120,8 @@ export class MemStorage implements IStorage {
   private testimonials: Map<number, Testimonial>;
   private emergencyContacts: Map<number, EmergencyContact>;
   private petMedicalRecords: Map<number, PetMedicalRecord>;
-  
+  private contactMessages: Map<number, ContactMessage>;
+
   public sessionStore: session.Store;
   
   private userIdCounter: number;
@@ -123,7 +132,8 @@ export class MemStorage implements IStorage {
   private testimonialIdCounter: number;
   private emergencyContactIdCounter: number;
   private petMedicalRecordIdCounter: number;
-  
+  private contactMessageIdCounter: number;
+
   constructor() {
     this.users = new Map();
     this.pets = new Map();
@@ -133,7 +143,8 @@ export class MemStorage implements IStorage {
     this.testimonials = new Map();
     this.emergencyContacts = new Map();
     this.petMedicalRecords = new Map();
-    
+    this.contactMessages = new Map();
+
     this.userIdCounter = 1;
     this.petIdCounter = 1;
     this.resourceIdCounter = 1;
@@ -142,20 +153,24 @@ export class MemStorage implements IStorage {
     this.testimonialIdCounter = 1;
     this.emergencyContactIdCounter = 1;
     this.petMedicalRecordIdCounter = 1;
-    
+    this.contactMessageIdCounter = 1;
+
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired sessions every 24h
     });
     
-    // Initialize with admin user
-    this.createUser({
-      username: "admin",
-      password: "admin", // This will be hashed in auth.ts
-      email: "admin@pawpal.com",
-      name: "Admin User",
-      role: "admin"
-    });
-    
+    // Initialize with admin user. createUser stores the password verbatim, so it has
+    // to arrive already hashed or login can never verify it.
+    void hashPassword(DEFAULT_ADMIN_PASSWORD).then((password) =>
+      this.createUser({
+        username: "admin",
+        password,
+        email: "admin@pawpal.com",
+        name: "Admin User",
+        role: "admin",
+      }),
+    );
+
     // Initialize with sample pets
     this.seedPets();
     
@@ -183,6 +198,10 @@ export class MemStorage implements IStorage {
     );
   }
   
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
   async createUser(userData: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
     const createdAt = new Date();
@@ -496,7 +515,29 @@ export class MemStorage implements IStorage {
   async deletePetMedicalRecord(id: number): Promise<boolean> {
     return this.petMedicalRecords.delete(id);
   }
-  
+
+  // Contact message operations
+  async getContactMessages(): Promise<ContactMessage[]> {
+    return Array.from(this.contactMessages.values()).sort((a, b) => b.id - a.id);
+  }
+
+  async createContactMessage(messageData: InsertContactMessage): Promise<ContactMessage> {
+    const id = this.contactMessageIdCounter++;
+    const message: ContactMessage = {
+      id,
+      createdAt: new Date(),
+      status: "new",
+      userId: messageData.userId ?? null,
+      name: messageData.name,
+      email: messageData.email,
+      phone: messageData.phone ?? null,
+      subject: messageData.subject,
+      message: messageData.message,
+    };
+    this.contactMessages.set(id, message);
+    return message;
+  }
+
   // Seed data functions
   private seedPets(): void {
     const pets = [
@@ -662,6 +703,10 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
   
+  async getUsers(): Promise<User[]> {
+    return db!.select().from(users).orderBy(users.id);
+  }
+
   async createUser(userData: InsertUser): Promise<User> {
     const [user] = await db!.insert(users).values(userData).returning();
     return user;
@@ -902,7 +947,17 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(petMedicalRecords).where(eq(petMedicalRecords.id, id));
     return (result.rowCount ?? 0) > 0;
   }
-  
+
+  // Contact messages
+  async getContactMessages(): Promise<ContactMessage[]> {
+    return db.select().from(contactMessages).orderBy(desc(contactMessages.id));
+  }
+
+  async createContactMessage(messageData: InsertContactMessage): Promise<ContactMessage> {
+    const [message] = await db.insert(contactMessages).values(messageData).returning();
+    return message;
+  }
+
   // Seed initial data
   private async seedInitialData() {
     try {

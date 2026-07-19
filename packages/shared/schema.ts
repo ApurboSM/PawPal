@@ -258,3 +258,35 @@ export const insertPetMedicalRecordSchema = createInsertSchema(petMedicalRecords
 
 export type InsertPetMedicalRecord = z.infer<typeof insertPetMedicalRecordSchema>;
 export type PetMedicalRecord = typeof petMedicalRecords.$inferSelect;
+
+// Contact form messages submitted from the public contact page
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  // Null when the sender is not logged in.
+  userId: integer("user_id"),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  status: text("status").notNull().default("new"), // new, read, archived
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertContactMessageSchema = createInsertSchema(contactMessages, {
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  phone: z.string().max(40).optional().nullable(),
+  subject: z.string().min(3).max(150),
+  message: z.string().min(10).max(5000),
+}).pick({
+  userId: true,
+  name: true,
+  email: true,
+  phone: true,
+  subject: true,
+  message: true,
+});
+
+export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+export type ContactMessage = typeof contactMessages.$inferSelect;
