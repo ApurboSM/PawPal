@@ -76,10 +76,12 @@ type NavCapsuleProps = {
   rect: Rect | null;
   className?: string;
   radius: number;
-  /** Horizontal inset in px, so the pill can sit narrower than its tab. */
+  /** Horizontal inset in px. Negative grows the pill wider than the measured box. */
   insetX?: number;
-  /** Vertical inset in px. */
+  /** Vertical inset in px. Negative grows the pill taller than the measured box. */
   insetY?: number;
+  /** Nudge up/down after insets, e.g. to keep an icon pill clear of its label. */
+  offsetY?: number;
 };
 
 /**
@@ -102,7 +104,14 @@ type NavCapsuleProps = {
  * pill takes its destination width as it starts travelling, which reads fine
  * because the movement carries the eye.
  */
-export function NavCapsule({ rect, className, radius, insetX = 0, insetY = 0 }: NavCapsuleProps) {
+export function NavCapsule({
+  rect,
+  className,
+  radius,
+  insetX = 0,
+  insetY = 0,
+  offsetY = 0,
+}: NavCapsuleProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const hasPositioned = useRef(false);
 
@@ -111,7 +120,7 @@ export function NavCapsule({ rect, className, radius, insetX = 0, insetY = 0 }: 
     if (!el || !rect) return;
 
     const x = rect.left + insetX;
-    const y = rect.top + insetY;
+    const y = rect.top + insetY + offsetY;
     const width = Math.max(rect.width - insetX * 2, 0);
     const height = Math.max(rect.height - insetY * 2, 0);
 
@@ -133,7 +142,7 @@ export function NavCapsule({ rect, className, radius, insetX = 0, insetY = 0 }: 
       el.style.opacity = "1";
       hasPositioned.current = true;
     }
-  }, [rect, insetX, insetY]);
+  }, [rect, insetX, insetY, offsetY]);
 
   useEffect(() => {
     if (!rect) hasPositioned.current = false;

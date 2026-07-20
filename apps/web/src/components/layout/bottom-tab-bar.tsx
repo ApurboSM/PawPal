@@ -43,6 +43,8 @@ export function BottomTabBar() {
   const prefersReducedMotion = useReducedMotion();
 
   const listRef = useRef<HTMLUListElement>(null);
+  // The capsule tracks the icon, not the whole tab, so it stays a small pill
+  // around the glyph instead of a slab behind icon + label.
   const itemRefs = useRef<Array<HTMLElement | null>>([]);
 
   const search = typeof window === "undefined" ? "" : window.location.search;
@@ -62,14 +64,18 @@ export function BottomTabBar() {
         ref={listRef}
         className="glass-bar relative mx-3 mb-3 flex items-stretch gap-0.5 rounded-[26px] p-1.5"
       >
-        {/* Full tab height; narrowed horizontally just enough to leave a gap
-            between neighbours while still containing the widest label. */}
+        {/* Geometry is kept in lockstep with the hover indicator below
+            (inset-x-2 / inset-y-1 / rounded-[16px]) so the active pill and the
+            press state are the same shape. Change one, change the other. */}
         <NavCapsule
           rect={capsuleRect}
-          radius={18}
-          insetX={4}
-          insetY={0}
-          className={cn("glass-capsule", activeTab?.emphasis && "!border-red-200/80")}
+          radius={16}
+          insetX={25}
+          insetY={-2}
+          className={cn(
+            "glass-capsule-soft",
+            activeTab?.emphasis && "glass-capsule-soft-danger",
+          )}
         />
 
         {TABS.map((tab, index) => {
@@ -78,14 +84,15 @@ export function BottomTabBar() {
           const Icon = tab.icon;
 
           return (
-            <li
-              key={tab.path}
-              ref={(el) => {
-                itemRefs.current[index] = el;
-              }}
-              className="min-w-0 flex-1"
-            >
+            <li key={tab.path} className="min-w-0 flex-1">
+              {/* The capsule measures this anchor, not the <li>: items-stretch makes
+                  the li as tall as the tallest tab, while the hover wash is
+                  positioned against the anchor. Measuring the li would leave the
+                  capsule 10px taller than the wash it is meant to match. */}
               <a
+                ref={(el) => {
+                  itemRefs.current[index] = el;
+                }}
                 href={href}
                 aria-current={isNavItemActive(location, search, tab.path) ? "page" : undefined}
                 aria-label={tab.name}

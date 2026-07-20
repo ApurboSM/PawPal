@@ -330,6 +330,32 @@
     }
   }
 
+  /* Lighter variant for the small pill that sits behind a bottom-tab icon.
+     Thinner glass than .glass-capsule so the bar reads through it. */
+  .glass-capsule-soft {
+    background-image: linear-gradient(
+      165deg,
+      hsl(0 0% 100% / 0.5) 0%,
+      hsl(340 80% 96% / 0.3) 100%
+    );
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid hsl(0 0% 100% / 0.4);
+    box-shadow:
+      inset 0 1px 0 0 hsl(0 0% 100% / 0.55),
+      0 4px 10px -6px hsl(340 70% 45% / 0.3);
+  }
+
+  .glass-capsule-soft-danger {
+    background-image: linear-gradient(165deg, hsl(0 0% 100% / 0.5) 0%, hsl(0 80% 95% / 0.34) 100%);
+    border-color: hsl(0 80% 92% / 0.55);
+  }
+
+  .dark .glass-capsule-soft {
+    background-image: linear-gradient(165deg, hsl(342 30% 34% / 0.6), hsl(342 30% 26% / 0.4));
+    border-color: hsl(0 0% 100% / 0.16);
+  }
+
   /* The travelling pill behind the active bottom-tab item. */
   .glass-capsule {
     background-image: linear-gradient(
