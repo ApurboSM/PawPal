@@ -108,7 +108,11 @@ export function BottomTabBar() {
                 onPointerEnter={() => prefetchRoute(tab.path)}
                 onTouchStart={() => prefetchRoute(tab.path)}
                 className={cn(
-                  "group relative z-10 flex min-h-[58px] cursor-pointer flex-col items-center justify-center gap-1 rounded-[16px] px-0.5 py-1.5",
+                  // h-full: items-stretch makes the <li> as tall as the tallest tab,
+                  // but the anchor was sizing to its own content and sitting at the
+                  // top of it — 7px of space above, 17px below. Filling the row lets
+                  // justify-center centre the icon and label properly.
+                  "group relative z-10 flex h-full min-h-[58px] cursor-pointer flex-col items-center justify-center gap-1 rounded-[16px] px-0.5 py-1.5",
                   "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
                   "active:scale-[0.97] motion-reduce:active:scale-100",
                   tab.emphasis
@@ -120,11 +124,13 @@ export function BottomTabBar() {
                       : "text-muted-foreground hover:text-primary",
                 )}
               >
-                {/* Hover/press wash for the inactive tabs, so every tab reacts to touch. */}
+                {/* Hover/press wash for the inactive tabs, so every tab reacts to touch.
+                    Insets mirror NavCapsule's above (insetX 25 / insetY -2) so the
+                    press state and the active pill are the same shape. */}
                 {!isActive && (
                   <span
                     className={cn(
-                      "absolute inset-x-2 inset-y-1 -z-10 rounded-[16px] opacity-0 transition-opacity duration-200",
+                      "absolute inset-x-[25px] inset-y-[-2px] -z-10 rounded-[16px] opacity-0 transition-opacity duration-200",
                       "group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100",
                       tab.emphasis ? "bg-red-500/10" : "bg-primary/10",
                     )}
