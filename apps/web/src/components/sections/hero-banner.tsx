@@ -31,10 +31,10 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
           composition, so cropping it (the old lg:bg-cover on a half-width box)
           sliced the animals off as soon as the viewport got short and wide.
           Pinned bottom-right, top offset by the nav so it never tucks under the
-          bar, and capped in width from lg up so the artwork keeps clear of the
-          headline on narrow desktops instead of sliding under it. */}
+          bar. From md up it is capped to a right-hand column so the artwork
+          keeps clear of the headline instead of sliding under it. */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-5 top-[var(--nav-h)] bg-contain bg-right-bottom bg-no-repeat sm:bottom-6 lg:left-auto lg:right-0 lg:w-[64%] lg:max-w-[880px]"
+        className="pointer-events-none absolute inset-x-0 bottom-5 top-[var(--nav-h)] bg-contain bg-right-bottom bg-no-repeat sm:bottom-6 md:left-auto md:right-0 md:w-[62%] lg:w-[64%] lg:max-w-[880px]"
         style={{
           backgroundImage: `url(${petHeroImage})`,
         }}
@@ -42,10 +42,11 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
       ></div>
 
       {/* Readability scrim above the pets: the copy now sits on top of the
-          artwork, so it needs its own backing. Fades out well before the
-          right edge so the animals stay crisp. */}
+          artwork, so it needs its own backing. Runs top-down while the layout is
+          stacked and left-to-right once the copy and the artwork sit side by
+          side, fading out before it dulls the animals. */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-primary/70 via-primary/25 to-transparent lg:bg-gradient-to-r lg:from-primary/70 lg:via-primary/25 lg:to-transparent"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-primary/70 via-primary/25 to-transparent md:bg-gradient-to-r md:from-primary/70 md:via-primary/25 md:to-transparent"
         aria-hidden="true"
       ></div>
 
@@ -62,7 +63,7 @@ export function HeroBanner({ title, subtitle, backgroundImage }: HeroBannerProps
               legible on the frames where a line reaches over the artwork. */}
           <h1 className="mb-4 bg-gradient-to-r from-white to-accent bg-clip-text text-4xl font-bold leading-tight text-transparent drop-shadow-[0_2px_14px_hsl(var(--primary)/0.8)] sm:text-5xl lg:text-6xl">{title}</h1>
           
-          <p className="mb-7 max-w-lg text-lg text-white/90 sm:mb-8 sm:text-xl">{subtitle}</p>
+          <p className="mb-7 max-w-lg text-lg text-white/90 drop-shadow-[0_1px_10px_hsl(var(--primary)/0.85)] sm:mb-8 sm:text-xl">{subtitle}</p>
           
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <Link href="/pets" className="w-full sm:w-auto">
