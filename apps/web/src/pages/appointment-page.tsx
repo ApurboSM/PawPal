@@ -65,14 +65,23 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  Info, 
-  CheckCircle2, 
-  XCircle, 
-  ClipboardList 
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Info,
+  CheckCircle2,
+  XCircle,
+  ClipboardList,
+  MapPin,
+  Navigation,
+  ExternalLink
 } from "lucide-react";
+import {
+  LocationPickerFields,
+  emptyLocation,
+} from "@/components/forms/location-picker-fields";
+import { LocationMapView } from "@/components/map/location-map-view";
+import { formatLocation, googleDirectionsUrl, googleMapsUrl, toCoords } from "@/lib/maps";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListRowsSkeleton } from "@/components/skeletons/page-skeletons";
 import { useToast } from "@/hooks/use-toast";
@@ -81,6 +90,17 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { format, addDays, isBefore, startOfDay } from "date-fns";
 
 // Form schema for appointment booking
+const locationSchema = z.object({
+  country: z.string().min(1, "Select a country"),
+  countryCode: z.string().min(1, "Select a country"),
+  state: z.string().min(1, "Select a state or division"),
+  stateCode: z.string().min(1, "Select a state or division"),
+  city: z.string().min(1, "Select a city"),
+  address: z.string().trim().min(5, "Write your address"),
+  lat: z.string().min(1, "Pin the exact spot on the map"),
+  lng: z.string().min(1, "Pin the exact spot on the map"),
+});
+
 const appointmentSchema = z.object({
   petId: z.number().nullable(),
   type: z.string({
@@ -93,6 +113,7 @@ const appointmentSchema = z.object({
     .string()
     .regex(/^([01][0-9]|2[0-3]):[0-5][0-9]$/, "Please select a valid time"),
   notes: z.string().optional(),
+  location: locationSchema,
 });
 
 type AppointmentFormValues = z.infer<typeof appointmentSchema>;
@@ -129,13 +150,26 @@ export default function AppointmentPage() {
       date: undefined,
       time: "09:00",
       notes: "",
+      location: emptyLocation,
     },
   });
   
   // Create appointment mutation
   const createAppointmentMutation = useMutation({
-    mutationFn: async (data: AppointmentFormValues) => {
-      const response = await apiRequest("POST", "/api/appointments", data);
+    mutationFn: async ({ location, time, ...data }: AppointmentFormValues) => {
+      const response = await apiRequest("POST", "/api/appointments", {
+        ...data,
+        // The nested location the form works with, flattened onto the columns
+        // the appointment row actually has.
+        locationCountry: location.country,
+        locationCountryCode: location.countryCode,
+        locationState: location.state,
+        locationStateCode: location.stateCode,
+        locationCity: location.city,
+        locationAddress: location.address.trim(),
+        locationLat: location.lat,
+        locationLng: location.lng,
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -271,7 +305,9 @@ export default function AppointmentPage() {
             </div>
             
             <TabsContent value="book">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* The form runs full width: the location step pairs a column of
+                  dropdowns with a map, which needs the room. */}
+              <div className="grid grid-cols-1 gap-8">
                 {/* Appointment Booking Form */}
                 <Card>
                   <CardHeader>
@@ -355,7 +391,7 @@ export default function AppointmentPage() {
                         />
                         
                         {/* Date + Time Selection */}
-                        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                           <FormField
                             control={form.control}
                             name="date"
@@ -493,6 +529,41 @@ export default function AppointmentPage() {
                           />
                         </div>
                         
+                        {/* Location: dropdowns + interactive map */}
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <div className="mb-3 border-t pt-6">
+                                <FormLabel className="flex items-center gap-2 text-base font-semibold">
+                                  <MapPin className="h-4 w-4 text-[#FF6B98]" />
+                                  Appointment Location
+                                </FormLabel>
+                                <p className="mt-1 text-sm text-neutral-600">
+                                  Pick the area, write the address, then pin the exact spot. Whoever
+                                  you are meeting can open that pin in Google Maps or get directions
+                                  from wherever they are.
+                                </p>
+                              </div>
+                              <FormControl>
+                                <LocationPickerFields
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  errors={{
+                                    countryCode: (fieldState.error as any)?.countryCode?.message,
+                                    stateCode: (fieldState.error as any)?.stateCode?.message,
+                                    city: (fieldState.error as any)?.city?.message,
+                                    address: (fieldState.error as any)?.address?.message,
+                                    lat: (fieldState.error as any)?.lat?.message,
+                                    lng: (fieldState.error as any)?.lng?.message,
+                                  }}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
                         {/* Additional Notes */}
                         <FormField
                           control={form.control}
@@ -529,7 +600,7 @@ export default function AppointmentPage() {
                 </Card>
                 
                 {/* Appointment Information */}
-                <div className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-2">
                   {/* Service Types */}
                   <Card>
                     <CardHeader>
@@ -628,6 +699,7 @@ export default function AppointmentPage() {
                           <TableHead>Type</TableHead>
                           <TableHead>Pet</TableHead>
                           <TableHead>Date & Time</TableHead>
+                          <TableHead>Location</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
@@ -646,6 +718,37 @@ export default function AppointmentPage() {
                             </TableCell>
                             <TableCell>{getPetName(appointment.petId)}</TableCell>
                             <TableCell>{formatAppointmentDate(appointment.date)}</TableCell>
+                            <TableCell className="max-w-[260px]">
+                              {toCoords(appointment) ? (
+                                <div className="space-y-1">
+                                  <p className="truncate text-sm" title={formatLocation(appointment)}>
+                                    {formatLocation(appointment)}
+                                  </p>
+                                  <div className="flex flex-wrap gap-3 text-xs">
+                                    <a
+                                      className="inline-flex items-center text-[#4A6FA5] hover:underline"
+                                      href={googleMapsUrl(toCoords(appointment)!)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <ExternalLink className="mr-1 h-3 w-3" />
+                                      Google Maps
+                                    </a>
+                                    <a
+                                      className="inline-flex items-center text-[#4A6FA5] hover:underline"
+                                      href={googleDirectionsUrl(toCoords(appointment)!)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <Navigation className="mr-1 h-3 w-3" />
+                                      Directions
+                                    </a>
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-sm text-neutral-400">Not provided</span>
+                              )}
+                            </TableCell>
                             <TableCell>
                               <div className="flex items-center">
                                 {appointment.status === "scheduled" ? (
@@ -679,7 +782,7 @@ export default function AppointmentPage() {
                                       Details
                                     </Button>
                                   </DialogTrigger>
-                                  <DialogContent>
+                                  <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
                                     <DialogHeader>
                                       <DialogTitle>Appointment Details</DialogTitle>
                                     </DialogHeader>
@@ -713,6 +816,10 @@ export default function AppointmentPage() {
                                       <div>
                                         <h4 className="text-sm font-medium text-neutral-500">Notes</h4>
                                         <p className="text-sm">{appointment.notes || "No additional notes provided."}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="mb-2 text-sm font-medium text-neutral-500">Location</h4>
+                                        <LocationMapView location={appointment} />
                                       </div>
                                     </div>
                                     <DialogFooter>

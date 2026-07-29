@@ -166,7 +166,30 @@ export const appointments = pgTable("appointments", {
   date: timestamp("date").notNull(),
   status: text("status").notNull().default("scheduled"), // scheduled, completed, cancelled
   notes: text("notes"),
+  // Where the appointment happens. Names are stored alongside the ISO codes so a
+  // saved appointment still renders correctly if the geo dataset ever changes.
+  locationCountry: text("location_country"),
+  locationCountryCode: text("location_country_code"),
+  locationState: text("location_state"),
+  locationStateCode: text("location_state_code"),
+  locationCity: text("location_city"),
+  locationAddress: text("location_address"),
+  // Stored as text: the exact decimal the user pinned round-trips unchanged, and
+  // nothing here does arithmetic on the coordinates.
+  locationLat: text("location_lat"),
+  locationLng: text("location_lng"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const appointmentLocationSchema = z.object({
+  locationCountry: z.string().min(1, "Select a country"),
+  locationCountryCode: z.string().min(1),
+  locationState: z.string().min(1, "Select a state or division"),
+  locationStateCode: z.string().min(1),
+  locationCity: z.string().min(1, "Select a city"),
+  locationAddress: z.string().min(5, "Write your address"),
+  locationLat: z.string().min(1, "Pin the exact spot on the map"),
+  locationLng: z.string().min(1, "Pin the exact spot on the map"),
 });
 
 export const insertAppointmentSchema = createInsertSchema(appointments).pick({
@@ -176,6 +199,14 @@ export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   type: true,
   date: true,
   notes: true,
+  locationCountry: true,
+  locationCountryCode: true,
+  locationState: true,
+  locationStateCode: true,
+  locationCity: true,
+  locationAddress: true,
+  locationLat: true,
+  locationLng: true,
 });
 
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
