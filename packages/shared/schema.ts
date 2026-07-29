@@ -212,6 +212,112 @@ export const insertAppointmentSchema = createInsertSchema(appointments).pick({
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
 export type Appointment = typeof appointments.$inferSelect;
 
+// Payments
+//
+// PawPal does not process card or wallet charges itself. The customer pays into
+// one of the listed accounts from their own bKash/Rocket/Nagad/Upay/bank app and
+// then reports the transaction here, so every row is a *claim* that an admin
+// verifies against the receiving account statement.
+export const paymentMethodValues = ["bkash", "rocket", "nagad", "upay", "bank"] as const;
+export const paymentPurposeValues = [
+  "pet_purchase",
+  "adoption_fee",
+  "appointment_fee",
+  "donation",
+  "other",
+] as const;
+export const paymentStatusValues = ["pending", "verified", "rejected"] as const;
+
+export type PaymentMethod = (typeof paymentMethodValues)[number];
+export type PaymentPurpose = (typeof paymentPurposeValues)[number];
+export type PaymentStatus = (typeof paymentStatusValues)[number];
+
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  method: text("method").notNull(), // bkash, rocket, nagad, upay, bank
+  purpose: text("purpose").notNull(), // pet_purchase, adoption_fee, ...
+  petId: integer("pet_id"),
+  appointmentId: integer("appointment_id"),
+  // Kept as text for the same reason coordinates are: it is a reported figure,
+  // not something the app does arithmetic on.
+  amount: text("amount").notNull(),
+  currency: text("currency").notNull().default("BDT"),
+  // Which of our accounts the money was sent to, captured at submit time so a
+  // later config change cannot rewrite history.
+  receiverAccount: text("receiver_account"),
+  senderName: text("sender_name").notNull(),
+  senderAccount: text("sender_account").notNull(), // wallet number or bank account
+  transactionId: text("transaction_id").notNull(), // TrxID / bank reference
+  bankName: text("bank_name"),
+  branchName: text("branch_name"),
+  paidAt: timestamp("paid_at").notNull(),
+  note: text("note"),
+  proofUrl: text("proof_url"), // uploaded screenshot / deposit slip
+  status: text("status").notNull().default("pending"),
+  adminNote: text("admin_note"),
+  reviewedBy: integer("reviewed_by"),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).pick({
+  userId: true,
+  method: true,
+  purpose: true,
+  petId: true,
+  appointmentId: true,
+  amount: true,
+  currency: true,
+  receiverAccount: true,
+  senderName: true,
+  senderAccount: true,
+  transactionId: true,
+  bankName: true,
+  branchName: true,
+  paidAt: true,
+  note: true,
+  proofUrl: true,
+});
+
+/** What the client posts to /api/payments. */
+export const submitPaymentSchema = z
+  .object({
+    method: z.enum(paymentMethodValues),
+    purpose: z.enum(paymentPurposeValues),
+    petId: z.number().int().positive().nullable().optional(),
+    appointmentId: z.number().int().positive().nullable().optional(),
+    amount: z
+      .string()
+      .trim()
+      .regex(/^\d+(\.\d{1,2})?$/, "Enter the amount you sent, e.g. 1500 or 1500.50")
+      .refine((value) => Number(value) > 0, "Amount must be more than 0"),
+    currency: z.string().trim().default("BDT"),
+    receiverAccount: z.string().trim().optional(),
+    senderName: z.string().trim().min(2, "Enter the name on the sending account"),
+    senderAccount: z
+      .string()
+      .trim()
+      .min(6, "Enter the number or account you paid from"),
+    transactionId: z
+      .string()
+      .trim()
+      .min(4, "Enter the transaction ID from your payment confirmation"),
+    bankName: z.string().trim().optional(),
+    branchName: z.string().trim().optional(),
+    paidAt: z.coerce.date(),
+    note: z.string().trim().max(500).optional(),
+    proofUrl: z.string().trim().optional(),
+  })
+  .refine((value) => value.method !== "bank" || Boolean(value.bankName), {
+    message: "Bank name is required for bank transfers",
+    path: ["bankName"],
+  });
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type SubmitPayment = z.infer<typeof submitPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;
+
 // Testimonials
 export const testimonials = pgTable("testimonials", {
   id: serial("id").primaryKey(),

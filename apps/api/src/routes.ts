@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema, insertEmergencyContactSchema, insertPetMedicalRecordSchema, insertContactMessageSchema } from "@pawpal/shared/schema";
+import { insertPetSchema, insertResourceSchema, insertAppointmentSchema, insertAdoptionApplicationSchema, insertTestimonialSchema, insertEmergencyContactSchema, insertPetMedicalRecordSchema, insertContactMessageSchema, submitPaymentSchema, paymentStatusValues } from "@pawpal/shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import type { FileFilterCallback } from "multer";
@@ -891,6 +891,172 @@ export function registerRoutes(app: Express): Server {
       res.json(users.map(({ password, ...safeUser }) => safeUser));
     } catch {
       res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // ---------- Payment Routes ----------
+  //
+  // Manual settlement: the customer transfers money from their own wallet or
+  // bank to one of the shop's accounts and reports the transaction here. Nothing
+  // in this app moves money, so every row lands as "pending" until an admin
+  // matches it against the receiving account statement.
+
+  const paymentProofUpload = multer({
+    storage: multer.diskStorage({
+      destination: (_req: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) =>
+        cb(null, uploadDir),
+      filename: (_req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
+        const safeExt = path.extname(file.originalname || "").slice(0, 10) || ".png";
+        cb(null, `payment_${Date.now()}_${Math.random().toString(16).slice(2)}${safeExt}`);
+      },
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+      if (file.mimetype?.startsWith("image/")) return cb(null, true);
+      cb(new Error("Only image uploads are allowed"));
+    },
+  });
+
+  app.post(
+    "/api/uploads/payment-proof",
+    isAuthenticated,
+    paymentProofUpload.single("file"),
+    async (req, res) => {
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file) return res.status(400).json({ message: "No file uploaded" });
+      return res.json({ url: `/uploads/${file.filename}` });
+    },
+  );
+
+  // The caller's own payment history.
+  app.get("/api/payments", isAuthenticated, async (req, res) => {
+    try {
+      res.json(await storage.getPaymentsForUser(req.user!.id));
+    } catch {
+      res.status(500).json({ message: "Failed to fetch payments" });
+    }
+  });
+
+  app.get("/api/payments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const payment = await storage.getPayment(parseInt(req.params.id));
+      if (!payment) return res.status(404).json({ message: "Payment not found" });
+
+      if (payment.userId !== req.user!.id && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      res.json(payment);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch payment" });
+    }
+  });
+
+  app.post("/api/payments", isAuthenticated, async (req, res) => {
+    try {
+      const parsed = submitPaymentSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid payment details",
+          errors: parsed.error.errors,
+        });
+      }
+
+      const body = parsed.data;
+
+      // A transaction ID identifies one real transfer. Re-submitting it is
+      // either a double-post or someone else's receipt.
+      const duplicate = await storage.findPaymentByTransaction(body.method, body.transactionId);
+      if (duplicate) {
+        return res.status(409).json({
+          message: "That transaction ID has already been submitted",
+        });
+      }
+
+      if (body.paidAt.getTime() > Date.now() + 5 * 60_000) {
+        return res.status(400).json({ message: "Payment date cannot be in the future" });
+      }
+
+      const payment = await storage.createPayment({
+        userId: req.user!.id,
+        method: body.method,
+        purpose: body.purpose,
+        petId: body.petId ?? null,
+        appointmentId: body.appointmentId ?? null,
+        amount: body.amount,
+        currency: body.currency || "BDT",
+        receiverAccount: body.receiverAccount ?? null,
+        senderName: body.senderName,
+        senderAccount: body.senderAccount,
+        transactionId: body.transactionId,
+        bankName: body.bankName ?? null,
+        branchName: body.branchName ?? null,
+        paidAt: body.paidAt,
+        note: body.note ?? null,
+        proofUrl: body.proofUrl ?? null,
+      });
+
+      res.status(201).json(payment);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to submit payment" });
+    }
+  });
+
+  // Submitters can withdraw a claim while it is still untouched.
+  app.delete("/api/payments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const payment = await storage.getPayment(parseInt(req.params.id));
+      if (!payment) return res.status(404).json({ message: "Payment not found" });
+
+      const isOwner = payment.userId === req.user!.id;
+      if (!isOwner && req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      if (isOwner && req.user!.role !== "admin" && payment.status !== "pending") {
+        return res.status(400).json({ message: "Only pending payments can be withdrawn" });
+      }
+
+      await storage.deletePayment(payment.id);
+      res.status(204).send();
+    } catch {
+      res.status(500).json({ message: "Failed to delete payment" });
+    }
+  });
+
+  app.get("/api/admin/payments", isAdmin, async (_req, res) => {
+    try {
+      res.json(await storage.getAllPayments());
+    } catch {
+      res.status(500).json({ message: "Failed to fetch payments" });
+    }
+  });
+
+  // Verification is the only thing an admin changes; the reported figures stay
+  // as submitted so the record still matches the customer's receipt.
+  app.put("/api/admin/payments/:id", isAdmin, async (req, res) => {
+    try {
+      const parsed = z
+        .object({
+          status: z.enum(paymentStatusValues),
+          adminNote: z.string().trim().max(500).optional(),
+        })
+        .safeParse(req.body);
+
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid review", errors: parsed.error.errors });
+      }
+
+      const payment = await storage.updatePayment(parseInt(req.params.id), {
+        status: parsed.data.status,
+        adminNote: parsed.data.adminNote ?? null,
+        reviewedBy: req.user!.id,
+        reviewedAt: new Date(),
+      });
+
+      if (!payment) return res.status(404).json({ message: "Payment not found" });
+      res.json(payment);
+    } catch {
+      res.status(500).json({ message: "Failed to update payment" });
     }
   });
 

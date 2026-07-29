@@ -26,8 +26,11 @@ import {
   contactMessages,
   type ContactMessage,
   type InsertContactMessage,
+  payments,
+  type Payment,
+  type InsertPayment,
 } from "@pawpal/shared/schema";
-import { eq, count, and, or, desc } from "drizzle-orm";
+import { eq, count, and, or, desc, sql } from "drizzle-orm";
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -110,6 +113,16 @@ export interface IStorage {
   getContactMessages(): Promise<ContactMessage[]>;
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
 
+  // Payment operations
+  getPayment(id: number): Promise<Payment | undefined>;
+  getPaymentsForUser(userId: number): Promise<Payment[]>;
+  getAllPayments(): Promise<Payment[]>;
+  /** Guards against the same transaction ID being claimed twice. */
+  findPaymentByTransaction(method: string, transactionId: string): Promise<Payment | undefined>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  updatePayment(id: number, payment: Partial<Payment>): Promise<Payment | undefined>;
+  deletePayment(id: number): Promise<boolean>;
+
   // Session store
   sessionStore: session.Store;
 }
@@ -124,6 +137,7 @@ export class MemStorage implements IStorage {
   private emergencyContacts: Map<number, EmergencyContact>;
   private petMedicalRecords: Map<number, PetMedicalRecord>;
   private contactMessages: Map<number, ContactMessage>;
+  private payments: Map<number, Payment>;
 
   public sessionStore: session.Store;
   
@@ -136,6 +150,7 @@ export class MemStorage implements IStorage {
   private emergencyContactIdCounter: number;
   private petMedicalRecordIdCounter: number;
   private contactMessageIdCounter: number;
+  private paymentIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -147,6 +162,7 @@ export class MemStorage implements IStorage {
     this.emergencyContacts = new Map();
     this.petMedicalRecords = new Map();
     this.contactMessages = new Map();
+    this.payments = new Map();
 
     this.userIdCounter = 1;
     this.petIdCounter = 1;
@@ -157,6 +173,7 @@ export class MemStorage implements IStorage {
     this.emergencyContactIdCounter = 1;
     this.petMedicalRecordIdCounter = 1;
     this.contactMessageIdCounter = 1;
+    this.paymentIdCounter = 1;
 
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired sessions every 24h
@@ -547,6 +564,72 @@ export class MemStorage implements IStorage {
     };
     this.contactMessages.set(id, message);
     return message;
+  }
+
+  // Payments
+  async getPayment(id: number): Promise<Payment | undefined> {
+    return this.payments.get(id);
+  }
+
+  async getPaymentsForUser(userId: number): Promise<Payment[]> {
+    return Array.from(this.payments.values())
+      .filter((payment) => payment.userId === userId)
+      .sort((a, b) => b.id - a.id);
+  }
+
+  async getAllPayments(): Promise<Payment[]> {
+    return Array.from(this.payments.values()).sort((a, b) => b.id - a.id);
+  }
+
+  async findPaymentByTransaction(method: string, transactionId: string): Promise<Payment | undefined> {
+    const needle = transactionId.trim().toLowerCase();
+    return Array.from(this.payments.values()).find(
+      (payment) =>
+        payment.method === method && payment.transactionId.trim().toLowerCase() === needle,
+    );
+  }
+
+  async createPayment(paymentData: InsertPayment): Promise<Payment> {
+    const id = this.paymentIdCounter++;
+    const payment: Payment = {
+      id,
+      createdAt: new Date(),
+      status: "pending",
+      currency: paymentData.currency ?? "BDT",
+      petId: paymentData.petId ?? null,
+      appointmentId: paymentData.appointmentId ?? null,
+      receiverAccount: paymentData.receiverAccount ?? null,
+      bankName: paymentData.bankName ?? null,
+      branchName: paymentData.branchName ?? null,
+      note: paymentData.note ?? null,
+      proofUrl: paymentData.proofUrl ?? null,
+      adminNote: null,
+      reviewedBy: null,
+      reviewedAt: null,
+      userId: paymentData.userId,
+      method: paymentData.method,
+      purpose: paymentData.purpose,
+      amount: paymentData.amount,
+      senderName: paymentData.senderName,
+      senderAccount: paymentData.senderAccount,
+      transactionId: paymentData.transactionId,
+      paidAt: paymentData.paidAt,
+    };
+    this.payments.set(id, payment);
+    return payment;
+  }
+
+  async updatePayment(id: number, paymentData: Partial<Payment>): Promise<Payment | undefined> {
+    const payment = await this.getPayment(id);
+    if (!payment) return undefined;
+
+    const updated = { ...payment, ...paymentData };
+    this.payments.set(id, updated);
+    return updated;
+  }
+
+  async deletePayment(id: number): Promise<boolean> {
+    return this.payments.delete(id);
   }
 
   // Seed data functions
@@ -967,6 +1050,56 @@ export class DatabaseStorage implements IStorage {
   async createContactMessage(messageData: InsertContactMessage): Promise<ContactMessage> {
     const [message] = await db.insert(contactMessages).values(messageData).returning();
     return message;
+  }
+
+  // Payments
+  async getPayment(id: number): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments).where(eq(payments.id, id));
+    return payment || undefined;
+  }
+
+  async getPaymentsForUser(userId: number): Promise<Payment[]> {
+    return db
+      .select()
+      .from(payments)
+      .where(eq(payments.userId, userId))
+      .orderBy(desc(payments.id));
+  }
+
+  async getAllPayments(): Promise<Payment[]> {
+    return db.select().from(payments).orderBy(desc(payments.id));
+  }
+
+  async findPaymentByTransaction(method: string, transactionId: string): Promise<Payment | undefined> {
+    const [payment] = await db
+      .select()
+      .from(payments)
+      .where(
+        and(
+          eq(payments.method, method),
+          sql`LOWER(${payments.transactionId}) = LOWER(${transactionId.trim()})`,
+        ),
+      );
+    return payment || undefined;
+  }
+
+  async createPayment(paymentData: InsertPayment): Promise<Payment> {
+    const [payment] = await db.insert(payments).values(paymentData).returning();
+    return payment;
+  }
+
+  async updatePayment(id: number, paymentData: Partial<Payment>): Promise<Payment | undefined> {
+    const [payment] = await db
+      .update(payments)
+      .set(paymentData)
+      .where(eq(payments.id, id))
+      .returning();
+    return payment || undefined;
+  }
+
+  async deletePayment(id: number): Promise<boolean> {
+    const result = await db.delete(payments).where(eq(payments.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Seed initial data
