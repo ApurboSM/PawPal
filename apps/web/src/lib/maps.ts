@@ -25,6 +25,8 @@ export interface GeoState {
 
 export interface GeoCity {
   name: string;
+  /** Set when the entry is a district rather than a city — see geo-hierarchy.ts. */
+  isoCode?: string;
   latitude: string | null;
   longitude: string | null;
 }

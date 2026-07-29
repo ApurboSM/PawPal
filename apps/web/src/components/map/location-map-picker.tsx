@@ -35,6 +35,9 @@ interface LocationMapPickerProps {
   onChange: (next: LatLng) => void;
   /** Where the dropdowns say we should be looking — recentres the map. */
   focus?: LatLng | null;
+  /** How tight to zoom when following `focus`. A country needs a wider frame
+   *  than a city, so the caller picks it. */
+  focusZoom?: number;
   /** Fires after a pin lands and the address behind it is resolved. */
   onAddressResolved?: (address: string, display: string) => void;
   heightClass?: string;
@@ -52,6 +55,7 @@ export function LocationMapPicker({
   value,
   onChange,
   focus,
+  focusZoom = 12,
   onAddressResolved,
   heightClass = "h-[320px] sm:h-[380px]",
 }: LocationMapPickerProps) {
@@ -63,6 +67,7 @@ export function LocationMapPicker({
   const [isLocating, setIsLocating] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
   const [flyTarget, setFlyTarget] = useState<LatLng | null>(null);
+  const [flyZoom, setFlyZoom] = useState(16);
   const [resolvedLabel, setResolvedLabel] = useState<string | null>(null);
 
   // Dhaka: a defined starting view beats the empty ocean at [0, 0].
@@ -75,13 +80,17 @@ export function LocationMapPicker({
 
   // Follow the country/state/city dropdowns.
   useEffect(() => {
-    if (focus) setFlyTarget(focus);
-  }, [focus?.lat, focus?.lng]);
+    if (!focus) return;
+    setFlyTarget(focus);
+    setFlyZoom(focusZoom);
+  }, [focus?.lat, focus?.lng, focusZoom]);
 
   const pin = useCallback(
     (next: LatLng) => {
       onChange(next);
       setFlyTarget(next);
+      // A dropped pin is an exact spot, so go all the way in.
+      setFlyZoom(16);
     },
     [onChange],
   );
@@ -214,7 +223,7 @@ export function LocationMapPicker({
           <BaseLayers />
           <ScaleControl position="bottomleft" />
           <ResizeHandler />
-          <FlyTo center={flyTarget} zoom={16} />
+          <FlyTo center={flyTarget} zoom={flyZoom} />
           <ClickToPin onPick={pin} />
           {value && (
             <Marker

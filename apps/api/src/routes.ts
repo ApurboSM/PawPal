@@ -11,7 +11,8 @@ import path from "path";
 import fs from "fs";
 import { z as zod } from "zod";
 import { hasDatabaseUrl, pool } from "./db";
-import { Country, State, City } from "country-state-city";
+import { Country } from "country-state-city";
+import { getPlacesInState, getTopLevelStates } from "./geo-hierarchy";
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: Function) => {
@@ -498,32 +499,23 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Only the top administrative tier: for countries like Bangladesh the dataset
+  // lists divisions and districts as siblings, and districts belong one level
+  // down (see geo-hierarchy.ts).
   app.get("/api/geo/states/:countryCode", (req, res) => {
     try {
       geoCache(res);
-      res.json(
-        State.getStatesOfCountry(req.params.countryCode).map((s) => ({
-          name: s.name,
-          isoCode: s.isoCode,
-          latitude: s.latitude,
-          longitude: s.longitude,
-        })),
-      );
+      res.json(getTopLevelStates(req.params.countryCode));
     } catch (error) {
       res.status(500).json({ message: "Failed to load states" });
     }
   });
 
+  // Cities *and* districts, so a division still offers a usable next step.
   app.get("/api/geo/cities/:countryCode/:stateCode", (req, res) => {
     try {
       geoCache(res);
-      res.json(
-        City.getCitiesOfState(req.params.countryCode, req.params.stateCode).map((c) => ({
-          name: c.name,
-          latitude: c.latitude,
-          longitude: c.longitude,
-        })),
-      );
+      res.json(getPlacesInState(req.params.countryCode, req.params.stateCode));
     } catch (error) {
       res.status(500).json({ message: "Failed to load cities" });
     }

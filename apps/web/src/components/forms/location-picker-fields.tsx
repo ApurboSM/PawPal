@@ -42,6 +42,8 @@ export const emptyLocation: LocationValue = {
 
 interface Option {
   value: string;
+  /** Present when the entry is an administrative district, not a city. */
+  code?: string;
   /** What the dropdown shows — may carry a flag emoji. */
   label: string;
   /** The plain name that gets saved on the appointment. */
@@ -143,13 +145,17 @@ interface LocationPickerFieldsProps {
   errors?: Partial<Record<keyof LocationValue, string | undefined>>;
 }
 
+/** How tight the map frames each tier of the picker. */
+const FOCUS_ZOOM = { country: 5, state: 8, district: 11, city: 13 } as const;
+
 /**
- * Country → state → city → street address, with a Leaflet map beside them.
- * The dropdowns move the map, and the map fills in the address, so the two
- * halves stay in step whichever one the user starts from.
+ * Country → state/division → city/district → street address, with a Leaflet map
+ * beside them. The dropdowns move the map, and the map fills in the address, so
+ * the two halves stay in step whichever one the user starts from.
  */
 export function LocationPickerFields({ value, onChange, errors }: LocationPickerFieldsProps) {
   const [mapFocus, setMapFocus] = useState<LatLng | null>(null);
+  const [focusZoom, setFocusZoom] = useState<number>(FOCUS_ZOOM.city);
 
   const { data: countries, isLoading: isCountriesLoading } = useQuery<GeoCountry[]>({
     queryKey: ["/api/geo/countries"],
@@ -198,11 +204,19 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
         value: city.name,
         label: city.name,
         name: city.name,
+        code: city.isoCode,
         lat: city.latitude,
         lng: city.longitude,
       })),
     [cities],
   );
+
+  const focusOn = (option: Option, zoom: number) => {
+    const center = toLatLng(option.lat, option.lng);
+    if (!center) return;
+    setMapFocus(center);
+    setFocusZoom(zoom);
+  };
 
   // Some countries (city-states, small islands) have exactly one state. Picking
   // it for the user saves a dropdown that can only be answered one way.
@@ -210,8 +224,7 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
     if (value.stateCode || stateOptions.length !== 1) return;
     const only = stateOptions[0];
     onChange({ ...value, state: only.name, stateCode: only.value, city: "" });
-    const center = toLatLng(only.lat, only.lng);
-    if (center) setMapFocus(center);
+    focusOn(only, FOCUS_ZOOM.state);
   }, [stateOptions, value.stateCode]);
 
   const pinned = toLatLng(value.lat, value.lng);
@@ -225,20 +238,18 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
       stateCode: "",
       city: "",
     });
-    const center = toLatLng(option.lat, option.lng);
-    if (center) setMapFocus(center);
+    focusOn(option, FOCUS_ZOOM.country);
   };
 
   const selectState = (option: Option) => {
     onChange({ ...value, state: option.name, stateCode: option.value, city: "" });
-    const center = toLatLng(option.lat, option.lng);
-    if (center) setMapFocus(center);
+    focusOn(option, FOCUS_ZOOM.state);
   };
 
   const selectCity = (option: Option) => {
     onChange({ ...value, city: option.name });
-    const center = toLatLng(option.lat, option.lng);
-    if (center) setMapFocus(center);
+    // District entries carry an ISO code; they cover far more ground than a city.
+    focusOn(option, option.code ? FOCUS_ZOOM.district : FOCUS_ZOOM.city);
   };
 
   return (
@@ -275,13 +286,15 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="location-city">City</Label>
+          <Label htmlFor="location-city">City / District</Label>
           <SearchableSelect
             id="location-city"
             options={cityOptions}
             value={value.city}
-            placeholder={value.stateCode ? "Select a city" : "Pick a state first"}
-            emptyText="No city found — pin the spot on the map instead"
+            placeholder={
+              value.stateCode ? "Select a city or district" : "Pick a state or division first"
+            }
+            emptyText="Nothing found — pin the spot on the map instead"
             disabled={!value.stateCode}
             isLoading={isCitiesLoading}
             onSelect={selectCity}
@@ -324,6 +337,7 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
         <LocationMapPicker
           value={pinned}
           focus={mapFocus}
+          focusZoom={focusZoom}
           onChange={(next) =>
             onChange({ ...value, lat: String(next.lat), lng: String(next.lng) })
           }
