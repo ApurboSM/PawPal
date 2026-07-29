@@ -18,6 +18,7 @@ import {
   PET_DETAIL_ROUTE,
   RESOURCE_DETAIL_ROUTE,
   APPOINTMENT_DETAIL_ROUTE,
+  PAYMENT_DETAIL_ROUTE,
   NOT_FOUND_ROUTE,
 } from "@/lib/route-imports";
 
@@ -34,6 +35,9 @@ const ResourcesPageRoute = ROUTES["/resources"];
 const ResourceDetailPageRoute = RESOURCE_DETAIL_ROUTE;
 const AppointmentPageRoute = ROUTES["/appointments"];
 const AppointmentDetailPageRoute = APPOINTMENT_DETAIL_ROUTE;
+const PaymentsPageRoute = ROUTES["/payments"];
+const PaymentNewPageRoute = ROUTES["/payments/new"];
+const PaymentDetailPageRoute = PAYMENT_DETAIL_ROUTE;
 const AdminPageRoute = ROUTES["/admin"];
 const ContactPageRoute = ROUTES["/contact"];
 const PrivacyPolicyPageRoute = ROUTES["/privacy-policy"];
@@ -57,6 +61,10 @@ function Router() {
       <Route path="/emergency" component={EmergencyPageRoute} />
       <ProtectedRoute path="/appointments" component={AppointmentPageRoute} />
       <ProtectedRoute path="/appointments/:id" component={AppointmentDetailPageRoute} />
+      {/* "/payments/new" is declared before "/payments/:id" so the literal wins. */}
+      <ProtectedRoute path="/payments" component={PaymentsPageRoute} />
+      <ProtectedRoute path="/payments/new" component={PaymentNewPageRoute} />
+      <ProtectedRoute path="/payments/:id" component={PaymentDetailPageRoute} />
       <ProtectedRoute path="/profile" component={ProfilePageRoute} />
       <ProtectedRoute path="/admin" component={AdminPageRoute} />
       <Route path="/contact" component={ContactPageRoute} />

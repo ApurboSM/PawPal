@@ -17,6 +17,8 @@ export const ROUTES: Record<string, LazyRoute> = {
   "/resources": createLazyRoute(() => import("@/pages/resources-page")),
   "/emergency": createLazyRoute(() => import("@/pages/emergency-page")),
   "/appointments": createLazyRoute(() => import("@/pages/appointment-page")),
+  "/payments": createLazyRoute(() => import("@/pages/payments-page")),
+  "/payments/new": createLazyRoute(() => import("@/pages/payment-new-page")),
   "/contact": createLazyRoute(() => import("@/pages/contact-page")),
   "/profile": createLazyRoute(() => import("@/pages/profile-page")),
   "/admin": createLazyRoute(() => import("@/pages/admin-page")),
@@ -31,12 +33,15 @@ export const RESOURCE_DETAIL_ROUTE = createLazyRoute(() => import("@/pages/resou
 export const APPOINTMENT_DETAIL_ROUTE = createLazyRoute(
   () => import("@/pages/appointment-detail-page"),
 );
+export const PAYMENT_DETAIL_ROUTE = createLazyRoute(() => import("@/pages/payment-detail-page"));
 export const NOT_FOUND_ROUTE = createLazyRoute(() => import("@/pages/not-found"));
 
 const PREFIX_ROUTES: Array<[string, LazyRoute]> = [
   ["/pets/", PET_DETAIL_ROUTE],
   ["/resources/", RESOURCE_DETAIL_ROUTE],
   ["/appointments/", APPOINTMENT_DETAIL_ROUTE],
+  // "/payments/new" is an exact entry above, so only real ids reach here.
+  ["/payments/", PAYMENT_DETAIL_ROUTE],
 ];
 
 /** The five bottom-tab destinations, warmed once the browser goes idle. */
