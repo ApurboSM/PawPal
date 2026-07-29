@@ -11,6 +11,7 @@ import path from "path";
 import fs from "fs";
 import { z as zod } from "zod";
 import { hasDatabaseUrl, pool } from "./db";
+import { Country, State, City } from "country-state-city";
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: Function) => {
@@ -471,8 +472,65 @@ export function registerRoutes(app: Express): Server {
     }
   });
   
+  // ---------- Geo Routes (country / state / city pickers) ----------
+
+  // The country-state-city dataset is ~8MB, so it stays on the server and the
+  // client pulls only the slice it is showing. Static data -> cache hard.
+  const geoCache = (res: Response) => {
+    res.set("Cache-Control", "public, max-age=86400");
+  };
+
+  app.get("/api/geo/countries", (_req, res) => {
+    try {
+      geoCache(res);
+      res.json(
+        Country.getAllCountries().map((c) => ({
+          name: c.name,
+          isoCode: c.isoCode,
+          flag: c.flag,
+          phonecode: c.phonecode,
+          latitude: c.latitude,
+          longitude: c.longitude,
+        })),
+      );
+    } catch (error) {
+      res.status(500).json({ message: "Failed to load countries" });
+    }
+  });
+
+  app.get("/api/geo/states/:countryCode", (req, res) => {
+    try {
+      geoCache(res);
+      res.json(
+        State.getStatesOfCountry(req.params.countryCode).map((s) => ({
+          name: s.name,
+          isoCode: s.isoCode,
+          latitude: s.latitude,
+          longitude: s.longitude,
+        })),
+      );
+    } catch (error) {
+      res.status(500).json({ message: "Failed to load states" });
+    }
+  });
+
+  app.get("/api/geo/cities/:countryCode/:stateCode", (req, res) => {
+    try {
+      geoCache(res);
+      res.json(
+        City.getCitiesOfState(req.params.countryCode, req.params.stateCode).map((c) => ({
+          name: c.name,
+          latitude: c.latitude,
+          longitude: c.longitude,
+        })),
+      );
+    } catch (error) {
+      res.status(500).json({ message: "Failed to load cities" });
+    }
+  });
+
   // ---------- Appointment Routes ----------
-  
+
   // Get all appointments for a user
   app.get("/api/appointments", isAuthenticated, async (req, res) => {
     try {
@@ -525,6 +583,16 @@ export function registerRoutes(app: Express): Server {
           date: z.coerce.date(),
           notes: z.string().optional(),
           participantUserId: z.number().nullable().optional(),
+          // Optional on the wire: the quick-book widget on the home page posts
+          // without a location, the appointments page always sends one.
+          locationCountry: z.string().optional(),
+          locationCountryCode: z.string().optional(),
+          locationState: z.string().optional(),
+          locationStateCode: z.string().optional(),
+          locationCity: z.string().optional(),
+          locationAddress: z.string().optional(),
+          locationLat: z.string().optional(),
+          locationLng: z.string().optional(),
         })
         .parse(req.body);
 
@@ -544,8 +612,16 @@ export function registerRoutes(app: Express): Server {
         type: body.type,
         date: body.date,
         notes: body.notes,
+        locationCountry: body.locationCountry ?? null,
+        locationCountryCode: body.locationCountryCode ?? null,
+        locationState: body.locationState ?? null,
+        locationStateCode: body.locationStateCode ?? null,
+        locationCity: body.locationCity ?? null,
+        locationAddress: body.locationAddress ?? null,
+        locationLat: body.locationLat ?? null,
+        locationLng: body.locationLng ?? null,
       });
-      
+
       const appointment = await storage.createAppointment(appointmentData);
       res.status(201).json(appointment);
     } catch (error) {

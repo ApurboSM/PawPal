@@ -429,3 +429,52 @@
     padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* --- Leaflet -------------------------------------------------------------- */
+
+/* Leaflet's panes sit at z-index 400-700 and its controls at 800-1000, which
+   would otherwise punch through the navbar, dialogs and the bottom tab bar. */
+.leaflet-container {
+  z-index: 0;
+  font: inherit;
+}
+
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1;
+}
+
+.leaflet-container a {
+  color: hsl(var(--primary));
+}
+
+/* The brand map pin: a paw-pink teardrop with a soft pulse so the pinned point
+   stays findable while the user pans around it. */
+.pawpal-pin {
+  background: transparent;
+  border: 0;
+}
+
+.pawpal-pin__pulse {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 26px;
+  height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: hsl(340 82% 52% / 0.3);
+  animation: pawpal-pin-pulse 2s ease-in-out infinite;
+}
+
+@keyframes pawpal-pin-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
+  50% { transform: translateX(-50%) scale(1.5); opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pawpal-pin__pulse {
+    animation: none;
+  }
+}

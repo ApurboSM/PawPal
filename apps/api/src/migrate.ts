@@ -22,6 +22,16 @@ async function migrate() {
     await db.execute(sql`ALTER TABLE pets ALTER COLUMN listing_type SET DEFAULT 'adopt';`);
     await db.execute(sql`ALTER TABLE pets ALTER COLUMN listing_type SET NOT NULL;`);
     
+    // Appointments: where the visit happens (dropdown selections + pinned point)
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_country TEXT;`);
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_country_code TEXT;`);
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_state TEXT;`);
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_state_code TEXT;`);
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_city TEXT;`);
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_address TEXT;`);
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_lat TEXT;`);
+    await db.execute(sql`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS location_lng TEXT;`);
+
     console.log('Migration completed successfully');
     process.exit(0);
   } catch (error) {

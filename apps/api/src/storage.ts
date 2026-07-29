@@ -341,6 +341,14 @@ export class MemStorage implements IStorage {
       petId: appointmentData.petId ?? null,
       participantUserId: appointmentData.participantUserId ?? null,
       notes: appointmentData.notes ?? null,
+      locationCountry: appointmentData.locationCountry ?? null,
+      locationCountryCode: appointmentData.locationCountryCode ?? null,
+      locationState: appointmentData.locationState ?? null,
+      locationStateCode: appointmentData.locationStateCode ?? null,
+      locationCity: appointmentData.locationCity ?? null,
+      locationAddress: appointmentData.locationAddress ?? null,
+      locationLat: appointmentData.locationLat ?? null,
+      locationLng: appointmentData.locationLng ?? null,
       ...appointmentData,
     };
     this.appointments.set(id, appointment);
