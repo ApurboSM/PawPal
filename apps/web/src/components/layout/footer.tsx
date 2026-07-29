@@ -107,6 +107,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/payments" className="text-foreground hover:text-primary transition-all-ease flex items-center group">
+                  <PawPrint className="h-4 w-4 mr-2 text-primary/70 group-hover:text-primary transition-all-ease" />
+                  <span>Payments</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="text-foreground hover:text-primary transition-all-ease flex items-center group">
                   <PawPrint className="h-4 w-4 mr-2 text-primary/70 group-hover:text-primary transition-all-ease" />
                   <span>Contact</span>

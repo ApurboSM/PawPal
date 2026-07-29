@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Pet, Resource, AdoptionApplication, User } from "@pawpal/shared/schema";
 import { Helmet } from "react-helmet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminPaymentsPanel } from "@/components/payments/admin-payments-panel";
 import {
   Table,
   TableBody,
@@ -520,15 +521,16 @@ export default function AdminPage() {
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-lg text-neutral-600 mb-8">
-            Manage pets, adoption applications, resources, and appointments.
+            Manage pets, adoption applications, resources, appointments, and payments.
           </p>
           
           <Tabs defaultValue="pets" className="space-y-8">
-            <TabsList className="w-full grid grid-cols-3 md:grid-cols-4 lg:max-w-xl">
+            <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:max-w-3xl">
               <TabsTrigger value="pets">Pets</TabsTrigger>
               <TabsTrigger value="applications">Applications</TabsTrigger>
               <TabsTrigger value="resources">Resources</TabsTrigger>
               <TabsTrigger value="appointments">Appointments</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
             </TabsList>
             
             {/* Pets Management */}
@@ -1967,6 +1969,11 @@ export default function AdminPage() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Payment verification */}
+            <TabsContent value="payments">
+              <AdminPaymentsPanel />
             </TabsContent>
           </Tabs>
         </div>

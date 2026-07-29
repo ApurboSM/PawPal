@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Calendar, MapPin, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import { Heart, Calendar, MapPin, CheckCircle, AlertCircle, ArrowLeft, Wallet } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DetailSkeleton } from "@/components/skeletons/page-skeletons";
 import { useMemo, useState } from "react";
@@ -433,13 +433,29 @@ export default function PetDetailPage() {
                     </DialogContent>
                   </Dialog>
                   
+                  {/* Money changes hands off-platform, so this is a hand-off to
+                      the reporting form rather than a checkout. */}
+                  <Link
+                    href={`/payments/new?purpose=${
+                      pet.listingType === "sell" ? "pet_purchase" : "adoption_fee"
+                    }&petId=${pet.id}`}
+                  >
+                    <Button
+                      className="w-full bg-[#FF6B98] text-white shadow-md transition-transform hover:-translate-y-0.5 hover:bg-[#e85c87]"
+                      size="lg"
+                    >
+                      <Wallet className="mr-2 h-4 w-4" />
+                      {pet.listingType === "sell" ? `Pay for ${pet.name}` : "Pay the adoption fee"}
+                    </Button>
+                  </Link>
+
                   <Link href="/appointments">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full border-[#4A6FA5] text-[#4A6FA5] hover:bg-[#4A6FA5] hover:text-white"
                       size="lg"
                     >
-                      <Calendar className="mr-2 h-4 w-4" /> 
+                      <Calendar className="mr-2 h-4 w-4" />
                       Schedule a Visit
                     </Button>
                   </Link>
