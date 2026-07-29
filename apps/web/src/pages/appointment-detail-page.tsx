@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DetailSkeleton } from "@/components/skeletons/page-skeletons";
 import { ArrowLeft, Calendar, Clock3, PawPrint, FileText, MapPin, ShieldCheck } from "lucide-react";
+import { LocationMapView } from "@/components/map/location-map-view";
 
 function appointmentTypeLabel(type?: string) {
   if (type === "meet_and_greet") return "Meet & Greet";
@@ -115,6 +116,20 @@ export default function AppointmentDetailPage() {
                   <p className="text-neutral-700">{appointment.notes?.trim() ? appointment.notes : "No additional notes provided."}</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Where to go. This is the participant's copy of the pin the booker
+              dropped, with the same Google Maps hand-offs. */}
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-[#4A6FA5]" />
+                Location
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LocationMapView location={appointment} heightClass="h-[320px]" />
             </CardContent>
           </Card>
 
