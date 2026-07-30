@@ -476,9 +476,13 @@ export function registerRoutes(app: Express): Server {
   // ---------- Geo Routes (country / state / city pickers) ----------
 
   // The country-state-city dataset is ~8MB, so it stays on the server and the
-  // client pulls only the slice it is showing. Static data -> cache hard.
+  // client pulls only the slice it is showing. The dataset barely moves, but our
+  // reading of it does (see geo-hierarchy.ts) — so let the browser keep its copy
+  // and revalidate rather than trust it for a day. An unchanged slice costs a
+  // 304 with no body; a corrected one reaches the user on the next load instead
+  // of whenever their cache happens to expire.
   const geoCache = (res: Response) => {
-    res.set("Cache-Control", "public, max-age=86400");
+    res.set("Cache-Control", "no-cache");
   };
 
   app.get("/api/geo/countries", (_req, res) => {

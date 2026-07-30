@@ -53,6 +53,33 @@ interface Option {
 }
 
 /**
+ * Place names in the dataset carry their native diacritics — "Bājitpur",
+ * "Dohār", "Sonārgaon" — but nobody types them on the way to picking a city.
+ */
+const normalize = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+/**
+ * cmdk's built-in scorer matches the raw string, so "Bajitpur" never finds
+ * "Bājitpur". Score the stripped forms instead, ranking a name that starts with
+ * the query above one that merely contains it.
+ */
+const scoreOption = (value: string, search: string) => {
+  const query = normalize(search).trim();
+  if (!query) return 1;
+
+  const name = normalize(value);
+  const at = name.indexOf(query);
+  if (at < 0) return 0;
+  if (at === 0) return 1;
+  // "bazar" should still surface "Bhairab Bāzār", just below any leading match.
+  return name[at - 1] === " " ? 0.7 : 0.4;
+};
+
+/**
  * Type-ahead dropdown. A plain <select> is unusable at 250 countries or the
  * 1000+ cities some states have, so every list here is searchable.
  */
@@ -101,7 +128,7 @@ function SearchableSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command>
+        <Command filter={scoreOption}>
           <CommandInput placeholder={placeholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
@@ -149,6 +176,14 @@ interface LocationPickerFieldsProps {
 const FOCUS_ZOOM = { country: 5, state: 8, district: 11, city: 13 } as const;
 
 /**
+ * Bump when the geo endpoints start answering differently. The old responses
+ * went out with a 24-hour `Cache-Control`, so a browser that asked for a
+ * division's districts before they existed would keep showing that empty list
+ * for the rest of the day; a new URL retires those entries at once.
+ */
+const GEO_VERSION = 2;
+
+/**
  * Country → state/division → city/district → street address, with a Leaflet map
  * beside them. The dropdowns move the map, and the map fills in the address, so
  * the two halves stay in step whichever one the user starts from.
@@ -158,18 +193,18 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
   const [focusZoom, setFocusZoom] = useState<number>(FOCUS_ZOOM.city);
 
   const { data: countries, isLoading: isCountriesLoading } = useQuery<GeoCountry[]>({
-    queryKey: ["/api/geo/countries"],
+    queryKey: [`/api/geo/countries?v=${GEO_VERSION}`],
     staleTime: Infinity,
   });
 
   const { data: states, isLoading: isStatesLoading } = useQuery<GeoState[]>({
-    queryKey: [`/api/geo/states/${value.countryCode}`],
+    queryKey: [`/api/geo/states/${value.countryCode}?v=${GEO_VERSION}`],
     enabled: Boolean(value.countryCode),
     staleTime: Infinity,
   });
 
   const { data: cities, isLoading: isCitiesLoading } = useQuery<GeoCity[]>({
-    queryKey: [`/api/geo/cities/${value.countryCode}/${value.stateCode}`],
+    queryKey: [`/api/geo/cities/${value.countryCode}/${value.stateCode}?v=${GEO_VERSION}`],
     enabled: Boolean(value.countryCode && value.stateCode),
     staleTime: Infinity,
   });
