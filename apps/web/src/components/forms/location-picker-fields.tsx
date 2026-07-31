@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Loader2, MapPin } from "lucide-react";
+import { AlertCircle, Check, ChevronsUpDown, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -192,18 +192,33 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
   const [mapFocus, setMapFocus] = useState<LatLng | null>(null);
   const [focusZoom, setFocusZoom] = useState<number>(FOCUS_ZOOM.city);
 
-  const { data: countries, isLoading: isCountriesLoading } = useQuery<GeoCountry[]>({
+  const {
+    data: countries,
+    isLoading: isCountriesLoading,
+    isError: countriesFailed,
+    refetch: refetchCountries,
+  } = useQuery<GeoCountry[]>({
     queryKey: [`/api/geo/countries?v=${GEO_VERSION}`],
     staleTime: Infinity,
   });
 
-  const { data: states, isLoading: isStatesLoading } = useQuery<GeoState[]>({
+  const {
+    data: states,
+    isLoading: isStatesLoading,
+    isError: statesFailed,
+    refetch: refetchStates,
+  } = useQuery<GeoState[]>({
     queryKey: [`/api/geo/states/${value.countryCode}?v=${GEO_VERSION}`],
     enabled: Boolean(value.countryCode),
     staleTime: Infinity,
   });
 
-  const { data: cities, isLoading: isCitiesLoading } = useQuery<GeoCity[]>({
+  const {
+    data: cities,
+    isLoading: isCitiesLoading,
+    isError: citiesFailed,
+    refetch: refetchCities,
+  } = useQuery<GeoCity[]>({
     queryKey: [`/api/geo/cities/${value.countryCode}/${value.stateCode}?v=${GEO_VERSION}`],
     enabled: Boolean(value.countryCode && value.stateCode),
     staleTime: Infinity,
@@ -287,6 +302,17 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
     focusOn(option, option.code ? FOCUS_ZOOM.district : FOCUS_ZOOM.city);
   };
 
+  /** A dead request must not masquerade as an empty result set. */
+  const LoadFailed = ({ what, onRetry }: { what: string; onRetry: () => void }) => (
+    <p className="flex flex-wrap items-center gap-2 text-sm text-red-600">
+      <AlertCircle className="h-4 w-4 shrink-0" />
+      Could not load {what}. Check that the server is running.
+      <button type="button" onClick={onRetry} className="font-semibold underline">
+        Retry
+      </button>
+    </p>
+  );
+
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       {/* Dropdowns */}
@@ -298,10 +324,11 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
             options={countryOptions}
             value={value.countryCode}
             placeholder="Select a country"
-            emptyText="No country found"
+            emptyText={countriesFailed ? "Country list unavailable" : "No country found"}
             isLoading={isCountriesLoading}
             onSelect={selectCountry}
           />
+          {countriesFailed && <LoadFailed what="countries" onRetry={() => refetchCountries()} />}
           {errors?.countryCode && <p className="text-sm text-red-600">{errors.countryCode}</p>}
         </div>
 
@@ -312,11 +339,14 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
             options={stateOptions}
             value={value.stateCode}
             placeholder={value.countryCode ? "Select a state or division" : "Pick a country first"}
-            emptyText="No state or division found"
+            emptyText={statesFailed ? "List unavailable" : "No state or division found"}
             disabled={!value.countryCode}
             isLoading={isStatesLoading}
             onSelect={selectState}
           />
+          {statesFailed && (
+            <LoadFailed what="states and divisions" onRetry={() => refetchStates()} />
+          )}
           {errors?.stateCode && <p className="text-sm text-red-600">{errors.stateCode}</p>}
         </div>
 
@@ -329,11 +359,18 @@ export function LocationPickerFields({ value, onChange, errors }: LocationPicker
             placeholder={
               value.stateCode ? "Select a city or district" : "Pick a state or division first"
             }
-            emptyText="Nothing found — pin the spot on the map instead"
+            emptyText={
+              citiesFailed
+                ? "List unavailable — pin the spot on the map instead"
+                : "Nothing found — pin the spot on the map instead"
+            }
             disabled={!value.stateCode}
             isLoading={isCitiesLoading}
             onSelect={selectCity}
           />
+          {citiesFailed && (
+            <LoadFailed what="cities and districts" onRetry={() => refetchCities()} />
+          )}
           {errors?.city && <p className="text-sm text-red-600">{errors.city}</p>}
         </div>
 
